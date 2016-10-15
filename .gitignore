@@ -5,3 +5,6 @@
 *.cpp
 *.o
 *.h
+
+# Executables
+pacman/{Car, ColumnRunner}

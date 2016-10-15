@@ -12,8 +12,8 @@ object Application {
     System.out.println("Running tests");
     val margs = Array("--backend", "c", "--genHarness", "--compile", "--test")
     
-    chiselMainTest(margs, () => Module(new Runner())) {
-      c => new RunnerTests(c)
+    chiselMainTest(margs, () => Module(new ColumnRunner(1))) {
+      c => new ColumnRunnerTests(c)
     }
 
     val carN = 4;
