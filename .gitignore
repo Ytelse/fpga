@@ -1,0 +1,9 @@
+# Output directory
+*target/
+
+# Executables
+
+# Henerated cpp files
+*.cpp
+*.o
+*.h
