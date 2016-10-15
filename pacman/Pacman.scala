@@ -1,4 +1,4 @@
-//  
+//
 //  Entry point of entire application
 //
 
@@ -11,7 +11,7 @@ object Application {
   def test() {
     System.out.println("Running tests");
     val margs = Array("--backend", "c", "--genHarness", "--compile", "--test")
-    
+
     chiselMainTest(margs, () => Module(new ColumnRunner(1))) {
       c => new ColumnRunnerTests(c)
     }

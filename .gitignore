@@ -7,4 +7,5 @@
 *.h
 
 # Executables
-pacman/{Car, ColumnRunner}
+pacman/Car
+pacman/ColumnRunner

@@ -13,18 +13,29 @@ import Chisel._
  */
 class ColumnRunner(k: Int) extends Module {
   var io = new Bundle {
-    val inputs = Vec.fill(k){ Bool() }.asInput
-    val weights = Vec.fill(k){ Bool() }.asInput
-    /** The accumulating value is the output value of the
-     *  previous Runner, or `0` if it is the first runner */
-    val accumulator = UInt(width=10).asInput
+    val xs = Vec.fill(k){ UInt(width=1) }.asInput
+    val ws = Vec.fill(k){ UInt(width=1) }.asInput
+    /** yIn is the output of the previous Runner,
+     *  or `0` if it is the first runner */
+    val yIn = UInt(width=10).asInput
     /** output = acc + sum(inner(input, weights)) */
-    val output = UInt(width=10).asOutput
+    val yOut = UInt(width=10).asOutput
   }
-  io.output := UInt(123)
+  val sum = (io.xs, io.ws).zipped
+            .map(Utils.equv)
+            .reduce(_ + _) + io.yIn
+  io.yOut := sum
 }
 
 class ColumnRunnerTests(c: ColumnRunner) extends Tester(c) {
+  poke(c.io.yIn, 0)
+  poke(c.io.xs(0), 1)
+  poke(c.io.ws(0), 1)
   step(1)
-  expect(c.io.out, 123)
+  expect(c.io.yOut, 1)
+  step(1)
+  expect(c.io.yOut, 1)
+  poke(c.io.ws(0), 0)
+  step(1)
+  expect(c.io.yOut, 0)
 }
