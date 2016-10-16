@@ -16,8 +16,8 @@ object Application {
       c => new ColumnRunnerTests(c)
     }
 
-    val carN = 8;
-    val carK = 1;
+    val carN = 4;
+    val carK = 2;
     chiselMainTest(margs, () => Module(new Car(carN, carK))) {
       c => new CarTests(c, carN, carK)
     }
