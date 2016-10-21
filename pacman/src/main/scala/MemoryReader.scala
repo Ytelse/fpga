@@ -27,7 +27,7 @@ class MemoryReader(n: Int, k: Int, addrWidth: Int, offset: Int, rowLength: Int)
   }
   // NOTE: we've assumed byte addressing
   val stepSize = n * k / 8
-  when(reset || ((addrReg + UInt(x=stepSize)) === UInt(x=rowLength))) {
+  when(addrReg + UInt(x=stepSize) === UInt(x=rowLength)) {
     addrReg := UInt(x=offset)
   }.otherwise {
     addrReg := addrReg + UInt(x=stepSize)

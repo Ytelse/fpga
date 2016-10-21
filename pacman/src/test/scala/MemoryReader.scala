@@ -3,11 +3,8 @@ package Pacman
 import Chisel._
 
 class MemoryReaderTests(c: MemoryReader, n: Int, k: Int, addrWidth: Int, offset: Int, rowLength: Int) extends Tester(c) {
-
   var stepSize = n * k / 8
-  poke(c.reset, false)
-
-  for (i <- 0 until rowLength) {
+  for (i <- 0 until rowLength / stepSize + 1) {
     val randomNums = (0 until n).map((_) => rnd.nextInt(math.pow(2, k).toInt))
     var num = 0;
     for (j <- 0 until n) {
@@ -23,6 +20,9 @@ class MemoryReaderTests(c: MemoryReader, n: Int, k: Int, addrWidth: Int, offset:
       expect(c.io.weights(j), randomNums(j))
     }
   }
+
+  reset()
+  expect(c.io.addr, 0)
 }
 
 object MemoryReaderTest {
