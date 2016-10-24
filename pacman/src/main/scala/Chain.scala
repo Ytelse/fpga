@@ -7,7 +7,7 @@ class Chain(numProcessingUnits: Int,
             k: Int,
             numMemoryReaders: Int,
             memoryOffsets: List[Int],
-            rowLength: Int)
+            readingLength: Int)
     extends Module {
   val yWidth = 10
   val unitsPerMemoryReader = numProcessingUnits / numMemoryReaders
@@ -25,7 +25,7 @@ class Chain(numProcessingUnits: Int,
                              k,
                              addrWidth,
                              memoryOffsets(i),
-                             rowLength)))
+                             readingLength)))
 
   val io = new Bundle {
     val addressLines =
@@ -34,27 +34,31 @@ class Chain(numProcessingUnits: Int,
       Vec.fill(numMemoryReaders) { Bits(width = dataLineWidth) }.asInput
     val resetIn = Bool().asInput
     val xs = Bits(width = k).asInput
-    val yx = Vec.fill(numProcessingUnits){ Bits(width=yWidth) }.asOutput
+    val ys = Vec.fill(numProcessingUnits) { Bits(width = yWidth) }.asOutput
     // Add x_out and reset_out ?
   }
 
   for (i <- 0 until numProcessingUnits) {
-    io.yx(i) := processingUnits(i).io.yOut
+    io.ys(i) := processingUnits(i).io.yOut
   }
 
   processingUnits
     .sliding(2)
-    .map((lst) => {
+    .foreach((lst) => {
       val a = lst(0)
       val b = lst(1)
       b.io.resetIn := a.io.resetOut
       b.io.xs := a.io.xOut
     })
 
+  processingUnits(0).io.xs := io.xs
+  processingUnits(0).io.resetIn := io.resetIn
+
+
   processingUnits
     .grouped(unitsPerMemoryReader)
     .zip(memoryReaders.iterator)
-    .map({
+    .foreach({
       case (punits, reader) => {
         punits.zipWithIndex.map({
           case (punit, i) => {
@@ -66,6 +70,6 @@ class Chain(numProcessingUnits: Int,
 
   for (i <- 0 until numMemoryReaders) {
     memoryReaders(i).io.data := io.dataLines(i)
-    io.addressLines(i) := memoryReaders(i).io.data
+    io.addressLines(i) := memoryReaders(i).io.addr
   }
 }

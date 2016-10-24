@@ -26,7 +26,8 @@ class ProcessingUnit(k: Int) extends Module {
     val resetOut = Bool().asOutput
   }
 
-  yReg := Mux(io.resetIn, UInt(0), PopCount(~(io.xs ^ io.ws)) + yReg)
+  val innerProd = PopCount(~(io.xs ^ io.ws))
+  yReg := Mux(io.resetIn, innerProd, innerProd + yReg)
 
   resetReg := io.resetIn
   io.resetOut := resetReg

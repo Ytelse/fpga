@@ -13,7 +13,7 @@ import Chisel._
   * `k` is the width of the lines to each MemoryReader. That is,
   * the number of bits each reader reads at any given time.
   */
-class MemoryReader(n: Int, k: Int, addrWidth: Int, offset: Int, rowLength: Int)
+class MemoryReader(n: Int, k: Int, addrWidth: Int, offset: Int, readingLength: Int)
     extends Module {
   // TODO: How should the cars know which
   // addresses to read? If we parametrize it,
@@ -21,13 +21,13 @@ class MemoryReader(n: Int, k: Int, addrWidth: Int, offset: Int, rowLength: Int)
   // be what we want.
   val addrReg = Reg(UInt(width = addrWidth), init = UInt(x = offset))
   val io = new Bundle {
-    val data = UInt(width = n * k).asInput
+    val data = Bits(width = n * k).asInput
     val addr = UInt(width = addrWidth).asOutput
     val weights = Vec.fill(n) { Bits(width = k) }.asOutput
   }
   // NOTE: we've assumed byte addressing
   val stepSize = n * k / 8
-  when(addrReg + UInt(x = stepSize) === UInt(x = rowLength)) {
+  when(addrReg + UInt(x = stepSize) === UInt(x = readingLength)) {
     addrReg := UInt(x = offset)
   }.otherwise {
     addrReg := addrReg + UInt(x = stepSize)

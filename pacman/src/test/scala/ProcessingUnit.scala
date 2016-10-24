@@ -39,7 +39,7 @@ class ProcessingUnitTests(c: ProcessingUnit, k: Int) extends Tester(c) {
   step(1)
 
   expect(c.io.xOut, ones)
-  expect(c.io.yOut, 0)
+  expect(c.io.yOut, k)
   expect(c.io.resetOut, true);
   poke(c.io.xs, 0)
 
