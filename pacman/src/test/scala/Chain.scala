@@ -149,18 +149,70 @@ object ChainTest {
     List.range(1, n + 1).filter((e) => n % e == 0)
   }
 
-  def main(args: Array[String]): Unit = {
-    val margs = Array("--backend", "c", "--genHarness",
+  def test(matHeight: Int,
+           matWidth: Int,
+           numPUs: Int,
+           numReaders: Int,
+           PUsPerReader: Int,
+           readerWidth: Int,
+           k: Int,
+           memoryOffsets: List[Int],
+           addrWidth: Int,
+           readingLength: Int) = {
+    val margs = Array("--backend", "v", "--genHarness",
                       "--compile", "--test")
+    println("matHeight", matHeight)
+    println("matWidth", matWidth)
+    println("numPUs", numPUs)
+    println("numReaders", numReaders)
+    println("PUsPerReader", PUsPerReader)
+    println("readerWidth", readerWidth)
+    println("k", k)
+    println("memoryOffsets", memoryOffsets)
+    println("addrWidth", addrWidth)
+    println("readingLength", readingLength)
+
+    chiselMainTest(margs, () =>
+        Module(new Chain(numPUs,
+                         addrWidth,
+                         k,
+                         numReaders,
+                         memoryOffsets,
+                         readingLength))) {
+      c => new ChainTests(c,
+                          numPUs,
+                          addrWidth,
+                          k,
+                          numReaders,
+                          memoryOffsets,
+                          (matHeight, matWidth))
+    }
+  }
+
+  def main(args: Array[String]): Unit = {
     val addrWidth = 64;
 
-    val matHeight = 8
-    val matWidth = 32
+    test(784, // matHeight
+         1024, // matWidth
+         32, // numPUs
+         4, // numReaders
+         8, // PUsPerReader
+         64, // readerWidth
+         8, // k
+         List(0, 0, 0, 0), // zeroes
+         addrWidth, 
+         (784 * 1024) / (8 * 4)) // (width * height) / (8 * numReaders)
+
+
+
+
     for (matHeight <- List(4, 8, 10, 28)) {
       for (matWidth <- List(8, 16, 24, 64)) {
       val possibleReaderWidth = divisors(matWidth / 8)
       for (readerWidth <- possibleReaderWidth) {
-        val possibleNumReaders = List.range(1, matWidth / (readerWidth * 8) + 1)
+        // val possibleNumReaders = List.range(1, matWidth / (readerWidth * 8) + 1)
+        val possibleNumReaders = List(4)
+
         for (numReaders <- possibleNumReaders) {
           val memoryOffsets = List.fill(numReaders)(0)
           val readingLength = (matWidth * matHeight) / (8 * numReaders)
@@ -173,33 +225,16 @@ object ChainTest {
           for (PUsPerReader <- possiblePUsPerReader) {
             val k = (8 * readerWidth) / PUsPerReader
             val numPUs = PUsPerReader * numReaders
-
-            println("matHeight", matHeight)
-            println("matWidth", matWidth)
-            println("numPUs", numPUs)
-            println("numReaders", numReaders)
-            println("PUsPerReader", PUsPerReader)
-            println("readerWidth", readerWidth)
-            println("k", k)
-            println("memoryOffsets", memoryOffsets)
-            println("addrWidth", addrWidth)
-            println("readingLength", readingLength)
-
-            chiselMainTest(margs, () =>
-                Module(new Chain(numPUs,
-                                 addrWidth,
-                                 k,
-                                 numReaders,
-                                 memoryOffsets,
-                                 readingLength))) {
-              c => new ChainTests(c,
-                                  numPUs,
-                                  addrWidth,
-                                  k,
-                                  numReaders,
-                                  memoryOffsets,
-                                  (matHeight, matWidth))
-              }
+            test(matHeight,
+                 matWidth,
+                 numPUs,
+                 numReaders,
+                 PUsPerReader,
+                 readerWidth,
+                 k,
+                 memoryOffsets,
+                 addrWidth,
+                 readingLength)
             }
           }
         }
