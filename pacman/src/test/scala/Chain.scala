@@ -8,7 +8,7 @@ object Stuff {
   def getWeightMatrix(matWidth: Int, matHeight: Int) : Seq[Int] =
     Seq.fill(matWidth * matHeight)(Random.nextInt(2))
 
-  def getInputMatrix(len: Int): Seq[Int] =
+  def getInputVector(len: Int): Seq[Int] =
     Seq.fill(len)(Random.nextInt(2))
 
   def matrixMul(matrix: Seq[Int], vector: Seq[Int],
@@ -74,19 +74,19 @@ class ChainTests(c: Chain,
   }
 
 
-  // Cycles we need to wait in the beginning
-  val waitStart = matWidth / k
-  // Cycles we need to wait between getting Ys
-  val waitBetween = matWidth / k - processingUnits
   // How much the addresses should change between each step
   val expectedAddrStep = PUsPerReader * k / 8
 
   var result = Seq(1)
   // For each input vector
   for (iteration <- 0 until N_ITERS) {
-    val xs = Stuff.getInputMatrix(matWidth)
+    val xs = Stuff.getInputVector(matWidth)
     val previousRes = result
     result = Stuff.matrixMul(weights, xs, matWidth, matHeight)
+
+    // Stuff.printMat(xs, 1, matWidth);
+    // Stuff.printMat(weights, matHeight, matWidth);
+    // Stuff.printMat(result, 1, matHeight);
 
     // One step is reading `k` x values. After matWidth/k
     // steps we get out the first y.
@@ -128,7 +128,7 @@ class ChainTests(c: Chain,
         poke(c.io.dataLines(mrI), vecToBigInt(num))
       }
 
-      val xIndex = 4 * (stepNumber % (matWidth / k))
+      val xIndex = k * (stepNumber % (matWidth / k))
       poke(c.io.xs, vecToBigInt(xs.slice(xIndex, xIndex + k)))
 
       // If we are to start a new row pass, reset the chain
@@ -144,31 +144,66 @@ class ChainTests(c: Chain,
 }
 
 object ChainTest {
+
+  def divisors(n: Int): Seq[Int] = {
+    List.range(1, n + 1).filter((e) => n % e == 0)
+  }
+
   def main(args: Array[String]): Unit = {
     val margs = Array("--backend", "c", "--genHarness",
                       "--compile", "--test")
-    val numProcessingUnits = 4
     val addrWidth = 64;
-    val memoryReaders = 2
-    val k = 4
-    val memoryOffsets = List(0, 0)
+
     val matHeight = 8
-    val matWidth = 20
-    val readingLength = (matWidth * matHeight) / (8 * memoryReaders)
-    chiselMainTest(margs, () =>
-        Module(new Chain(numProcessingUnits,
-                         addrWidth,
-                         k,
-                         memoryReaders,
-                         memoryOffsets,
-                         readingLength))) {
-      c => new ChainTests(c,
-                          numProcessingUnits,
-                          addrWidth,
-                          k,
-                          memoryReaders,
-                          memoryOffsets,
-                          (matHeight, matWidth))
+    val matWidth = 32
+    for (matHeight <- List(4, 8, 10, 28)) {
+      for (matWidth <- List(8, 16, 24, 64)) {
+      val possibleReaderWidth = divisors(matWidth / 8)
+      for (readerWidth <- possibleReaderWidth) {
+        val possibleNumReaders = List.range(1, matWidth / (readerWidth * 8) + 1)
+        for (numReaders <- possibleNumReaders) {
+          val memoryOffsets = List.fill(numReaders)(0)
+          val readingLength = (matWidth * matHeight) / (8 * numReaders)
+
+          val possiblePUsPerReader = divisors(readerWidth * 8)
+            .filter((p) => {
+              val numPus = p * numReaders
+              numPus <= matHeight && matHeight % numPus == 0
+            })
+          for (PUsPerReader <- possiblePUsPerReader) {
+            val k = (8 * readerWidth) / PUsPerReader
+            val numPUs = PUsPerReader * numReaders
+
+            println("matHeight", matHeight)
+            println("matWidth", matWidth)
+            println("numPUs", numPUs)
+            println("numReaders", numReaders)
+            println("PUsPerReader", PUsPerReader)
+            println("readerWidth", readerWidth)
+            println("k", k)
+            println("memoryOffsets", memoryOffsets)
+            println("addrWidth", addrWidth)
+            println("readingLength", readingLength)
+
+            chiselMainTest(margs, () =>
+                Module(new Chain(numPUs,
+                                 addrWidth,
+                                 k,
+                                 numReaders,
+                                 memoryOffsets,
+                                 readingLength))) {
+              c => new ChainTests(c,
+                                  numPUs,
+                                  addrWidth,
+                                  k,
+                                  numReaders,
+                                  memoryOffsets,
+                                  (matHeight, matWidth))
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

@@ -42,14 +42,16 @@ class Chain(numProcessingUnits: Int,
     io.ys(i) := processingUnits(i).io.yOut
   }
 
-  processingUnits
-    .sliding(2)
-    .foreach((lst) => {
-      val a = lst(0)
-      val b = lst(1)
-      b.io.resetIn := a.io.resetOut
-      b.io.xs := a.io.xOut
-    })
+  if (processingUnits.length > 1) {
+    processingUnits
+      .sliding(2)
+      .foreach((lst) => {
+        val a = lst(0)
+        val b = lst(1)
+        b.io.resetIn := a.io.resetOut
+        b.io.xs := a.io.xOut
+      })
+  }
 
   processingUnits(0).io.xs := io.xs
   processingUnits(0).io.resetIn := io.resetIn
