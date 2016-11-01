@@ -35,6 +35,19 @@ create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports { C
 
 #set_property -dict { PACKAGE_PIN T10 IOSTANDARD LVCMOS33 } [get_ports { reset }]; #IO_L22N_T3_A04_D20_14 Sch=reset
 
+## MCU CTRL
+
+#set_property -dict { PACKAGE_PIN C8 IOSTANDARD LVCMOS33 } [get_ports { MCUctrl[0] }]; #IO_L1P_T0_AD0P_15 Sch=MCUctrl[0]
+#set_property -dict { PACKAGE_PIN C9 IOSTANDARD LVCMOS33 } [get_ports { MCUctrl[1] }]; #IO_L1N_T0_AD0N_15 Sch=MCUctrl[1]
+#set_property -dict { PACKAGE_PIN A8 IOSTANDARD LVCMOS33 } [get_ports { MCUctrl[2] }]; #IO_L2P_T0_AD8P_15 Sch=MCUctrl[2]
+#set_property -dict { PACKAGE_PIN A9 IOSTANDARD LVCMOS33 } [get_ports { MCUctrl[3] }]; #IO_L2N_T0_AD8N_15 Sch=MCUctrl[3]
+#set_property -dict { PACKAGE_PIN B9 IOSTANDARD LVCMOS33 } [get_ports { MCUctrl[4] }]; #IO_L3P_T0_DQS_AD1P_15 Sch=MCUctrl[4]
+#set_property -dict { PACKAGE_PIN A10 IOSTANDARD LVCMOS33 } [get_ports { MCUctrl[5] }]; #IO_L3N_T0_DQS_AD1N_15 Sch=MCUctrl[5]
+#set_property -dict { PACKAGE_PIN B10 IOSTANDARD LVCMOS33 } [get_ports { MCUctrl[6] }]; #IO_L4P_T0_15 Sch=MCUctrl[6]
+#set_property -dict { PACKAGE_PIN B11 IOSTANDARD LVCMOS33 } [get_ports { MCUctrl[7] }]; #IO_L4N_T0_15 Sch=MCUctrl[7]
+#set_property -dict { PACKAGE_PIN B12 IOSTANDARD LVCMOS33 } [get_ports { MCUctrl[8] }]; #IO_L5P_T0_AD9P_15 Sch=MCUctrl[8]
+#set_property -dict { PACKAGE_PIN A12 IOSTANDARD LVCMOS33 } [get_ports { MCUctrl[9] }]; #IO_L5N_T0_AD9N_15 Sch=MCUctrl[9]
+
 ##EBI-A BUS
 
 #set_property -dict { PACKAGE_PIN T10 IOSTANDARD LVCMOS33 } [get_ports { EBIa[0] }]; #IO_L6N_T0_VREF_15 Sch=EBIa[0]
@@ -106,7 +119,21 @@ create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports { C
 #set_property -dict { PACKAGE PIN D6 IOSTANDARD LVCMOS33 } [get ports { ULPIrst }]; #IO_L6P_T0_35 Sch=ULPIrst
 #set_property -dict { PACKAGE PIN C3 IOSTANDARD LVCMOS33 } [get ports { ULPIstp }]; #IO_L7P_T1_AD6P_35 Sch=ULPIstp
 
+## USB1
+#set_property -dict { PACKAGE PIN E1 IOSTANDARD LVCMOS33 } [get ports { USB1DnRes }]; #IO_L15N_T2_DQS_35 Sch=USB1DnRes
+#set_property -dict { PACKAGE PIN G5 IOSTANDARD LVCMOS33 } [get ports { USB1Dn }]; #IO_L16P_T2_35 Sch=USB1Dn
+#set_property -dict { PACKAGE PIN G4 IOSTANDARD LVCMOS33 } [get ports { USB1Dp }]; #IO_L16N_T2_35 Sch=USB1Dp
+#set_property -dict { PACKAGE PIN G2 IOSTANDARD LVCMOS33 } [get ports { USP1susp }]; #IO_L17P_T2_35 Sch=USP1susp
+#set_property -dict { PACKAGE PIN G1 IOSTANDARD LVCMOS33 } [get ports { USB1oe }]; #IO_L17N_T2_35 Sch=USB1oe
+#set_property -dict { PACKAGE PIN H5 IOSTANDARD LVCMOS33 } [get ports { USB1vm }]; #IO_L18P_T2_35 Sch=USB1vm
+#set_property -dict { PACKAGE PIN H4 IOSTANDARD LVCMOS33 } [get ports { USB1rcv }]; #IO_L18N_T2_35 Sch=USB1rcv
+#set_property -dict { PACKAGE PIN J5 IOSTANDARD LVCMOS33 } [get ports { USB1softcon }]; #IO_L19P_T3_35 Sch=USB1softcon
+#set_property -dict { PACKAGE PIN J4 IOSTANDARD LVCMOS33 } [get ports { USB1vp }]; #IO_L19N_T3_VREF_35 Sch=USB1vp
+#set_property -dict { PACKAGE PIN H2 IOSTANDARD LVCMOS33 } [get ports { USB1speed }]; #IO_L20P_T3_35 Sch=USB1speed
+
+
 ## FPGA LED
+
 #set_property -dict { PACKAGE PIN H1 IOSTANDARD LVCMOS33 } [get ports { led[0] }]; #IO_L20N_T3_35 Sch=led[0]
 #set_property -dict { PACKAGE PIN J3 IOSTANDARD LVCMOS33 } [get ports { led[1] }]; #IO_L21P_T3_DQS_35 Sch=led[1]
 #set_property -dict { PACKAGE PIN H3 IOSTANDARD LVCMOS33 } [get ports { led[2] }]; #IO_L21N_T3_DQS_35 Sch=led[2]
@@ -115,3 +142,5 @@ create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports { C
 #set_property -dict { PACKAGE PIN L3 IOSTANDARD LVCMOS33 } [get ports { led[5] }]; #IO_L23P_T3_35 Sch=led[5]
 #set_property -dict { PACKAGE PIN L2 IOSTANDARD LVCMOS33 } [get ports { led[6] }]; #IO_L23N_T3_35 Sch=led[6]
 #set_property -dict { PACKAGE PIN K3 IOSTANDARD LVCMOS33 } [get ports { led[7] }]; #IO_L24P_T3_35 Sch=led[7]
+
+
