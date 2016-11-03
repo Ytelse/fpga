@@ -192,16 +192,16 @@ object ChainTest {
   def main(args: Array[String]): Unit = {
     val addrWidth = 64;
 
-    test(784, // matHeight
-         1024, // matWidth
-         32, // numPUs
-         4, // numReaders
-         8, // PUsPerReader
-         64, // readerWidth
+    test(256, // matHeight
+         784, // matWidth
+         64, // numPUs
+         16, // numReaders
+         4, // PUsPerReader
+         32, // readerWidth
          8, // k
-         List(0, 0, 0, 0), // zeroes
+         List.fill(16)(0), // zeroes
          addrWidth, 
-         (784 * 1024) / (8 * 4)) // (width * height) / (8 * numReaders)
+         (256 * 784) / (8 * 16)) // (width * height) / (8 * numReaders)
 
 
 
