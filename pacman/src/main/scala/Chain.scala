@@ -2,19 +2,25 @@ package Pacman
 
 import Chisel._
 
-class Chain(numProcessingUnits: Int,
-            addrWidth: Int,
-            k: Int,
-            numMemoryReaders: Int,
-            memoryOffsets: List[Int],
-            readingLength: Int)
+class Chain(parameters: LayerParameters)
     extends Module {
-  val yWidth = 10
+
+      // TODO REmove
+  val numProcessingUnits: Int = parameters.NumberOfPUs
+  val addrWidth: Int = parameters.AddressWidth
+  val k: Int = parameters.K
+  val numMemoryReaders: Int = parameters.NumberOfMS
+  val memoryOffsets: List[Int] = parameters.MemoryOffsets
+  val readingLength: Int = parameters.ReadingLength
+  val yWidth = parameters.AccumulatorWidth
+
+
+
   val unitsPerMemoryReader = numProcessingUnits / numMemoryReaders
   val dataLineWidth = k * unitsPerMemoryReader
 
   val processingUnits =
-    List.fill(numProcessingUnits)(Module(new ProcessingUnit(k)))
+    List.fill(numProcessingUnits)(Module(new ProcessingUnit(parameters)))
   val memoryReaders =
     List
       .range(0, numMemoryReaders)
@@ -32,7 +38,8 @@ class Chain(numProcessingUnits: Int,
       Vec.fill(numMemoryReaders) { Bits(width = addrWidth) }.asOutput
     val dataLines =
       Vec.fill(numMemoryReaders) { Bits(width = dataLineWidth) }.asInput
-    val resetIn = Bool().asInput
+    val bias = UInt(width = parameters.BiasWidth).asInput
+    val restartIn = Bool().asInput
     val xs = Bits(width = k).asInput
     val ys = Vec.fill(numProcessingUnits) { Bits(width = yWidth) }.asOutput
     // Add x_out and reset_out ?
@@ -40,6 +47,7 @@ class Chain(numProcessingUnits: Int,
 
   for (i <- 0 until numProcessingUnits) {
     io.ys(i) := processingUnits(i).io.yOut
+    processingUnits(i).io.bias := io.bias
   }
 
   if (processingUnits.length > 1) {
@@ -48,13 +56,13 @@ class Chain(numProcessingUnits: Int,
       .foreach((lst) => {
         val a = lst(0)
         val b = lst(1)
-        b.io.resetIn := a.io.resetOut
+        b.io.restartIn := a.io.restartOut
         b.io.xs := a.io.xOut
       })
   }
 
   processingUnits(0).io.xs := io.xs
-  processingUnits(0).io.resetIn := io.resetIn
+  processingUnits(0).io.restartIn := io.restartIn
 
 
   processingUnits

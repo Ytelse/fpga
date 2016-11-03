@@ -103,7 +103,10 @@ class ChainTests(c: Chain,
         val resultToCheckAgainst = if (whichRowPass == 0) previousRes else result
         val whichRowPassToCheck = posMod(whichRowPass - 1, numPasses)
         val i = whichRowPassToCheck * passHeight + rowPassIndex
-        expect(c.io.ys(rowPassIndex), resultToCheckAgainst(i))
+        val bias = posMod(stepNumber - matWidth / k, totalSteps)
+        println("  ", bias)
+        expect(c.io.ys(rowPassIndex),
+          resultToCheckAgainst(i) + bias)
       }
 
       // Check that addresses are incremented correctly
@@ -132,10 +135,11 @@ class ChainTests(c: Chain,
       poke(c.io.xs, vecToBigInt(xs.slice(xIndex, xIndex + k)))
 
       // If we are to start a new row pass, reset the chain
+      poke(c.io.bias, stepNumber)
       if (rowPassIndex == 0) {
-        poke(c.io.resetIn, true)
+        poke(c.io.restartIn, true)
       } else if (rowPassIndex == 1) {
-        poke(c.io.resetIn, false)
+        poke(c.io.restartIn, false)
       }
 
       step(1)
@@ -159,7 +163,7 @@ object ChainTest {
            memoryOffsets: List[Int],
            addrWidth: Int,
            readingLength: Int) = {
-    val margs = Array("--backend", "v", "--genHarness",
+    val margs = Array("--backend", "c", "--genHarness",
                       "--compile", "--test")
     println("matHeight", matHeight)
     println("matWidth", matWidth)
@@ -172,13 +176,19 @@ object ChainTest {
     println("addrWidth", addrWidth)
     println("readingLength", readingLength)
 
+    val p = new LayerParameters(
+      K=k,
+      BiasWidth=8,
+      AccumulatorWidth=10,
+      NumberOfPUs=numPUs,
+      AddressWidth=addrWidth,
+      NumberOfMS=numReaders,
+      MemoryOffsets=memoryOffsets,
+      ReadingLength=readingLength
+      )
+
     chiselMainTest(margs, () =>
-        Module(new Chain(numPUs,
-                         addrWidth,
-                         k,
-                         numReaders,
-                         memoryOffsets,
-                         readingLength))) {
+        Module(new Chain(p))) {
       c => new ChainTests(c,
                           numPUs,
                           addrWidth,
@@ -192,26 +202,11 @@ object ChainTest {
   def main(args: Array[String]): Unit = {
     val addrWidth = 64;
 
-    test(256, // matHeight
-         784, // matWidth
-         64, // numPUs
-         16, // numReaders
-         4, // PUsPerReader
-         32, // readerWidth
-         8, // k
-         List.fill(16)(0), // zeroes
-         addrWidth, 
-         (256 * 784) / (8 * 16)) // (width * height) / (8 * numReaders)
-
-
-
-
     for (matHeight <- List(4, 8, 10, 28)) {
       for (matWidth <- List(8, 16, 24, 64)) {
       val possibleReaderWidth = divisors(matWidth / 8)
       for (readerWidth <- possibleReaderWidth) {
-        // val possibleNumReaders = List.range(1, matWidth / (readerWidth * 8) + 1)
-        val possibleNumReaders = List(4)
+        val possibleNumReaders = List.range(1, matWidth / (readerWidth * 8) + 1)
 
         for (numReaders <- possibleNumReaders) {
           val memoryOffsets = List.fill(numReaders)(0)

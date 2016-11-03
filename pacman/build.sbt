@@ -1,2 +1,5 @@
 libraryDependencies += "edu.berkeley.cs" %% "chisel" % "latest.release"
-scalacOptions += "-feature"
+scalacOptions ++= Seq("-deprecation",
+                      "-feature",
+                      "-unchecked",
+                      "-language:reflectiveCalls")
