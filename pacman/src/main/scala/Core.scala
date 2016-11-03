@@ -35,4 +35,5 @@ class Core(parameters: LayerParameters) extends Module {
     // Output is the upper bit
     io.out(i) := value(tmpWidth)
   }
+  // Count restarts, and send restart when we're done
 }
