@@ -56,8 +56,8 @@ route: ${ROUTE_DCP}
 bitgen: ${BITFILE}
 	@echo "Bitfile generation complete"
 
-upload: #chisel ${BITFILE}
-	#${VIVADO} -mode batch -source ${SCRIPTDIR}/program_bitfile.tcl -tclargs ${BITFILE} | tee ${SYNTH_LOG}
+upload: chisel ${BITFILE}
+	${VIVADO} -mode batch -source ${SCRIPTDIR}/program_bitfile.tcl -tclargs ${BITFILE} | tee ${SYNTH_LOG}
 	@rm -f ${CURDIR}/vivado.log
 	@rm -f ${CURDIR}/vivado.jou
 	@rm -f ${CURDIR}/webtalk.log

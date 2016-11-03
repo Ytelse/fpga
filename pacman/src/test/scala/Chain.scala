@@ -45,10 +45,7 @@ object Stuff {
 
 class ChainTests(c: Chain,
                  processingUnits: Int,
-                 addrWidth: Int,
                  k: Int,
-                 memoryReaders: Int,
-                 memoryOffsets: List[Int],
                  matrixDimensions: (Int, Int)
   ) extends Tester(c) {
 
@@ -61,8 +58,6 @@ class ChainTests(c: Chain,
   val (matHeight, matWidth) = matrixDimensions
   val weights = Stuff.getWeightMatrix(matWidth, matHeight)
 
-  val PUsPerReader = processingUnits / memoryReaders
-
   val totalSteps = (matWidth * matHeight) / (k * processingUnits)
   val offsetArray =
     List.range(0, matHeight / processingUnits)
@@ -72,10 +67,6 @@ class ChainTests(c: Chain,
   def vecToBigInt(vec: Seq[Int]): BigInt = {
     int(Bits(vec.reverse.map((n) => n.toString).fold("b")(_ + _)))
   }
-
-
-  // How much the addresses should change between each step
-  val expectedAddrStep = PUsPerReader * k / 8
 
   var result = Seq(1)
   // For each input vector
@@ -108,20 +99,14 @@ class ChainTests(c: Chain,
           resultToCheckAgainst(i) + bias)
       }
 
-      // Loop over memory reades, and set their data lines.
-      for (mrI <- 0 until memoryReaders) {
-        var num = new Array[Int](k * PUsPerReader)
-        // For each processing unit in the reader,
-        // we get the weights coefficients, and merge
-        for (puI <- 0 until PUsPerReader){
-          val puNumber = puI + mrI * PUsPerReader
-          val offsetIndex = posMod(stepNumber - puNumber, totalSteps)
-          val weightIndex = offsetArray(offsetIndex) + matWidth * puNumber
-          for (i <- 0 until k) {
-            num(puI * k + i) = weights(weightIndex + i)
-          }
+      for (puIndex <- 0 until processingUnits) {
+        var num = new Array[Int](k)
+        val offsetIndex = posMod(stepNumber - puIndex, totalSteps)
+        val weightIndex = offsetArray(offsetIndex) + matWidth * puIndex
+        for (i <- 0 until k) {
+          num(i) = weights(weightIndex + i)
         }
-        poke(c.io.weights(mrI), vecToBigInt(num))
+        poke(c.io.weights(puIndex), vecToBigInt(num))
       }
 
       val xIndex = k * (stepNumber % (matWidth / k))
@@ -148,83 +133,46 @@ object ChainTest {
 
   def test(matHeight: Int,
            matWidth: Int,
-           numPUs: Int,
-           numReaders: Int,
-           PUsPerReader: Int,
-           readerWidth: Int,
-           k: Int,
-           memoryOffsets: List[Int],
-           addrWidth: Int,
-           readingLength: Int) = {
+           chainLength: Int,
+           k: Int) = {
     val margs = Array("--backend", "c", "--genHarness",
                       "--compile", "--test")
     println("matHeight", matHeight)
     println("matWidth", matWidth)
-    println("numPUs", numPUs)
-    println("numReaders", numReaders)
-    println("PUsPerReader", PUsPerReader)
-    println("readerWidth", readerWidth)
+    println("chainLength", chainLength)
     println("k", k)
-    println("memoryOffsets", memoryOffsets)
-    println("addrWidth", addrWidth)
-    println("readingLength", readingLength)
 
     val p = new LayerParameters(
       K=k,
-      BiasWidth=8,
+      BiasWidth=18,
       AccumulatorWidth=10,
-      NumberOfPUs=numPUs,
-      AddressWidth=addrWidth,
-      NumberOfMS=numReaders,
-      MemoryOffsets=memoryOffsets,
-      ReadingLength=readingLength
+      NumberOfPUs=chainLength,
+      NumberOfMS=chainLength
       )
 
     chiselMainTest(margs, () =>
         Module(new Chain(p))) {
       c => new ChainTests(c,
-                          numPUs,
-                          addrWidth,
+                          chainLength,
                           k,
-                          numReaders,
-                          memoryOffsets,
                           (matHeight, matWidth))
     }
   }
 
   def main(args: Array[String]): Unit = {
-    val addrWidth = 64;
-
     for (matHeight <- List(4, 8, 10, 28)) {
       for (matWidth <- List(8, 16, 24, 64)) {
-      val possibleReaderWidth = divisors(matWidth / 8)
-      for (readerWidth <- possibleReaderWidth) {
-        val possibleNumReaders = List.range(1, matWidth / (readerWidth * 8) + 1)
+        val possibleKs = divisors(matWidth);
+        for (k <- possibleKs) {
 
-        for (numReaders <- possibleNumReaders) {
-          val memoryOffsets = List.fill(numReaders)(0)
-          val readingLength = (matWidth * matHeight) / (8 * numReaders)
+          val possibleLengths = List.range(1, Math.min(matHeight, matWidth / k))
+            .filter((l) => matHeight % l == 0)
 
-          val possiblePUsPerReader = divisors(readerWidth * 8)
-            .filter((p) => {
-              val numPus = p * numReaders
-              numPus <= matHeight && matHeight % numPus == 0
-            })
-              .filter((p) => p == 1)
-          for (PUsPerReader <- possiblePUsPerReader) {
-            val k = (8 * readerWidth) / PUsPerReader
-            val numPUs = PUsPerReader * numReaders
-            test(matHeight,
-                 matWidth,
-                 numPUs,
-                 numReaders,
-                 PUsPerReader,
-                 readerWidth,
-                 k,
-                 memoryOffsets,
-                 addrWidth,
-                 readingLength)
-            }
+          for (chainLength <- possibleLengths) {
+            test(matHeight, // matHeight
+                 matWidth, // matWidth
+                 chainLength, // numPUs
+                 k) // k
           }
         }
       }
