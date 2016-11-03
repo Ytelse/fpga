@@ -12,9 +12,8 @@ class Pacman extends Module {
 
 object Main {
   def main(args: Array[String]) {
-    chiselMainTest(args, () =>
-        Module(new Pacman)) {
-      bl => new Tester(bl)
+    chiselMainTest(args, () => Module(new Pacman)) { bl =>
+      new Tester(bl)
     }
   }
 }

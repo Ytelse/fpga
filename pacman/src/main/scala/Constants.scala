@@ -1,12 +1,12 @@
 package Pacman
 
 class LayerParameters(
-  val K: Int = 0,
-  val BiasWidth: Int = 0,
-  val AccumulatorWidth: Int = 0,
-  val NumberOfPUs: Int = 0,
-  val AddressWidth: Int = 0,
-  val NumberOfMS: Int = 0,
-  val MemoryOffsets: List[Int] = List(),
-  val ReadingLength: Int = 0
+    val K: Int = 0,
+    val BiasWidth: Int = 0,
+    val AccumulatorWidth: Int = 0,
+    val NumberOfPUs: Int = 0,
+    val AddressWidth: Int = 0,
+    val NumberOfMS: Int = 0,
+    val MemoryOffsets: List[Int] = List(),
+    val ReadingLength: Int = 0
 )

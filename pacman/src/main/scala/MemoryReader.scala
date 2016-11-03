@@ -13,7 +13,11 @@ import Chisel._
   * `k` is the width of the lines to each MemoryReader. That is,
   * the number of bits each reader reads at any given time.
   */
-class MemoryReader(n: Int, k: Int, addrWidth: Int, offset: Int, readingLength: Int)
+class MemoryReader(n: Int,
+                   k: Int,
+                   addrWidth: Int,
+                   offset: Int,
+                   readingLength: Int)
     extends Module {
   // TODO: How should the cars know which
   // addresses to read? If we parametrize it,

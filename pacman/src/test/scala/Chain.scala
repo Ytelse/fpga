@@ -104,15 +104,8 @@ class ChainTests(c: Chain,
         val whichRowPassToCheck = posMod(whichRowPass - 1, numPasses)
         val i = whichRowPassToCheck * passHeight + rowPassIndex
         val bias = posMod(stepNumber - matWidth / k, totalSteps)
-        println("  ", bias)
         expect(c.io.ys(rowPassIndex),
           resultToCheckAgainst(i) + bias)
-      }
-
-      // Check that addresses are incremented correctly
-      for (mrI <- 0 until memoryReaders) {
-        val addr = expectedAddrStep * posMod(stepNumber, totalSteps)
-        expect(c.io.addressLines(mrI), addr)
       }
 
       // Loop over memory reades, and set their data lines.
@@ -128,7 +121,7 @@ class ChainTests(c: Chain,
             num(puI * k + i) = weights(weightIndex + i)
           }
         }
-        poke(c.io.dataLines(mrI), vecToBigInt(num))
+        poke(c.io.weights(mrI), vecToBigInt(num))
       }
 
       val xIndex = k * (stepNumber % (matWidth / k))
@@ -217,6 +210,7 @@ object ChainTest {
               val numPus = p * numReaders
               numPus <= matHeight && matHeight % numPus == 0
             })
+              .filter((p) => p == 1)
           for (PUsPerReader <- possiblePUsPerReader) {
             val k = (8 * readerWidth) / PUsPerReader
             val numPUs = PUsPerReader * numReaders
