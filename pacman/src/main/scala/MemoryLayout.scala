@@ -4,7 +4,7 @@ object MemoryLayout {
   private[this] def rotate(seq: IndexedSeq[Int], steps: Int): IndexedSeq[Int] = {
     seq.takeRight(steps) ++ seq.dropRight(steps)
   }
-  private[this] def paddedBinary(x: Int, width: Int) : String = {
+  private[this] def paddedBinary(x: Int, width: Int): String = {
     ("%" + width + "s").format(Integer.toBinaryString(x)).replace(' ', '0')
   }
 
@@ -29,8 +29,8 @@ object MemoryLayout {
 
     val unshifted_PUstreams = Range(0, parameters.NumberOfPUs)
       .map(pui => weights.zipWithIndex
-             .filter({ case (row, i) => i % parameters.NumberOfPUs == pui })
-             .flatMap(pair => pair._1))
+        .filter({ case (row, i) => i % parameters.NumberOfPUs == pui })
+        .flatMap(pair => pair._1))
 
     val shifted_PUstreams = unshifted_PUstreams
       .zipWithIndex.map({ case (s, i) => rotate(s, parameters.K * i) })
@@ -39,20 +39,21 @@ object MemoryLayout {
       .map(s => s.grouped(parameters.K).toList)
 
     val MU_seperated = PU_word_streams
-      .grouped(parameters.NumberOfMS)
+      .grouped(PUsPerMUs)
       .map(_.transpose)
       .toList
 
     println(MU_seperated)
     val MU_word_streams = MU_seperated
-      .map(_.map(_.flatMap(e => e)
-           .mkString).map("b" + _))
+      .map(_.map(_.reverse
+        .flatMap(_.reverse)
+        .mkString).map("b" + _))
 
     val weightStreams = MU_word_streams.map(_.toArray).toArray
 
     val biasStream = bias
       .grouped(parameters.NumberOfPUs)
-    .flatMap(_ ++ List.fill(parameters.MatrixWidth / parameters.K - parameters.NumberOfPUs)(0))
+      .flatMap(_ ++ List.fill(parameters.MatrixWidth / parameters.K - parameters.NumberOfPUs)(0))
       .map("b" + paddedBinary(_, parameters.BiasWidth)).toArray
 
     println(biasStream)
@@ -61,14 +62,3 @@ object MemoryLayout {
   }
 }
 
-
-// List(
-//   List(
-//     List(List(0, 1), List(0, 1), List(1, 0), List(1, 0), List(0, 1), List(1, 1), List(0, 1), List(1, 0), List(1, 0), List(1, 0), List(0, 1), List(1, 0)),
-//     List(List(1, 0), List(1, 1), List(0, 0), List(1, 1), List(1, 0), List(1, 0), List(1, 0), List(1, 1), List(1, 0), List(0, 1), List(0, 1), List(1, 0))
-//   ),
-//   List(
-//     List(List(0, 1), List(1, 1), List(1, 0), List(1, 1), List(0, 0), List(0, 1), List(1, 1), List(0, 0), List(0, 1), List(1, 0), List(0, 1), List(1, 1)),
-//     List(List(1, 0), List(1, 1), List(0, 0), List(0, 0), List(0, 1), List(0, 1), List(0, 0), List(1, 0), List(1, 1), List(1, 0), List(0, 1), List(1, 0))
-//   )
-// )
