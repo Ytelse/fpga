@@ -6,9 +6,9 @@ import org.scalatest.Assertions
 
 class Core(parameters: LayerParameters) extends Module {
   // TODO: Add rest of used parameters?
-  // NOTE: for some reason, assert required Chisel.Data
-  // types. Maybe its inherited from Module?
-  assert(UInt(parameters.MatrixWidth) > UInt(0))
+  if (parameters.MatrixWidth == 0) {
+    throw new AssertionError("Core needs parameters.MatrixWidth to be set")
+  }
 
   var chain = Module(new Chain(parameters))
   val io = new Bundle {
@@ -28,7 +28,7 @@ class Core(parameters: LayerParameters) extends Module {
   chain.io.xs := io.xs
 
   for (i <- 0 until parameters.NumberOfPUs) {
-    // TODO: Handle overflow!
+    // TODO: Test overflow!
     val tmpWidth = parameters.AccumulatorWidth + 2
     val value = chain.io.ys(i) * SInt(2, width=tmpWidth)
     - SInt(parameters.MatrixWidth)

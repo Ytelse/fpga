@@ -4,45 +4,6 @@ import util.Random
 
 import Chisel._
 
-object Stuff {
-  def getWeightMatrix(matWidth: Int, matHeight: Int) : Seq[Int] =
-    Seq.fill(matWidth * matHeight)(Random.nextInt(2))
-
-  def getInputVector(len: Int): Seq[Int] =
-    Seq.fill(len)(Random.nextInt(2))
-
-  def matrixMul(matrix: Seq[Int], vector: Seq[Int],
-                matWidth: Int, matHeight: Int)
-      : Seq[Int] = {
-    var result = new Array[Int](matHeight)
-    for (y <- 0 until matHeight) {
-      val i = y * matWidth + matHeight
-      var sum = 0
-      for (z <- 0 until matWidth) {
-        val w_i = y * matWidth + z
-        val x_i = z
-        sum += (if (matrix(w_i) == vector(x_i)) 1 else 0)
-      }
-      result(y) = sum
-    }
-    result
-  }
-
-  def printMat(mat: Seq[Int], h: Int, w: Int) {
-    for (y <- 0 until h) {
-      for (z <- 0 until w) {
-        val i = y * w + z
-        print(mat(i))
-        print(" ")
-      }
-      print("\n")
-    }
-    print("\n")
-  }
-
-
-}
-
 class ChainTests(c: Chain,
                  processingUnits: Int,
                  k: Int,
@@ -56,7 +17,7 @@ class ChainTests(c: Chain,
   val N_ITERS = 3
   Random.setSeed(1234)
   val (matHeight, matWidth) = matrixDimensions
-  val weights = Stuff.getWeightMatrix(matWidth, matHeight)
+  val weights = Matrix.getWeightMatrix(matWidth, matHeight)
 
   val totalSteps = (matWidth * matHeight) / (k * processingUnits)
   val offsetArray =
@@ -71,13 +32,13 @@ class ChainTests(c: Chain,
   var result = Seq(1)
   // For each input vector
   for (iteration <- 0 until N_ITERS) {
-    val xs = Stuff.getInputVector(matWidth)
+    val xs = Matrix.getInputVector(matWidth)
     val previousRes = result
-    result = Stuff.matrixMul(weights, xs, matWidth, matHeight)
+    result = Matrix.matrixMul(weights, xs, matWidth, matHeight)
 
-    // Stuff.printMat(xs, 1, matWidth);
-    // Stuff.printMat(weights, matHeight, matWidth);
-    // Stuff.printMat(result, 1, matHeight);
+    // Matrix.printMat(xs, 1, matWidth);
+    // Matrix.printMat(weights, matHeight, matWidth);
+    // Matrix.printMat(result, 1, matHeight);
 
     // One step is reading `k` x values. After matWidth/k
     // steps we get out the first y.
