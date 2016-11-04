@@ -8,6 +8,7 @@ class MemoryStreamerTests(ms: MemoryStreamer) extends Tester(ms) {
   step(1)
   peek(ms.io)
 
+  expect(ms.io.bias, Integer.parseInt("01", 2))
   expect(ms.io.weights(0), Integer.parseInt("001"))
   expect(ms.io.weights(1), Integer.parseInt("010"))
 
@@ -15,7 +16,7 @@ class MemoryStreamerTests(ms: MemoryStreamer) extends Tester(ms) {
   step(1)
   peek(ms.io)
 
-  expect(ms.io.bias, Integer.parseInt("01", 2))
+  expect(ms.io.bias, Integer.parseInt("10", 2))
   expect(ms.io.weights(0), Integer.parseInt("100"))
   expect(ms.io.weights(1), Integer.parseInt("100"))
   expect(ms.io.weights(2), Integer.parseInt("110"))
@@ -25,7 +26,7 @@ class MemoryStreamerTests(ms: MemoryStreamer) extends Tester(ms) {
   step(1)
   peek(ms.io)
 
-  expect(ms.io.bias, Integer.parseInt("10", 2))
+  expect(ms.io.bias, Integer.parseInt("00", 2))
   expect(ms.io.weights(0), Integer.parseInt("100"))
   expect(ms.io.weights(1), Integer.parseInt("001"))
   expect(ms.io.weights(2), Integer.parseInt("001"))
@@ -37,7 +38,7 @@ class MemoryStreamerTests(ms: MemoryStreamer) extends Tester(ms) {
   step(1)
   peek(ms.io)
 
-  expect(ms.io.bias, Integer.parseInt("00", 2))
+  expect(ms.io.bias, Integer.parseInt("01", 2))
   expect(ms.io.weights(0), Integer.parseInt("001"))
   expect(ms.io.weights(1), Integer.parseInt("010"))
   expect(ms.io.weights(2), Integer.parseInt("111"))
@@ -47,7 +48,7 @@ class MemoryStreamerTests(ms: MemoryStreamer) extends Tester(ms) {
   step(1)
   peek(ms.io)
 
-  expect(ms.io.bias, Integer.parseInt("01", 2))
+  expect(ms.io.bias, Integer.parseInt("10", 2))
   expect(ms.io.weights(0), Integer.parseInt("100"))
   expect(ms.io.weights(1), Integer.parseInt("100"))
   expect(ms.io.weights(2), Integer.parseInt("110"))
@@ -59,7 +60,7 @@ class MemoryStreamerTests(ms: MemoryStreamer) extends Tester(ms) {
   step(1)
   peek(ms.io)
 
-  expect(ms.io.bias, Integer.parseInt("10", 2))
+  expect(ms.io.bias, Integer.parseInt("01", 2))
   expect(ms.io.weights(0), Integer.parseInt("001"))
   expect(ms.io.weights(1), Integer.parseInt("010"))
   expect(ms.io.weights(2), Integer.parseInt("001"))
@@ -69,7 +70,7 @@ class MemoryStreamerTests(ms: MemoryStreamer) extends Tester(ms) {
   step(1)
   peek(ms.io)
 
-  expect(ms.io.bias, Integer.parseInt("01", 2))
+  expect(ms.io.bias, Integer.parseInt("10", 2))
   expect(ms.io.weights(0), Integer.parseInt("100"))
   expect(ms.io.weights(1), Integer.parseInt("100"))
   expect(ms.io.weights(2), Integer.parseInt("110"))
@@ -79,7 +80,7 @@ class MemoryStreamerTests(ms: MemoryStreamer) extends Tester(ms) {
   step(1)
   peek(ms.io)
 
-  expect(ms.io.bias, Integer.parseInt("10", 2))
+  expect(ms.io.bias, Integer.parseInt("00", 2))
   expect(ms.io.weights(0), Integer.parseInt("100"))
   expect(ms.io.weights(1), Integer.parseInt("001"))
   expect(ms.io.weights(2), Integer.parseInt("001"))

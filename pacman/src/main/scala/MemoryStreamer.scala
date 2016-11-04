@@ -52,12 +52,7 @@ class MemoryStreamer(
     })
 
 
-  // Bias MU should get the same restart signal as the last weight MU
-  if(weightMemoryUnits.length == 1)
-    biasMemoryUnit.io.restartIn := io.restart
-  else{
-    val secondLastindex = weightMemoryUnits.length - 2
-    biasMemoryUnit.io.restartIn := weightMemoryUnits(secondLastindex).io.restartOut
-  }
+  // Bias
+  biasMemoryUnit.io.restartIn := io.restart
   io.bias := biasMemoryUnit.io.weights
 }
