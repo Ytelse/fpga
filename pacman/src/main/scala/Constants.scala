@@ -7,5 +7,6 @@ class LayerParameters(
     val NumberOfPUs: Int = 0,
     val AddressWidth: Int = 0,
     val NumberOfMS: Int = 0,
-    val MatrixWidth: Int = 0
+    val MatrixWidth: Int = 0,
+    val MatrixHeight: Int = 0
 )
