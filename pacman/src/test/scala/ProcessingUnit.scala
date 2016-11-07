@@ -43,18 +43,18 @@ class ProcessingUnitTests(c: ProcessingUnit, p: LayerParameters) extends Tester(
   poke(c.io.restartIn, true)
   poke(c.io.ws, ones)
   poke(c.io.xs, ones)
-  poke(c.io.bias, 10)
+  poke(c.io.bias, -10)
 
   step(1)
 
   expect(c.io.xOut, ones)
-  expect(c.io.yOut, p.K + 10)
+  expect(c.io.yOut, p.K - 10)
   expect(c.io.restartOut, true);
   poke(c.io.xs, 0)
 
   step(1)
 
-  expect(c.io.yOut, 10)
+  expect(c.io.yOut, -10)
   expect(c.io.xOut, 0)
   expect(c.io.restartOut, true);
 
@@ -68,7 +68,7 @@ class ProcessingUnitTests(c: ProcessingUnit, p: LayerParameters) extends Tester(
   step(1)
 
   expect(c.io.xOut, upperHalf)
-  expect(c.io.yOut, 10)
+  expect(c.io.yOut, -10)
   expect(c.io.restartOut, false);
 
 }

@@ -55,7 +55,7 @@ class ChainTests(c: Chain,
         val resultToCheckAgainst = if (whichRowPass == 0) previousRes else result
         val whichRowPassToCheck = posMod(whichRowPass - 1, numPasses)
         val i = whichRowPassToCheck * passHeight + rowPassIndex
-        val bias = posMod(stepNumber - matWidth / k, totalSteps)
+        val bias = posMod(stepNumber - matWidth / k, totalSteps) - 5
         expect(c.io.ys(rowPassIndex),
           resultToCheckAgainst(i) + bias)
       }
@@ -74,7 +74,7 @@ class ChainTests(c: Chain,
       poke(c.io.xs, vecToBigInt(xs.slice(xIndex, xIndex + k)))
 
       // If we are to start a new row pass, reset the chain
-      poke(c.io.bias, stepNumber)
+      poke(c.io.bias, stepNumber - 5)
       if (rowPassIndex == 0) {
         poke(c.io.restartIn, true)
       } else if (rowPassIndex == 1) {

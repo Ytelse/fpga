@@ -16,7 +16,7 @@ class Activation(parameters: LayerParameters) extends Module {
 
   val io = new Bundle {
     val in = Vec.fill(parameters.NumberOfPUs){
-      Bits(width = parameters.AccumulatorWidth)
+      SInt(width = parameters.AccumulatorWidth)
     }.asInput
     val out = Vec.fill(parameters.NumberOfPUs){ Bits(width=1) }.asOutput
   }

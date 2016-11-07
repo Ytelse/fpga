@@ -28,7 +28,7 @@ class MemoryStreamer(
         Bits(width = parameters.K)
       }
       .asOutput()
-    val bias = Bits(width = parameters.BiasWidth).asOutput()
+    val bias = SInt(width = parameters.BiasWidth).asOutput()
   }
 
   // Chain the weight MUs
