@@ -5,7 +5,8 @@ object MemoryLayout {
     seq.takeRight(steps) ++ seq.dropRight(steps)
   }
   private[this] def paddedBinary(x: Int, width: Int): String = {
-    ("%" + width + "s").format(Integer.toBinaryString(x)).replace(' ', '0')
+    val all = ("%" + width + "s").format(Integer.toBinaryString(x)).replace(' ', '0')
+    all.slice(all.length - width, all.length)
   }
 
   def getStreams(parameters: LayerParameters,
@@ -43,7 +44,6 @@ object MemoryLayout {
       .map(_.transpose)
       .toList
 
-    println(MU_seperated)
     val MU_word_streams = MU_seperated
       .map(_.map(_.reverse
         .flatMap(_.reverse)
@@ -55,8 +55,6 @@ object MemoryLayout {
       .grouped(parameters.NumberOfPUs)
       .flatMap(_ ++ List.fill(parameters.MatrixWidth / parameters.K - parameters.NumberOfPUs)(0))
       .map("b" + paddedBinary(_, parameters.BiasWidth)).toArray
-
-    println(biasStream)
 
     return (weightStreams, biasStream)
   }
