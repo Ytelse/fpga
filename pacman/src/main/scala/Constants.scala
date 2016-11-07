@@ -8,5 +8,6 @@ class LayerParameters(
     val AddressWidth: Int = 0,
     val NumberOfMS: Int = 0,
     val MatrixWidth: Int = 0,
-    val MatrixHeight: Int = 0
+    val MatrixHeight: Int = 0,
+    val NumberOfCores: Int = 0
 )
