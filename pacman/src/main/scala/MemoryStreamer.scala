@@ -18,8 +18,8 @@ class MemoryStreamer(
   }
 
   val weightMemoryUnits = Range(0, parameters.NumberOfMS)
-    .map(i => Module(new MemoryUnit(weightStreams(i))))
-  val biasMemoryUnit = Module(new MemoryUnit(biasStream))
+    .map(i => Module(new MemoryUnit(weightStreams(i), PUsPerMU)))
+  val biasMemoryUnit = Module(new MemoryUnit(biasStream, PUsPerMU))
 
   val io = new Bundle {
     val restart = Bool().asInput()
