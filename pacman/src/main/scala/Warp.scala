@@ -99,7 +99,7 @@ class WarpControl(p: LayerParameters) extends Module {
   val isRunning = runningReg || io.start
   val signalReady = totalCycleCounter.io.value === UInt(cyclesBeforeReady - 1)
   val isReady = readyReg
-  val signalFinished = (totalCycleCounter.io.value === UInt(totalCycles - 1))
+  val signalFinished = (totalCycleCounter.io.value === UInt(cyclesBeforeReady - 1))
   val signalNextPass = cycleInPassCounter.io.value === UInt(cyclesPerPass - 1)
   val signalBurst = cycleInPassCounter.io.value === UInt(cyclesBeforeBurst - 1)
   val isValid = !(selectXCounter.io.value === UInt(p.NumberOfPUs))
@@ -124,7 +124,7 @@ class WarpControl(p: LayerParameters) extends Module {
   cycleInPassCounter.io.rst := signalNextPass
   cycleInPassCounter.io.enable := isRunning
 
-  totalCycleCounter.io.rst := signalReady
+  totalCycleCounter.io.rst := (isReady && !io.start) || signalReady
   totalCycleCounter.io.enable := isRunning
 
   selectXCounter.io.rst := signalBurst
@@ -138,6 +138,6 @@ class WarpControl(p: LayerParameters) extends Module {
   io.done := signalDone
 
   io.selectX := selectXCounter.io.value
-  io.memoryRestart := isReady && !io.start
-  io.chainRestart := io.start
+  io.memoryRestart := (isReady && !io.start) || signalReady
+  io.chainRestart := cycleInPassCounter.io.value === UInt(0)
 }

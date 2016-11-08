@@ -97,15 +97,21 @@ class WarpTests(c: Warp,
   poke(c.io.xOut.ready, true)
   for (iter <- 0 until Iters) {
     poke(c.io.start, true)
+    println("ljaksdjlaksjdlk")
     expect(c.io.ready, true)
     val nextReadyCycle = Cycle + passesRequired * cyclesPerPass + PUsPerMUs - 2
+    println(("###############", nextReadyCycle))
     expectQueue.enqueue((nextReadyCycle, () => {
+      println("expecTqueueuee")
       expect(c.io.ready, true)
       shouldBeReady = true
     }))
     for (pass <- 0 until passesRequired) {
       for (i <- 0 until cyclesPerPass) {
-        if (pass != 0 || i != 0) {
+        if ((pass != 0 || i != 0) &&
+            (pass != passesRequired - 1 || i !=  cyclesPerPass - 1)) {
+          println(("hehe", pass, i))
+          println((passesRequired, cyclesPerPass))
           expect(c.io.ready, false)
           poke(c.io.start, false)
         }
@@ -120,31 +126,58 @@ class WarpTests(c: Warp,
             val _iter = iter
             val _pass = pass
             expectQueue.enqueue((Cycle + cyclesPerPass, () => {
-                peek(c.control.io.selectX)
-                for (i <- 0 until p.NumberOfCores) {
-                  peek(c.activators(i).io.out)
-                }
+                // peek(c.control.io.selectX)
+                // for (i <- 0 until p.NumberOfCores) {
+                //   peek(c.activators(i).io.out)
+                // }
+                // peek(c.activators(0).io)
+                // peek(c.control.io)
                 expect(c.io.xOut.valid, 1)
-                expect(c.io.xOut.bits(_core), expectedResults(_iter)(_core)(_i))
+                val ind = _i + p.NumberOfPUs * _pass
+                expect(c.io.xOut.bits(_core), expectedResults(_iter)(_core)(ind))
                 if (_i == p.NumberOfPUs - 1 && _pass == passesRequired - 1) {
                   expect(c.io.done, true)
                 }
               }))
           }
         }
-            peek(c.memoryStreamer.io)
+        peek(c.memoryStreamer.io)
         step(1)
         Cycle += 1
+
+        peek(c.control.totalCycleCounter.io)
+        peek(c.control.cycleInPassCounter.io)
+        peek(c.control.selectXCounter.io)
+        peek(c.control.doneCounter.io)
+        peek(c.control.io.memoryRestart)
+
         handleQueue(Cycle)
       }
     }
+    while (Cycle < nextReadyCycle) {
+      println("000000000000000000000000000000")
+      expect(c.io.ready, false)
+      step(1)
+      Cycle += 1
+      handleQueue(Cycle)
+
+        peek(c.control.totalCycleCounter.io)
+        peek(c.control.cycleInPassCounter.io)
+        peek(c.control.selectXCounter.io)
+        peek(c.control.doneCounter.io)
+        peek(c.control.io.memoryRestart)
+    }
+    expect(c.io.ready, true)
+
     for (i <- 0 until waitingSteps(iter)) {
       step(1)
       Cycle += 1
       handleQueue(Cycle)
       poke(c.io.xOut.ready, false)
+      println("heheheheheh")
       expect(c.io.ready, false)
       poke(c.io.xOut.ready, true)
+      println("laksjd")
       expect(c.io.ready, shouldBeReady)
     }
     shouldBeReady = false
@@ -155,16 +188,16 @@ object WarpTest {
   def main(args: Array[String]) {
     val margs = Array("--backend", "c", "--genHarness", "--compile", "--test")
     val p = new LayerParameters(
-      K=2,
+      K=1,
       BiasWidth=8,
       AccumulatorWidth=10,
-      NumberOfPUs=2,
-      NumberOfMS=2,
+      NumberOfPUs=8,
+      NumberOfMS=1,
       MatrixWidth=12,
       MatrixHeight=8,
       NumberOfCores=1
       );
-    Random.setSeed(1)
+    Random.setSeed(212)
 
 
     val weights = Array(
