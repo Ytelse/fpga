@@ -15,6 +15,7 @@ create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports { C
 ##FPGA_EP
 
 
+#set_property -dict { PACKAGE_PIN R16 IOSTANDARD LVCMOS33 } [get_ports { EP[0] }]; #IO_L9N_T1_DQS_D13_14 Sch=EP[0]
 #set_property -dict { PACKAGE_PIN T14 IOSTANDARD LVCMOS33 } [get_ports { EP[1] }]; #IO_L10P_T1_D14_14 Sch=EP[1]
 #set_property -dict { PACKAGE_PIN T15 IOSTANDARD LVCMOS33 } [get_ports { EP[2] }]; #IO_L10N_T1_D15_14 Sch=EP[2]
 #set_property -dict { PACKAGE_PIN N13 IOSTANDARD LVCMOS33 } [get_ports { EP[3] }]; #IO_L11P_T1_SRCC_14 Sch=EP[3]
