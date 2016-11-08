@@ -49,7 +49,28 @@ class Warp(parameters: LayerParameters,
   memoryStreamer.io.restart := control.io.memoryRestart
 }
 
-class WarpControl(parameters: LayerParameters) extends Module {
+class WarpControl(p: LayerParameters) extends Module {
+  class Counter(start : Int, max : Int) extends Module {
+    val io = new Bundle {
+      val enable = Bool().asInput
+      val rst = Bool().asInput
+      val value = UInt().asOutput
+    }
+
+    val startValue = UInt(start, width=UInt(max).getWidth)
+    val v = Reg(init = startValue)
+    when(io.enable) {
+      v := Mux(io.rst, startValue, v + UInt(1))
+    }.otherwise {
+      v := v
+    }
+    io.value := v
+  }
+
+  val passesRequired = p.MatrixHeight / p.NumberOfPUs
+  val cyclesPerPass = p.MatrixWidth / p.K
+  val totalCycles = passesRequired * cyclesPerPass
+
   val io = new Bundle {
     val inStart = Bool().asInput
     val inReady = Bool().asOutput
@@ -63,11 +84,26 @@ class WarpControl(parameters: LayerParameters) extends Module {
     val chainRestart = Bool().asOutput
   }
 
+  val totalCycleCounter = Module(new Counter(0, totalCycles - 1))
+  val cycleInPassCounter = Module(new Counter(0, cyclesPerPass - 1))
+  val passCounter = Module(new Counter(0, passesRequired - 1))
+  val finished = (totalCycleCounter.io.value === UInt(totalCycles - 1))
+  val nextPass = cycleInPassCounter.io.value === UInt(cyclesPerPass - 1)
+
+  cycleInPassCounter.io.rst := nextPass && !finished
+  cycleInPassCounter.io.enable := !finished
+
+  passCounter.io.rst := io.inStart
+  passCounter.io.enable := nextPass && !finished
+
+  totalCycleCounter.io.rst := Bool(false)
+  totalCycleCounter.io.enable := !(totalCycleCounter.io.value === UInt(totalCycles - 1))
+
   io.inReady := Bool(false)
   io.outValid := Bool(false)
   io.outDone := Bool(false)
 
   io.selectX := UInt(0)
-  io.memoryRestart := Bool(false)
-  io.chainRestart := Bool(false)
+  io.memoryRestart := Bool(true)
+  io.chainRestart := io.inStart
 }

@@ -54,9 +54,45 @@ class WarpTests(c: Warp,
   var shouldBeReady = false
 
 
+  Range(0, 30).foreach(f => {
+                         step(1)
+                         peek(c.control.cycleInPassCounter.io)
+                         peek(c.control.passCounter.io)
+                         peek(c.control.totalCycleCounter.io)
+                       })
+  peek(c.control.cycleInPassCounter.io)
+  peek(c.control.passCounter.io)
+  peek(c.control.totalCycleCounter.io)
+  step(1)
+  peek(c.control.cycleInPassCounter.io)
+  peek(c.control.passCounter.io)
+  peek(c.control.totalCycleCounter.io)
+  step(1)
+  peek(c.control.cycleInPassCounter.io)
+  peek(c.control.passCounter.io)
+  peek(c.control.totalCycleCounter.io)
+  step(1)
+  peek(c.control.cycleInPassCounter.io)
+  peek(c.control.passCounter.io)
+  peek(c.control.totalCycleCounter.io)
+  step(1)
+  peek(c.control.cycleInPassCounter.io)
+  peek(c.control.passCounter.io)
+  peek(c.control.totalCycleCounter.io)
+  step(1)
+  peek(c.control.cycleInPassCounter.io)
+  peek(c.control.passCounter.io)
+  peek(c.control.totalCycleCounter.io)
+  step(1)
+  peek(c.control.cycleInPassCounter.io)
+  peek(c.control.passCounter.io)
+  peek(c.control.totalCycleCounter.io)
+
   for (iter <- 0 until Iters) {
+    println(xs(iter))
     poke(c.io.start, true)
     expect(c.io.ready, true)
+    peek(c.chains(0).io)
     val nextReadyCycle = Cycle + passesRequired * cyclesPerPass + PUsPerMUs - 2
     expectQueue.enqueue((nextReadyCycle, () => {
       expect(c.io.ready, true)
@@ -89,6 +125,7 @@ class WarpTests(c: Warp,
           }
         }
         step(1)
+        peek(c.chains(0).io)
         Cycle += 1
         handleQueue(Cycle)
       }
