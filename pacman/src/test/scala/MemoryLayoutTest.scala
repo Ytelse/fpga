@@ -15,10 +15,13 @@ class ExampleSpec extends FlatSpec with Matchers {
     val weights = Array(
       Array(0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1),
       Array(1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0),
+
       Array(1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0),
       Array(0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1),
+
       Array(0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0),
       Array(1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0),
+
       Array(0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1),
       Array(1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0))
     val bias = Array(0x14, 0xA0, 0xFF, 0xCA, 0x82, 0x45, 0x80, 0x01)
@@ -37,9 +40,7 @@ class ExampleSpec extends FlatSpec with Matchers {
         "b1001",
         "b1010",
         "b0101"),
-      Array("b0110",
-        "b1111",
-        "b0001",
+      Array("b0001",
         "b0011",
         "b1000",
         "b1010",
@@ -48,7 +49,9 @@ class ExampleSpec extends FlatSpec with Matchers {
         "b1110",
         "b0101",
         "b1010",
-        "b0111"))
+        "b0111",
+        "b0110",
+        "b1111"))
     val correctBiasStream = Array("b00010100", "b10100000", "b11111111", "b11001010",
       "b00000000", "b00000000",
       "b10000010", "b01000101", "b10000000", "b00000001",

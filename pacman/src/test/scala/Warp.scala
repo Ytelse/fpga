@@ -20,8 +20,10 @@ class WarpTests(c: Warp,
     throw new AssertionError("NumberOfPUs needs to divide MatrixHeight")
 
   val Iters = 2
-  val xs = List.fill(Iters){List.fill(p.NumberOfCores)(
-      List.fill(p.MatrixWidth){ Random.nextInt(2) })}
+  val xs = List.fill(Iters) {
+            List.fill(p.NumberOfCores) {
+              List.fill(p.MatrixWidth) {
+                Random.nextInt(2) }}}
 
   val expectedResults = xs.map(e => e.map(vec =>
       Matrix.matrixMul(weights, vec)
@@ -52,6 +54,22 @@ class WarpTests(c: Warp,
     }
   }
   var shouldBeReady = false
+
+  println("Weights")
+  Matrix.printMat(weights)
+  println("Biases")
+  Matrix.printMat(Array(biases))
+
+  for (i <- 0 until Iters) {
+    for (j <- 0 until p.NumberOfCores) {
+      println("==========")
+      println("Step %d".format(i))
+      println("xs")
+      Matrix.printMat(Array(xs(i)(j).toArray))
+      println("output")
+      Matrix.printMat(expectedResults(i).map(_.toArray).toArray)
+    }
+  }
 
   step(100)
   // poke(c.io.xOut.ready, true)
@@ -102,6 +120,10 @@ class WarpTests(c: Warp,
             val _iter = iter
             val _pass = pass
             expectQueue.enqueue((Cycle + cyclesPerPass, () => {
+                peek(c.control.io.selectX)
+                for (i <- 0 until p.NumberOfCores) {
+                  peek(c.activators(i).io.out)
+                }
                 expect(c.io.xOut.valid, 1)
                 expect(c.io.xOut.bits(_core), expectedResults(_iter)(_core)(_i))
                 if (_i == p.NumberOfPUs - 1 && _pass == passesRequired - 1) {
@@ -110,6 +132,7 @@ class WarpTests(c: Warp,
               }))
           }
         }
+            peek(c.memoryStreamer.io)
         step(1)
         Cycle += 1
         handleQueue(Cycle)
@@ -126,23 +149,6 @@ class WarpTests(c: Warp,
     }
     shouldBeReady = false
   }
-
-  // println("Weights")
-  // Matrix.printMat(weights)
-  // println("Biases")
-  // Matrix.printMat(Array(biases))
-
-  // for (i <- 0 until p.NumberOfCores * Iters) {
-  //   println("==========")
-  //   println("Step %d".format(i))
-  //   println("xs")
-  //   Matrix.printMat(Array(xs(i).toArray))
-  //   println("output")
-  //   Matrix.printMat(Array(expectedResults(i).toArray))
-  // }
-
-  {
-  }
 }
 
 object WarpTest {
@@ -152,11 +158,11 @@ object WarpTest {
       K=2,
       BiasWidth=8,
       AccumulatorWidth=10,
-      NumberOfPUs=4,
+      NumberOfPUs=2,
       NumberOfMS=2,
       MatrixWidth=12,
       MatrixHeight=8,
-      NumberOfCores=3
+      NumberOfCores=1
       );
     Random.setSeed(1)
 
@@ -170,7 +176,8 @@ object WarpTest {
       Array(0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0),
       Array(0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1),
       Array(1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1))
-    val biases = Array(0, -6, 14, 5, 2, -5, 1, 9)
+    // val biases = Array(0, -6, 14, 5, 2, -5, 1, 9)
+    val biases = Array(0, 0, 0, 0, 0, 0, 0, 0)
 
     chiselMainTest(margs, () => Module(new Warp(p, weights, biases))) {
       c => new WarpTests(c, p, weights, biases)

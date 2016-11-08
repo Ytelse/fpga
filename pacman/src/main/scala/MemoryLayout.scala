@@ -34,7 +34,7 @@ object MemoryLayout {
         .flatMap(pair => pair._1))
 
     val shifted_PUstreams = unshifted_PUstreams
-      .zipWithIndex.map({ case (s, i) => rotate(s, parameters.K * i) })
+      .zipWithIndex.map({ case (s, i) => rotate(s, parameters.K * (i % PUsPerMUs)) })
 
     val PU_word_streams = shifted_PUstreams
       .map(s => s.grouped(parameters.K).toList)
