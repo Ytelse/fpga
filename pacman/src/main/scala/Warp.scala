@@ -73,8 +73,8 @@ class WarpControl(p: LayerParameters) extends Module {
   val totalCycles = passesRequired * cyclesPerPass
   val PUsPerMUs = p.NumberOfPUs / p.NumberOfMS
   val cyclesBeforeReady = totalCycles + PUsPerMUs - 2
-  // Maybe?
-  val cyclesBeforeDone = totalCycles + p.NumberOfPUs - 1
+  val cyclesBeforeDone = totalCycles + p.NumberOfPUs // TODO
+  val cyclesBeforeBurst = cyclesPerPass
 
   val io = new Bundle {
     val ready = Bool().asOutput
@@ -89,35 +89,55 @@ class WarpControl(p: LayerParameters) extends Module {
   }
 
   val runningReg = Reg(init=Bool(false))
-  val readyReg = Reg(init=Bool(false))
+  val readyReg = Reg(init=Bool(true))
 
-  val totalCycleCounter = Module(new Counter(0, totalCycles - 1))
+  val totalCycleCounter = Module(new Counter(0, cyclesBeforeReady - 1))
   val cycleInPassCounter = Module(new Counter(0, cyclesPerPass - 1))
-  val passCounter = Module(new Counter(initZeroOneCounterThing, passesRequired - 1))
-  val readyCounter = Module(new Counter(1, cyclesBeforeReady - 1))
+  val selectXCounter = Module(new Counter(0, p.NumberOfPUs))
+  val doneCounter = Module(new Counter(0, cyclesBeforeDone))
 
   val isRunning = runningReg || io.start
-  val ready = readyCounter.io.value === UInt(cyclesBeforeReady)
-  val finished = (totalCycleCounter.io.value === UInt(totalCycles - 1))
-  val nextPass = cycleInPassCounter.io.value === UInt(cyclesPerPass - 1)
+  val signalReady = totalCycleCounter.io.value === UInt(cyclesBeforeReady - 1)
+  val isReady = readyReg
+  val signalFinished = (totalCycleCounter.io.value === UInt(totalCycles - 1))
+  val signalNextPass = cycleInPassCounter.io.value === UInt(cyclesPerPass - 1)
+  val signalBurst = cycleInPassCounter.io.value === UInt(cyclesBeforeBurst - 1)
+  val isValid = !(selectXCounter.io.value === UInt(p.NumberOfPUs))
+  val signalDone = !(doneCounter.io.value === UInt(cyclesBeforeDone - 1))
 
-  cycleInPassCounter.io.rst := nextPass && !finished
-  cycleInPassCounter.io.enable := !finished
+  when(io.start) {
+    runningReg := Bool(true)
+  }.elsewhen(signalFinished) {
+    runningReg := Bool(false)
+  }.otherwise {
+    runningReg := runningReg
+  }
 
-  passCounter.io.rst := io.start
-  passCounter.io.enable := nextPass && !finished
+  when(io.start) {
+    readyReg := Bool(false)
+  }.elsewhen(signalReady) {
+    readyReg := Bool(true)
+  }.otherwise {
+    readyReg := readyReg
+  }
 
-  totalCycleCounter.io.rst := Bool(false)
-  totalCycleCounter.io.enable := !(totalCycleCounter.io.value === UInt(totalCycles - 1))
+  cycleInPassCounter.io.rst := signalNextPass
+  cycleInPassCounter.io.enable := isRunning
 
-  readyCounter.io.rst := ready
-  readyCounter.io.enable := (!(readyCounter.io.value === UInt(cyclesBeforeReady - 1)) || io.start)
+  totalCycleCounter.io.rst := signalReady
+  totalCycleCounter.io.enable := isRunning
 
-  io.ready := ready
-  io.valid := passCounter.io.value < UInt(cyclesPerPass)
-  io.done := finished && nextPass
+  selectXCounter.io.rst := signalBurst
+  selectXCounter.io.enable := signalBurst || isValid
 
-  io.selectX := UInt(0)
-  io.memoryRestart := ready
+  doneCounter.io.rst := io.start
+  doneCounter.io.enable := io.start || signalDone
+
+  io.ready := isReady && io.nextReady
+  io.valid := isValid
+  io.done := signalDone
+
+  io.selectX := selectXCounter.io.value
+  io.memoryRestart := isReady
   io.chainRestart := io.start
 }

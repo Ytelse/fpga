@@ -54,18 +54,29 @@ class WarpTests(c: Warp,
   var shouldBeReady = false
 
   step(100)
-  poke(c.io.xOut.ready, true)
-  poke(c.io.start, true)
-  Range(0, 30).foreach(f => {
-                         step(1)
-                         poke(c.io.start, false)
-                         peek(c.control.cycleInPassCounter.io)
-                         peek(c.control.passCounter.io)
-                         peek(c.control.totalCycleCounter.io)
-                         peek(c.control.readyCounter.io)
-                         peek(c.control.io.ready)
-                       })
+  // poke(c.io.xOut.ready, true)
+  // poke(c.io.start, true)
+  // Range(0, 15).foreach(f => {
+  //                        step(1)
+  //                        poke(c.io.start, false)
+  //                        peek(c.control.cycleInPassCounter.io)
+  //                        peek(c.control.totalCycleCounter.io)
+  //                        peek(c.control.selectXCounter.io)
+  //                        peek(c.control.io.ready)
+  //                        peek(c.control.io.valid)
+  //                      })
+  // poke(c.io.start, true)
+  // Range(0, 15).foreach(f => {
+  //                        step(1)
+  //                        poke(c.io.start, false)
+  //                        peek(c.control.cycleInPassCounter.io)
+  //                        peek(c.control.totalCycleCounter.io)
+  //                        peek(c.control.selectXCounter.io)
+  //                        peek(c.control.io.ready)
+  //                        peek(c.control.io.valid)
+  //                      })
 
+  poke(c.io.xOut.ready, true)
   for (iter <- 0 until Iters) {
     poke(c.io.start, true)
     expect(c.io.ready, true)
@@ -92,8 +103,7 @@ class WarpTests(c: Warp,
             val _pass = pass
             expectQueue.enqueue((Cycle + cyclesPerPass, () => {
                 expect(c.io.xOut.valid, 1)
-                expect(c.io.xOut.bits(_core),
-                  expectedResults(_iter)(_core)(_i))
+                expect(c.io.xOut.bits(_core), expectedResults(_iter)(_core)(_i))
                 if (_i == p.NumberOfPUs - 1 && _pass == passesRequired - 1) {
                   expect(c.io.done, true)
                 }
