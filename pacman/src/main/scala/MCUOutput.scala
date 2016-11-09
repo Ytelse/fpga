@@ -13,15 +13,15 @@ class MCUOutput/*(parameters: LayerParameters )*/ extends Module {
     val achRead = Bool().asInput
     val ebiValid = Bool().asOutput
   }
-  val outBuff = Vec.fill(4)(Reg(Bits(width=4),init=Bits(0)))
+  val outBuff = Vec.fill(4) { Reg(init=Bits(0,width=4)) }
   val fifo = Mem(16,Bits(width=4)) 
   val outCtrl = Module(new MCUOutCtrl)
   val data = OHToUInt(io.oneHotIn.bits)
-  val rdyAch = Reg(Bool(),init=Bool(true))
+  val rdyAch = Reg(init=Bool(true))
   
   // Output 
   io.ebiD := Cat(outBuff(0), outBuff(1), outBuff(2), outBuff(3))
-  io.oneHotIn.ready := outCtrl.io.addr=/=UInt(15)
+  io.oneHotIn.ready := outCtrl.io.addr!=UInt(15)
   
   // Control Input
   when (io.achRead) { rdyAch := io.ebiReEn}
