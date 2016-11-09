@@ -22,9 +22,7 @@ class MCUOutCtrl extends Module {
   ) 
  
   // Outputs
-  //for (i <- 0 until 5){
-    io.state := fillState
-  //}
+  io.state := fillState
   io.addr := fifoAddr
 
   // The fifo gets 1 valid number

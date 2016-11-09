@@ -7,20 +7,21 @@ import Chisel._
 
 class MCUOutput/*(parameters: LayerParameters )*/ extends Module {
   val io = new Bundle {
-    val oneHotIn = Decoupled(Bits(width=10 /*width of input */  )).asInput
+    val oneHotIn = Decoupled(Bits(width=10 /*width of input */  )).flip
     val ebiD = Bits(width=16).asOutput
     val ebiReEn = Bool().asInput
     val achRead = Bool().asInput
     val ebiValid = Bool().asOutput
   }
   val outBuff = Vec.fill(4)(Reg(Bits(width=4),init=Bits(0)))
-  val fifo = Mem(16,Bits(width=4))
+  val fifo = Mem(16,Bits(width=4)) 
   val outCtrl = Module(new MCUOutCtrl)
-  val data = Bits(width=4)
+  val data = OHToUInt(io.oneHotIn.bits)
   val rdyAch = Reg(Bool(),init=Bool(true))
   
   // Output 
   io.ebiD := Cat(outBuff(0), outBuff(1), outBuff(2), outBuff(3))
+  io.oneHotIn.ready := outCtrl.io.addr=/=UInt(15)
   
   // Control Input
   when (io.achRead) { rdyAch := io.ebiReEn}
@@ -28,9 +29,8 @@ class MCUOutput/*(parameters: LayerParameters )*/ extends Module {
   outCtrl.io.fillIn := rdyAch
    
   // Shift data in when valid
-  data := OHToUInt(io.oneHotIn.bits)
   when(io.oneHotIn.valid) {
-    fifo(0) := data
+    fifo(0) := data(3,0) 
     for(i <- 1 until 16) {
       fifo(i) := fifo(i-1)
     }
