@@ -90,39 +90,51 @@ class WarpControl(p: LayerParameters) extends Module {
 
   val runningReg = Reg(init=Bool(false))
   val readyReg = Reg(init=Bool(true))
+  val isWorkingReg = Reg(init=Bool(false))
 
   val totalCycleCounter = Module(new Counter(0, cyclesBeforeReady - 1))
   val cycleInPassCounter = Module(new Counter(0, cyclesPerPass - 1))
   val selectXCounter = Module(new Counter(0, p.NumberOfPUs))
-  val doneCounter = Module(new Counter(0, cyclesBeforeDone))
+  val outputCounter = Module(new Counter(0, p.MatrixHeight))
 
   val isRunning = runningReg || io.start
   val signalReady = totalCycleCounter.io.value === UInt(cyclesBeforeReady - 1)
   val isReady = readyReg
-  val signalFinished = (totalCycleCounter.io.value === UInt(cyclesBeforeReady - 1))
+  val signalFinishedOffset = if (PUsPerMUs == 1) 0 else 1
+  val signalFinished = (totalCycleCounter.io.value === UInt(cyclesBeforeReady - signalFinishedOffset))
   val signalNextPass = cycleInPassCounter.io.value === UInt(cyclesPerPass - 1)
   val signalBurst = cycleInPassCounter.io.value === UInt(cyclesBeforeBurst - 1)
   val isValid = !(selectXCounter.io.value === UInt(p.NumberOfPUs))
-  val signalDone = !(doneCounter.io.value === UInt(cyclesBeforeDone - 1))
 
-  when(io.start) {
+  when (io.start) {
     runningReg := Bool(true)
-  }.elsewhen(signalFinished) {
+  }.elsewhen (signalFinished) {
     runningReg := Bool(false)
   }.otherwise {
     runningReg := runningReg
   }
 
-  when(io.start) {
+  when (io.start) {
     readyReg := Bool(false)
-  }.elsewhen(signalReady) {
+  }.elsewhen (signalReady) {
     readyReg := Bool(true)
   }.otherwise {
     readyReg := readyReg
   }
 
-  cycleInPassCounter.io.rst := signalNextPass
-  cycleInPassCounter.io.enable := isRunning
+  when (io.start || runningReg) {
+    isWorkingReg := Bool(true)
+  }.elsewhen (io.done) {
+    isWorkingReg := Bool(false)
+  }
+
+
+  outputCounter.io.rst := (outputCounter.io.value === UInt(p.MatrixHeight - 1))
+  outputCounter.io.enable := io.valid && isWorkingReg
+
+  cycleInPassCounter.io.rst := signalNextPass || totalCycleCounter.io.rst
+  cycleInPassCounter.io.enable := isRunning && 
+                (totalCycleCounter.io.value < UInt(totalCycles))
 
   totalCycleCounter.io.rst := (isReady && !io.start) || signalReady
   totalCycleCounter.io.enable := isRunning
@@ -130,14 +142,12 @@ class WarpControl(p: LayerParameters) extends Module {
   selectXCounter.io.rst := signalBurst
   selectXCounter.io.enable := signalBurst || isValid
 
-  doneCounter.io.rst := io.start
-  doneCounter.io.enable := io.start || signalDone
-
   io.ready := isReady && io.nextReady
   io.valid := isValid
-  io.done := signalDone
+  io.done := outputCounter.io.value === UInt(p.MatrixHeight - 1)
 
   io.selectX := selectXCounter.io.value
-  io.memoryRestart := (isReady && !io.start) || signalReady
+  io.memoryRestart := (isReady && !io.start) || 
+                     totalCycleCounter.io.value === UInt(totalCycles - 1)
   io.chainRestart := cycleInPassCounter.io.value === UInt(0)
 }
