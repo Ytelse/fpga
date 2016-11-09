@@ -84,7 +84,7 @@ create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports { C
 #set_property -dict { PACKAGE_PIN F14 IOSTANDARD LVCMOS33 } [get_ports { EBId[11] }]; #IO_L21N_T3_DQS_A18_15 Sch=EBId[11]
 #set_property -dict { PACKAGE_PIN E15 IOSTANDARD LVCMOS33 } [get_ports { EBId[12] }]; #IO_L18N_T2_A23_15 Sch=EBId[12]
 #set_property -dict { PACKAGE_PIN D15 IOSTANDARD LVCMOS33 } [get_ports { EBId[13] }]; #IO_L15N_T2_DQS_ADV_B_15 Sch=EBId[13]
-#set_property -dict { PACKAGE_PIN G16 IOSTANDARD LVCMOS33 } [get_ports { EBId[14} ]; #IO_L22N_T3_A16_15 Sch=EBId[14]
+#set_property -dict { PACKAGE_PIN G16 IOSTANDARD LVCMOS33 } [get_ports { EBId[14] }]; #IO_L22N_T3_A16_15 Sch=EBId[14]
 #set_property -dict { PACKAGE_PIN D16 IOSTANDARD LVCMOS33 } [get_ports { EBId[15] }]; #IO_L17N_T2_A25_15 Sch=EBId[15]
 
 ## EBI Control
