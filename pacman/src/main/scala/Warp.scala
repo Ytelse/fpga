@@ -51,30 +51,52 @@ class Warp(parameters: LayerParameters,
 }
 
 class WarpControl(p: LayerParameters) extends Module {
-  class Counter(start : Int, max : Int) extends Module {
+  class Counter(start: Int, max: Int) extends Module {
     val io = new Bundle {
       val enable = Bool().asInput
       val rst = Bool().asInput
       val value = UInt().asOutput
     }
 
-    val startValue = UInt(start, width=UInt(max).getWidth)
+    val startValue = UInt(start, width=UInt(max - 1).getWidth)
     val v = Reg(init = startValue)
-    when(io.enable) {
-      v := Mux(io.rst, startValue, v + UInt(1))
-    }.otherwise {
-      v := v
+    when (io.rst) {
+      v := startValue
+    } .otherwise {
+      v := Mux(io.enable, v + UInt(1), v)
     }
     io.value := v
   }
 
+  class Switch(init: Boolean = false) extends Module {
+    val stateReg = Reg(init=Bool(init))
+    val io = new Bundle {
+      val signalOn = Bool().asInput
+      val state = Bool().asOutput
+      val rst = Bool().asInput
+    }
+
+    when (io.signalOn) {
+      stateReg := Bool(!init)
+    } .elsewhen (io.rst) {
+      stateReg := io.signalOn
+      } .otherwise {
+        stateReg := stateReg
+      }
+    if (init) {
+      io.state := stateReg && ~io.signalOn
+    } else {
+      io.state := stateReg || io.signalOn
+    }
+  }
+
   val passesRequired = p.MatrixHeight / p.NumberOfPUs
   val cyclesPerPass = p.MatrixWidth / p.K
-  val totalCycles = passesRequired * cyclesPerPass
+  val totalActiveCycles = passesRequired * cyclesPerPass
+  val lastActiveCycle = totalActiveCycles - 1
   val PUsPerMUs = p.NumberOfPUs / p.NumberOfMS
-  val cyclesBeforeReady = totalCycles + PUsPerMUs - 2
-  val cyclesBeforeDone = totalCycles + p.NumberOfPUs // TODO
-  val cyclesBeforeBurst = cyclesPerPass
+  val firstReadyCycle = totalActiveCycles + PUsPerMUs - 2
+  val firstOutputCycleInPass = cyclesPerPass - 1
 
   val io = new Bundle {
     val ready = Bool().asOutput
@@ -87,67 +109,51 @@ class WarpControl(p: LayerParameters) extends Module {
     val memoryRestart = Bool().asOutput
     val chainRestart = Bool().asOutput
   }
+  // Counters
+  val cycleInPass  = Module(new Counter(0, cyclesPerPass))
+  val cycle        = Module(new Counter(0, firstReadyCycle))
+  val tailCycle    = Module(new Counter(0, p.NumberOfPUs))
+  val selectX      = Module(new Counter(0, p.NumberOfPUs))
+  // Switches
+  val isActive     = Module(new Switch())
+  val isReady      = Module(new Switch(true))
+  val isOutputting = Module(new Switch())
+  val isTailing    = Module(new Switch())
+  // Signals
+  val signalWaiting         = Bool(false)
+  val signalLastActiveCycle = cycle.io.value === UInt(lastActiveCycle)
+  val signalFirstReadyCycle = cycle.io.value === UInt(firstReadyCycle)
+  val signalOutputtingNext  = cycleInPass.io.value === UInt(firstOutputCycleInPass)
+  val signalDone            = tailCycle.io.value === UInt(p.NumberOfPUs - 1)
+  val signalResetSelectX    = selectX.io.value === UInt(p.NumberOfPUs - 1)
+  val signalStartNewPass    = cycleInPass.io.value === UInt(0)
+  val signalLastCycleInPass = cycleInPass.io.value === UInt(cyclesPerPass - 1)
+  val signalTailingNext     = signalLastActiveCycle
 
-  val runningReg = Reg(init=Bool(false))
-  val readyReg = Reg(init=Bool(true))
-  val isWorkingReg = Reg(init=Bool(false))
+  // Counters
+  cycleInPass.io.enable := isActive.io.state
+  cycleInPass.io.rst    := signalLastCycleInPass
+  cycle.io.enable       := isActive.io.state
+  cycle.io.rst          := signalLastActiveCycle
+  tailCycle.io.enable   := isTailing.io.state
+  tailCycle.io.rst      := signalDone
+  selectX.io.enable     := isOutputting.io.state
+  selectX.io.rst        := signalResetSelectX
 
-  val totalCycleCounter = Module(new Counter(0, cyclesBeforeReady - 1))
-  val cycleInPassCounter = Module(new Counter(0, cyclesPerPass - 1))
-  val selectXCounter = Module(new Counter(0, p.NumberOfPUs))
-  val outputCounter = Module(new Counter(0, p.MatrixHeight))
-
-  val isRunning = runningReg || io.start
-  val signalReady = totalCycleCounter.io.value === UInt(cyclesBeforeReady - 1)
-  val isReady = readyReg
-  val signalFinishedOffset = if (PUsPerMUs == 1) 0 else 1
-  val signalFinished = (totalCycleCounter.io.value === UInt(cyclesBeforeReady - signalFinishedOffset))
-  val signalNextPass = cycleInPassCounter.io.value === UInt(cyclesPerPass - 1)
-  val signalBurst = cycleInPassCounter.io.value === UInt(cyclesBeforeBurst - 1)
-  val isValid = !(selectXCounter.io.value === UInt(p.NumberOfPUs))
-
-  when (io.start) {
-    runningReg := Bool(true)
-  }.elsewhen (signalFinished) {
-    runningReg := Bool(false)
-  }.otherwise {
-    runningReg := runningReg
-  }
-
-  when (io.start) {
-    readyReg := Bool(false)
-  }.elsewhen (signalReady) {
-    readyReg := Bool(true)
-  }.otherwise {
-    readyReg := readyReg
-  }
-
-  when (io.start || runningReg) {
-    isWorkingReg := Bool(true)
-  }.elsewhen (io.done) {
-    isWorkingReg := Bool(false)
-  }
+  // Switches
+  isActive.io.signalOn := io.start
+  isActive.io.rst := signalLastActiveCycle
+  isReady.io.signalOn := io.start
+  isReady.io.rst := signalFirstReadyCycle
+  isOutputting.io.signalOn := signalOutputting
+  isOutputting.io.rst := signalResetSelectX
+  isTailing.io.signalOn := signalTailing
+  isTailing.io.rst := signalDone
 
 
-  outputCounter.io.rst := (outputCounter.io.value === UInt(p.MatrixHeight - 1))
-  outputCounter.io.enable := io.valid && isWorkingReg
-
-  cycleInPassCounter.io.rst := signalNextPass || totalCycleCounter.io.rst
-  cycleInPassCounter.io.enable := isRunning && 
-                (totalCycleCounter.io.value < UInt(totalCycles))
-
-  totalCycleCounter.io.rst := (isReady && !io.start) || signalReady
-  totalCycleCounter.io.enable := isRunning
-
-  selectXCounter.io.rst := signalBurst
-  selectXCounter.io.enable := signalBurst || isValid
-
-  io.ready := isReady && io.nextReady
-  io.valid := isValid
-  io.done := outputCounter.io.value === UInt(p.MatrixHeight - 1)
-
-  io.selectX := selectXCounter.io.value
-  io.memoryRestart := (isReady && !io.start) || 
-                     totalCycleCounter.io.value === UInt(totalCycles - 1)
-  io.chainRestart := cycleInPassCounter.io.value === UInt(0)
+  io.selectX := selectX.io.value
+  io.valid := isOutputting.io.state
+  io.ready := isReady.io.state && io.nextReady
+  io.done := signalDone
+  io.chainRestart := signalStartNewPass
 }
