@@ -461,7 +461,7 @@ class WarpControlTests3(c: WarpControl, p: LayerParameters) extends Tester(c) {
 
 object WarpTest {
   def main(args: Array[String]) {
-    val margs = Array("--backend", "v", "--genHarness", "--compile", "--test")
+    val margs = Array("--backend", "c", "--genHarness", "--compile", "--test")
 
     // val p1 = new LayerParameters(
     //   K=1,
