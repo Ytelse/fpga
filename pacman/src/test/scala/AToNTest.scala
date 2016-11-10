@@ -99,7 +99,7 @@ class AToNTests(c: AToN, width_in : Int, width_out : Int) extends Tester(c)
 	}
 	else
 	{
-
+		step(1)
 	}
 	
 }
@@ -127,7 +127,7 @@ object AToNTest
 		test(4,8)
 
 		println("Testing width in greater than width out")
-		//test(9,3)
-		//test(8,4)
+		test(9,3)
+		test(8,4)
 	}
 }
