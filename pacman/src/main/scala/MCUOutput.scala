@@ -21,7 +21,7 @@ class MCUOutput/*(parameters: LayerParameters )*/ extends Module {
   
   // Output 
   io.ebiD := Cat(outBuff(0), outBuff(1), outBuff(2), outBuff(3))
-  io.oneHotIn.ready := outCtrl.io.addr!=UInt(15)
+  io.oneHotIn.ready := outCtrl.io.addr =/= UInt(15)
   
   // Control Input
   when (io.achRead) { rdyAch := io.ebiReEn}
