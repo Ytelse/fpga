@@ -10,4 +10,26 @@ class LayerParameters(
     val MatrixWidth: Int = 0,
     val MatrixHeight: Int = 0,
     val NumberOfCores: Int = 0
-)
+  ) {
+    override def toString(): String = {
+      ("K: %d\n" +
+      "BiasWidth: %d\n" +
+      "AccumulatorWidth: %d\n" +
+      "NumberOfPUs: %d\n" +
+      "AddressWidth: %d\n" +
+      "NumberOfMS: %d\n" +
+      "MatrixWidth: %d\n" +
+      "MatrixHeight: %d\n" +
+      "NumberOfCores: %d\n").format(
+    K,
+    BiasWidth,
+    AccumulatorWidth,
+    NumberOfPUs,
+    AddressWidth,
+    NumberOfMS,
+    MatrixWidth,
+    MatrixHeight,
+    NumberOfCores
+      )
+    }
+  }
