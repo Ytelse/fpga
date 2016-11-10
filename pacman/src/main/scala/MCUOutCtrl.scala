@@ -7,18 +7,18 @@ class MCUOutCtrl extends Module {
   val io = new Bundle{
     val fillIn = Bool().asInput
     val valid = Bool().asInput 
-    val state = Vec.fill(5)(Bits(width=1)).asOutput
+    val state = Vec.fill(5) { Bits(width=1) }.asOutput
     val addr = UInt(width=4).asOutput
   }
-  val fifoAddr = Reg(UInt(width=4),init=UInt(0))
-  val fillToggle = Reg(Bool(),init=Bool(false))
-  val fill = Reg(Bool(),init=Bool(false))
+  val fifoAddr = Reg(init=UInt(0,width=4))
+  val fillToggle = Reg(init=Bool(false))
+  val fill = Reg(init=Bool(false))
   val fillState = Vec(
-    Reg(Bits(width=1),init=Bits(0)), // Fill reg 0
-    Reg(Bits(width=1),init=Bits(0)), // Fill reg 1
-    Reg(Bits(width=1),init=Bits(0)), // Fill reg 2
-    Reg(Bits(width=1),init=Bits(0)), // Fill reg 3
-    Reg(Bits(width=1),init=Bits(1))  // Idle state
+    Reg(init=Bits(0)), // Fill reg 0
+    Reg(init=Bits(0)), // Fill reg 1
+    Reg(init=Bits(0)), // Fill reg 2
+    Reg(init=Bits(0)), // Fill reg 3
+    Reg(init=Bits(1))  // Idle state
   ) 
  
   // Outputs
