@@ -56,7 +56,7 @@ class AToNTests(c: AToN, width_in : Int, width_out : Int) extends Tester(c)
 		expect(c.io.a_val,true)
 		expect(c.io.n_rdy,false)		
 		step(1)
-		val inputVal = 0xa5c6
+		var inputVal = 0xa5c6
 		var inputMask = 0
 		var outputMask = 0
 		for (i <- 0 until width_in){
@@ -66,6 +66,37 @@ class AToNTests(c: AToN, width_in : Int, width_out : Int) extends Tester(c)
 			outputMask = outputMask | (1 << i)
 		}
 		
+		for(i <- 0 until width_out/width_in)
+		{
+			val sendVal = (inputVal >>> (i * width_in)) & inputMask
+			poke(c.io.a_data,sendVal)
+			step(1)
+			expect(c.io.a_val,true)
+			expect(c.io.n_rdy,false)
+			step(1)
+			poke(c.io.a_rdy,true)
+			step(1)
+			if(i == (width_out/width_in) - 1)
+			{
+				expect(c.io.a_val,false)
+				expect(c.io.n_rdy,true)
+				expect(c.io.n_data,inputVal & outputMask)
+				poke(c.io.a_rdy, false)
+				step(1)
+				expect(c.io.a_val,true)
+				expect(c.io.n_rdy,false)
+				step(1)
+			}
+			else
+			{
+				expect(c.io.a_val,true)
+				expect(c.io.n_rdy,false)
+				poke(c.io.a_rdy,false)
+				step(1)
+			}
+		}
+		
+		inputVal = 0x5ac3
 		for(i <- 0 until width_out/width_in)
 		{
 			val sendVal = (inputVal >>> (i * width_in)) & inputMask
@@ -113,7 +144,7 @@ class AToNTests(c: AToN, width_in : Int, width_out : Int) extends Tester(c)
 		expect(c.io.a_val,true)
 		expect(c.io.n_rdy,false)		
 		step(2)
-		val inputVal = 0xa5c6
+		var inputVal = 0xa5c6
 		var outputMask = 0
 		var inputMask = 0
 		for (i <- 0 until width_out){
@@ -123,6 +154,31 @@ class AToNTests(c: AToN, width_in : Int, width_out : Int) extends Tester(c)
 			inputMask = inputMask | (1 << i)
 		}
 
+		poke(c.io.a_data, inputVal & inputMask)
+		step(1)
+		expect(c.io.a_val,true)
+		expect(c.io.n_rdy,false)
+		step(1)
+		poke(c.io.a_rdy,true)
+		step(1)
+		poke(c.io.a_rdy,false)
+		expect(c.io.n_data,inputVal & outputMask)
+		expect(c.io.a_val,false)
+		expect(c.io.n_rdy,true)
+		for (i <- 1 until width_in/width_out)
+		{
+			step(1)
+			println(i*width_in, " # ",outputMask)
+			expect(c.io.n_data,(inputVal >>> (i*width_out)) & outputMask)
+			expect(c.io.n_rdy,true)
+			expect(c.io.a_val,false)			
+		}
+		step(1)
+		expect(c.io.a_val, true)
+		expect(c.io.n_rdy, false)
+
+		
+		inputVal = 0xb35a
 		poke(c.io.a_data, inputVal & inputMask)
 		step(1)
 		expect(c.io.a_val,true)
