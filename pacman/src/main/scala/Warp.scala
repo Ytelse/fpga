@@ -10,6 +10,7 @@ class Warp(parameters: LayerParameters,
     val xIn = Vec.fill(parameters.NumberOfCores)
               { Bits(width=parameters.K) }.asInput
     val start = Bool().asInput
+    val startOut = Bool().asOutput
     val ready = Bool().asOutput
     val xOut = Decoupled(Vec.fill(parameters.NumberOfCores)
                { Bits(width=1) })
@@ -41,6 +42,7 @@ class Warp(parameters: LayerParameters,
   }
 
   // Hook up control
+  io.startOut   <> io.start
   io.start      <> control.io.start
   io.ready      <> control.io.ready
   io.xOut.ready <> control.io.nextReady
@@ -51,24 +53,6 @@ class Warp(parameters: LayerParameters,
 }
 
 class WarpControl(p: LayerParameters) extends Module {
-  class Switch(init: Boolean = false) extends Module {
-    val stateReg = Reg(init=Bool(init))
-    val io = new Bundle {
-      val signalOn = Bool().asInput
-      val state = Bool().asOutput
-      val rst = Bool().asInput
-    }
-
-    when (io.signalOn) {
-      stateReg := Bool(true)
-    } .elsewhen (io.rst) {
-      stateReg := Bool(false)
-    } .otherwise {
-      stateReg := stateReg
-    }
-    io.state := stateReg || io.signalOn
-  }
-
   val passesRequired = p.MatrixHeight / p.NumberOfPUs
   val cyclesPerPass = p.MatrixWidth / p.K
   val totalActiveCycles = passesRequired * cyclesPerPass
@@ -137,10 +121,10 @@ class WarpControl(p: LayerParameters) extends Module {
   isTailing.io.rst          := signalDone
 
 
-  io.selectX := selectX.io.value
-  io.valid := isOutputting.io.state
-  io.ready := isReady.io.state && io.nextReady
-  io.done := signalDone
-  io.chainRestart := signalStartNewPass
-  io.memoryRestart := (isReady.io.state || signalLastActiveCycle) && !io.start
+  io.selectX        := selectX.io.value
+  io.valid          := isOutputting.io.state
+  io.ready          := isReady.io.state && io.nextReady
+  io.done           := signalDone
+  io.chainRestart   := signalStartNewPass
+  io.memoryRestart  := (isReady.io.state || signalLastActiveCycle) && !io.start
 }
