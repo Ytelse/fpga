@@ -5,6 +5,8 @@ import scala.io.Source
 class TestData(
   // 10 Matrices
   matrices: Array[Array[Array[Int]]],
+  // and its biases
+  biases: Array[Array[Int]],
   // 10 sets of 5 vectors of result data
   vectors: Array[Array[Array[Int]]]
 )
@@ -47,14 +49,24 @@ object Utils {
     var i = 1
     val firstMatrix = sliceToMatrix(lines.slice(i, i + 256))
     i += 257
+    val firstBiases = lines(i).split(" ").filter(s => s.length != 0)
+                      .map(s => Integer.parseInt(s, 10)).toArray
+    i += 2
     val secondMatrix = sliceToMatrix(lines.slice(i, i + 256))
     i += 257
+    val secondBiases = lines(i).split(" ").filter(s => s.length != 0)
+                      .map(s => Integer.parseInt(s, 10)).toArray
+    i += 2
     val thirdMatrix = sliceToMatrix(lines.slice(i, i + 256))
     i += 257
+    val thirdBiases = lines(i).split(" ").filter(s => s.length != 0)
+                      .map(s => Integer.parseInt(s, 10)).toArray
+    i += 2
     val fourthMatrix = sliceToMatrix(lines.slice(i, i + 10))
-    i += 10
-
-    i += 1
+    i += 11
+    val fourthBiases = lines(i).split(" ").filter(s => s.length != 0)
+                      .map(s => Integer.parseInt(s, 10)).toArray
+    i += 2
     val NImages = 10
     val NResults = 5
     val results = List.range(0, NImages).map(n => {
@@ -65,14 +77,9 @@ object Utils {
       }).toArray
     }).toArray
 
-    // Input vector is results(i)(0)
-    // results.foreach(r => {
-    //   printMatrix(r(0).grouped(28).map(_.toArray).toArray)
-    //   println("%d".format(fromOneHot(r(4))))
-    // })
-
     new TestData(
       Array(firstMatrix, secondMatrix, thirdMatrix, fourthMatrix),
+      Array(firstBiases, secondBiases, thirdBiases, fourthBiases),
       results
     )
   }
