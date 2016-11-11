@@ -22,8 +22,8 @@ class Interleaver(parameters: LayerParameters) extends Module {
     } 
   }
   doneDelay := io.doneIn
-  when(io.doneIn || count===UInt(parameters.NumberOfCores-1)) {
-    send := io.doneIn
+  when(doneDelay || count===UInt(parameters.NumberOfCores-1)) {
+    send := doneDelay
   }
   io.oneBitPerCore.ready := io.oneHotOut.ready
   io.oneHotOut.bits := regsBuf(count)
