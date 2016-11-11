@@ -35,9 +35,9 @@ class LayerParameters(
 }
 
 class GearBoxParameters(
-  val First: LayerParameters,
-  val Second: LayerParameters) {
+  val Previous: LayerParameters,
+  val Next: LayerParameters) {
     override def toString(): String = {
-      "First:\n" + First.toString() + "\nSecond:\n" + Second.toString()
+      "Previous:\n" + Previous.toString() + "\nNext:\n" + Next.toString()
     }
 }

@@ -11,10 +11,12 @@ class Counter(start: Int, max: Int, step: Int = 1) extends Module {
 
   val startValue = UInt(start, width=UInt(max - 1).getWidth)
   val v = Reg(init = startValue)
-  when (io.rst) {
-    v := startValue
-  } .otherwise {
-    v := Mux(io.enable, v + UInt(step), v)
+  when(io.enable) {
+    when(io.rst) {
+      v := UInt(start)
+    }.otherwise {
+      v := v + UInt(step)
+    }
   }
   io.value := v
 }

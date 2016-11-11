@@ -104,10 +104,10 @@ object CircularPeekQueueTest {
     val p = new GearBoxParameters(
                 new LayerParameters(MatrixHeight=10),
                 new LayerParameters(K=2, MatrixWidth=10))
-    val blockSize = p.First.MatrixHeight / p.Second.K
+    val blockSize = p.Previous.MatrixHeight / p.Next.K
     // TODO:
     val numberOfBlocks = 3
-    val dataWidth = p.Second.K
+    val dataWidth = p.Next.K
     chiselMainTest(margs, () => Module(new CircularPeekQueue(blockSize, numberOfBlocks, dataWidth))) {
       c => new CircularPeekQueueTests(c, p)
     }
