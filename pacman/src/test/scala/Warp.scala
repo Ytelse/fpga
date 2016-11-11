@@ -67,7 +67,7 @@ class WarpTests(c: Warp,
 
   step(100)
 
-  poke(c.io.xOut.ready, true)
+  poke(c.io.pipeReady, true)
   for (iter <- 0 until Iters) {
     poke(c.io.start, true)
     expect(c.io.ready, true)
@@ -94,9 +94,9 @@ class WarpTests(c: Warp,
             val _iter = iter
             val _pass = pass
             expectQueue.enqueue((Cycle + cyclesPerPass, () => {
-                expect(c.io.xOut.valid, 1)
+                expect(c.io.xOutValid, 1)
                 val ind = _i + p.NumberOfPUs * _pass
-                expect(c.io.xOut.bits(_core), expectedResults(_iter)(_core)(ind))
+                expect(c.io.xOut(_core), expectedResults(_iter)(_core)(ind))
                 if (_i == p.NumberOfPUs - 1 && _pass == passesRequired - 1) {
                   expect(c.io.done, true)
                 }
@@ -123,9 +123,9 @@ class WarpTests(c: Warp,
       step(1)
       Cycle += 1
       handleQueue(Cycle)
-      poke(c.io.xOut.ready, false)
+      poke(c.io.pipeReady, false)
       expect(c.io.ready, false)
-      poke(c.io.xOut.ready, true)
+      poke(c.io.pipeReady, true)
       expect(c.io.ready, shouldBeReady)
     }
     shouldBeReady = false
