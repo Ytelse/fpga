@@ -2,18 +2,19 @@ package Pacman
 
 import Chisel._
 
-class Warp(parameters: LayerParameters,
-           weights: Array[Array[Int]],
-           biases: Array[Int]) extends Module {
+class Warp(layerData: LayerData) extends Module {
+  val parameters = layerData.parameters
 
   val io = new Bundle {
     val xIn = Vec.fill(parameters.NumberOfCores)
               { Bits(width=parameters.K) }.asInput
     val start = Bool().asInput
-    val startOut = Bool().asOutput
     val ready = Bool().asOutput
-    val xOut = Decoupled(Vec.fill(parameters.NumberOfCores)
-               { Bits(width=1) })
+
+    val startOut = Bool().asOutput
+    val xOut = Vec.fill(parameters.NumberOfCores)(Bits(width=1)).asOutput
+    val xOutValid = Bool().asOutput
+    val pipeReady = Bool().asInput
     val done = Bool().asOutput
   }
 
@@ -23,8 +24,8 @@ class Warp(parameters: LayerParameters,
               { Module(new Chain(parameters)) }
   val activators = List.fill(parameters.NumberOfCores)
               { Module(new Activation(parameters)) }
-  val preprocessedBiases = biases.map(b => b / 2)
-  val (w, b) = MemoryLayout.getStreams(parameters, weights, preprocessedBiases)
+  val preprocessedBiases = layerData.biases.map(b => b / 2)
+  val (w, b) = MemoryLayout.getStreams(parameters, layerData.weights, preprocessedBiases)
   val memoryStreamer = Module(new MemoryStreamer(parameters, w, b))
 
   // Connect chains to activators
@@ -38,15 +39,15 @@ class Warp(parameters: LayerParameters,
 
   // Hook up output from activators to module output
   for (i <- 0 until parameters.NumberOfCores) {
-    io.xOut.bits(i) := activators(i).io.out(control.io.selectX)
+    io.xOut(i) := activators(i).io.out(control.io.selectX)
   }
 
   // Hook up control
   io.startOut   <> io.start
   io.start      <> control.io.start
   io.ready      <> control.io.ready
-  io.xOut.ready <> control.io.nextReady
-  io.xOut.valid <> control.io.valid
+  io.pipeReady <> control.io.nextReady
+  io.xOutValid <> control.io.valid
   io.done       <> control.io.done
   chains.foreach(c => c.io.restartIn := control.io.chainRestart)
   memoryStreamer.io.restart := control.io.memoryRestart

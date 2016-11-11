@@ -41,3 +41,9 @@ class GearBoxParameters(
       "Previous:\n" + Previous.toString() + "\nNext:\n" + Next.toString()
     }
 }
+
+class LayerData(
+  val parameters: LayerParameters,
+  val weights: Array[Array[Int]],
+  val biases: Array[Int]
+)
