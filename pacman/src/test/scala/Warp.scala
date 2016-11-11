@@ -506,46 +506,46 @@ object WarpTest {
     // }
 
     Random.setSeed(12)
-    val p = new LayerParameters(
-      K=16,
-      BiasWidth=8,
-      AccumulatorWidth=10,
-      NumberOfPUs=32,
-      NumberOfMS=8,
-      MatrixWidth=784,
-      MatrixHeight=256,
-      NumberOfCores=4
-      )
+    // val p = new LayerParameters(
+    //   K=16,
+    //   BiasWidth=8,
+    //   AccumulatorWidth=10,
+    //   NumberOfPUs=32,
+    //   NumberOfMS=8,
+    //   MatrixWidth=784,
+    //   MatrixHeight=256,
+    //   NumberOfCores=4
+    //   )
 
-    val weights = Array.fill(p.MatrixHeight) {
-      Array.fill(p.MatrixWidth) {
-        Random.nextInt(2)
-      }
-    }
-    val biases = Array.fill(p.MatrixHeight) {
-      (Random.nextInt(Math.pow(2, p.BiasWidth).toInt)
-       - Math.pow(2, p.BiasWidth - 1)).toInt
-    }
+    // val weights = Array.fill(p.MatrixHeight) {
+    //   Array.fill(p.MatrixWidth) {
+    //     Random.nextInt(2)
+    //   }
+    // }
+    // val biases = Array.fill(p.MatrixHeight) {
+    //   (Random.nextInt(Math.pow(2, p.BiasWidth).toInt)
+    //    - Math.pow(2, p.BiasWidth - 1)).toInt
+    // }
 
-    chiselMainTest(margs, () => Module(new Warp(p, weights, biases))) {
-      c => new WarpTests(c, p, weights, biases)
-    }
+    // chiselMainTest(margs, () => Module(new Warp(p, weights, biases))) {
+    //   c => new WarpTests(c, p, weights, biases)
+    // }
 
-    return
+    // return
 
     def divisors(n: Int): Seq[Int] = {
       List.range(1, n + 1).filter((e) => n % e == 0)
     }
 
-    for (matHeight <- List(128)) {
-      for (matWidth <- List(128)) {
+    for (matHeight <- List(2, 4, 8, 10, 32)) {
+      for (matWidth <- List(3, 8, 24, 32)) {
         val possibleKs = divisors(matWidth)
         for (k <- possibleKs) {
           val possiblePUs = List.range(1, Math.min(matHeight, matWidth / k)).filter(pus => matHeight % pus == 0)
           for (pus <- possiblePUs) {
             val possibleMUs = divisors(pus)
             for (mus <- possibleMUs) {
-              for (cores <- List(4)) {
+              for (cores <- List(1, 2, 3)) {
                 val params = new LayerParameters(
                   K = k,
                   BiasWidth = 8,

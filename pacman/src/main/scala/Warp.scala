@@ -51,23 +51,6 @@ class Warp(parameters: LayerParameters,
 }
 
 class WarpControl(p: LayerParameters) extends Module {
-  class Counter(start: Int, max: Int) extends Module {
-    val io = new Bundle {
-      val enable = Bool().asInput
-      val rst = Bool().asInput
-      val value = UInt().asOutput
-    }
-
-    val startValue = UInt(start, width=UInt(max - 1).getWidth)
-    val v = Reg(init = startValue)
-    when (io.rst) {
-      v := startValue
-    } .otherwise {
-      v := Mux(io.enable, v + UInt(1), v)
-    }
-    io.value := v
-  }
-
   class Switch(init: Boolean = false) extends Module {
     val stateReg = Reg(init=Bool(init))
     val io = new Bundle {
