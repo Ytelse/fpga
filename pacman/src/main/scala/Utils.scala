@@ -20,7 +20,7 @@ object Utils {
             val n = Integer.parseInt(s, 10)
             if (n == 1) 1
             else if (n == -1) 0
-            else 2
+            else throw new Error("Illegal char %s in string %s".format(s, string))
           })
           .toArray
   }
