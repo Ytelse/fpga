@@ -568,7 +568,8 @@ object WarpTest {
                 }
 
                 println(params)
-                chiselMainTest(margs, () => Module(new Warp(params, weights, biases))) {
+                val layerData = new LayerData(params, weights, biases)
+                chiselMainTest(margs, () => Module(new Warp(layerData))) {
                   c => new WarpTests(c, params, weights, biases)
                 }
               }

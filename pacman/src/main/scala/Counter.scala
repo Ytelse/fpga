@@ -63,7 +63,7 @@ class CounterWithSyncAndAsyncReset(start: Int, max: Int, step: Int = 1) extends 
   }
 }
 
-class AsyncCounter(start: Int, end: Int, step: Int) extends Module {
+class AsyncCounter(start: Int, end: Int, step: Int = 1) extends Module {
   if((end - start) % step != 0) {
     throw new AssertionError("Step size is not a divisor of (end - start)")
   }

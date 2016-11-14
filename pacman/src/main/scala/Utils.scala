@@ -3,12 +3,12 @@ package Pacman
 import scala.io.Source
 
 class TestData(
-  // 10 Matrices
-  matrices: Array[Array[Array[Int]]],
+  // 4 Matrices
+  val matrices: Array[Array[Array[Int]]],
   // and its biases
-  biases: Array[Array[Int]],
+  val biases: Array[Array[Int]],
   // 10 sets of 5 vectors of result data
-  vectors: Array[Array[Array[Int]]]
+  val vectors: Array[Array[Array[Int]]]
 )
 
 object Utils {
@@ -42,7 +42,7 @@ object Utils {
     arr.indexWhere(_ > 0)
   }
 
-  def readDumpFile() {
+  def readDumpFile() : TestData = {
     // This function only works for the `net_dump` file.
     // Please do not use it for anything else :)
     val lines = Source.fromFile("net_dump").getLines.toArray

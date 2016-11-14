@@ -5,11 +5,10 @@ import Chisel._
 class Net(
   layers: List[LayerData]) extends Module {
 
-  val xsInWidth = layers(0).parameters.NumberOfCores * layers(0).parameters.K
   val io = new Bundle {
     val ready = Bool().asOutput
     val start = Bool().asInput
-    val xsIn = Bits(width = xsInWidth).asInput
+    val xsIn = Vec.fill(layers(0).parameters.NumberOfCores)(Bits(width = layers(0).parameters.K)).asInput
 
     val xsOut = Vec.fill(layers.last.parameters.NumberOfCores)(Bits(width = 1)).asOutput
     val xsOutValid = Bool().asOutput
