@@ -12,6 +12,9 @@ class Pacman extends Module {
 
 object Main {
   def main(args: Array[String]) {
+    Utils.readDumpFile()
+
+    return;
     chiselMainTest(args, () => Module(new Pacman)) { bl =>
       new Tester(bl)
     }

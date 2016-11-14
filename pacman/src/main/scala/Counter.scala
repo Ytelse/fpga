@@ -21,6 +21,22 @@ class Counter(start: Int, max: Int, step: Int = 1) extends Module {
   io.value := v
 }
 
+class UpDownCounter(start: Int, end: Int, step: Int = 1) extends Module {
+  val io = new Bundle {
+    val up    = Bool().asInput
+    val down  = Bool().asInput
+    val value = UInt().asOutput
+  }
+  val reg = Reg(init = UInt(start, width=UInt(end).getWidth))
+  when (io.up && io.down) {
+  } .elsewhen (io.up) {
+    reg := reg + UInt(step)
+  } .elsewhen (io.down) {
+    reg := reg - UInt(step)
+  }
+  io.value := reg
+}
+
 
 class CounterWithSyncAndAsyncReset(start: Int, max: Int, step: Int = 1) extends Module {
   val io = new Bundle {
@@ -47,7 +63,7 @@ class CounterWithSyncAndAsyncReset(start: Int, max: Int, step: Int = 1) extends 
   }
 }
 
-class AsyncCounter(start: Int, end: Int, step: Int) extends Module {
+class AsyncCounter(start: Int, end: Int, step: Int = 1) extends Module {
   if((end - start) % step != 0) {
     throw new AssertionError("Step size is not a divisor of (end - start)")
   }
@@ -66,5 +82,31 @@ class AsyncCounter(start: Int, end: Int, step: Int) extends Module {
     io.value := nextValue
   }.otherwise {
     io.value := v
+  }
+}
+
+class AsyncUpDownCounter(start: Int, end: Int, step: Int = 1) extends Module {
+  if((end - start) % step != 0) {
+    throw new AssertionError("Step size is not a divisor of (end - start)")
+  }
+
+  val io = new Bundle {
+    val up    = Bool().asInput
+    val down  = Bool().asInput
+    val value = UInt().asOutput
+  }
+  val reg = Reg(init = UInt(start, width=UInt(end).getWidth))
+  when (io.up && io.down) {
+    io.value := reg + UInt(step)
+  } .elsewhen (io.up) {
+    val v = reg + UInt(step)
+    reg := v
+    io.value := v
+  } .elsewhen (io.down) {
+    val v = reg - UInt(step)
+    reg := v
+    io.value := reg
+  } .otherwise {
+    io.value := reg
   }
 }
