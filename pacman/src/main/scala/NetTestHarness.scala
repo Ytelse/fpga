@@ -13,7 +13,7 @@ class NetTestHarness(
     throw new AssertionError("NetTestHarness only support single input")
   }
 
-  val waitCycles = 2000
+  val waitCycles = 100000000
   val numberOfInputWords = layers(0).parameters.MatrixWidth / layers(0).parameters.K
 
   val io = new Bundle {
