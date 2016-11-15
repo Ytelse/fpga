@@ -2,8 +2,13 @@ package Pacman
 
 import Chisel._
 
-class NetSimulationHarnessTests(c: NetSimulationHarness) extends Tester(c) {
-  step(1)
+class NetSimulationHarnessTests(
+  c: NetSimulationHarness,
+  layers: List[LayerData],
+  testInputs: Array[Array[Int]]
+) extends Tester(c) {
+
+
 }
 
 object NetSimulation {
@@ -66,8 +71,8 @@ object NetSimulation {
       )
     ).toList
 
-    chiselMainTest(margs, () => Module(new NetSimulationHarness(layers, 1000000))) {
-      c => new NetSimulationHarnessTests(c)
+    chiselMainTest(margs, () => Module(new NetSimulationHarness(layers, 10, 128))) {
+      c => new NetSimulationHarnessTests(c, layers, testInput)
     }
   }
 }
