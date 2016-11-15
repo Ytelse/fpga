@@ -34,6 +34,17 @@ class BitToWordTests(btw : BitToWord) extends Tester(btw) {
   push(0)
   push(0)
   expect(btw.io.word, 1)
+
+  push(1)
+  push(0)
+  push(1)
+  push(0)
+  push(1)
+  push(0)
+  push(1)
+  push(0)
+  push(1)
+  expect(btw.io.word, 10)
 }
 
 object BitToWordTest {

@@ -24,7 +24,7 @@ class Warp(layerData: LayerData) extends Module {
               { Module(new Chain(parameters)) }
   val activators = List.fill(parameters.NumberOfCores)
               { Module(new Activation(parameters)) }
-  val preprocessedBiases = layerData.biases.map(b => b / 2)
+  val preprocessedBiases = layerData.biases.map(b => Math.floor(b / 2.0).toInt)
   val (w, b) = MemoryLayout.getStreams(parameters, layerData.weights, preprocessedBiases)
   val memoryStreamer = Module(new MemoryStreamer(parameters, w, b))
 

@@ -12,7 +12,7 @@ class NetSimulationHarness(
   val parallelInputs = firstLayer.parameters.NumberOfCores
   val totalInputWidth = inputWordSize * parallelInputs
   val inputCycles = firstLayer.parameters.MatrixWidth / firstLayer.parameters.K
-  val outputWordSize = lastLayer.parameters.K
+  val outputWordSize = lastLayer.parameters.MatrixHeight
   val parallelOutputs = lastLayer.parameters.NumberOfCores
   val totalOutputWidth = outputWordSize * parallelOutputs
   val inputBlockSize = totalInputWidth * inputCycles
@@ -23,6 +23,7 @@ class NetSimulationHarness(
     val inputCount = UInt().asOutput
     val start = Bool().asInput
     val done = Bool().asOutput
+    val mem = Vec.fill(1){ UInt(width=totalOutputWidth) }.asOutput
   }
 
   /*
@@ -31,19 +32,21 @@ class NetSimulationHarness(
   val catXIn = io.xIn.reduceLeft(Cat(_, _))
 
   val net = Module(new Net(layers))
+  net.io.pipeReady := Bool(true)
 
   val hasStarted = Module(new Switch())
   hasStarted.io.signalOn := io.start
   hasStarted.io.rst := Bool(false)
 
-  val signalNewInput = net.io.ready && hasStarted.io.state
+  val inputCounter = Module(new Counter(0, numberOfTestInputs))
+  val signalNewInputShifted = ShiftRegister(net.io.ready && hasStarted.io.state && (inputCounter.io.value < UInt(numberOfTestInputs)), 1)
+  val signalNewInput = net.io.ready && hasStarted.io.state && (inputCounter.io.value < UInt(numberOfTestInputs)) && !signalNewInputShifted
 
-  val queue = Module(new CircularPeekQueue(inputBlockSize, bufferLength + 1, totalInputWidth))
+  val queue = Module(new CircularPeekQueue(inputCycles, bufferLength + 1, totalInputWidth))
   queue.io.input := catXIn
   queue.io.writeEnable := io.xInValid
   queue.io.nextBlock := signalNewInput
 
-  val inputCounter = Module(new Counter(0, numberOfTestInputs))
   inputCounter.io.enable := signalNewInput
   inputCounter.io.rst := Bool(false)
   io.inputCount := inputCounter.io.value
@@ -63,6 +66,11 @@ class NetSimulationHarness(
    * Output
    */
   val outputMem = Mem(Bits(width=totalOutputWidth), numberOfTestInputs, true)
+
+  for (i <- 0 until 1) {
+    io.mem(i) := UInt(outputMem(i))
+  }
+
   val bitBuffers = Array.fill(parallelOutputs)(Module(new BitToWord(outputWordSize)))
   bitBuffers.zipWithIndex.foreach{
     case (b, i) => {
@@ -79,5 +87,5 @@ class NetSimulationHarness(
     outputMem(outputCounter.io.value) := bitBuffers.map(_.io.word).reduceLeft(Cat(_, _))
   }
 
-  io.done := outputCounter.io.value === UInt(numberOfTestInputs - 1)
+  io.done := outputCounter.io.value === UInt(numberOfTestInputs)
 }
