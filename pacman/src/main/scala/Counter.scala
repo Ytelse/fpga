@@ -110,3 +110,21 @@ class AsyncUpDownCounter(start: Int, end: Int, step: Int = 1) extends Module {
     io.value := reg
   }
 }
+
+class WrappingCounter(start: Int, end: Int, step: Int = 1) extends Module {
+  val io = new Bundle {
+    val enable = Bool().asInput
+    val value = UInt().asOutput
+  }
+
+  val startValue = UInt(start, width=UInt(end).getWidth)
+  val v = Reg(init = startValue)
+  if (end == step || step == 0) {
+    v := UInt(start)
+  } else {
+    when(io.enable) {
+      v := (v + UInt(step)) % UInt(end)
+    }
+  }
+  io.value := v
+}

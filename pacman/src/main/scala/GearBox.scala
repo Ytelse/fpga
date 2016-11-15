@@ -52,6 +52,21 @@ class GearBox(p: GearBoxParameters) extends Module {
     Module(new CircularPeekQueue(wordsPerBlock, blocksPerQueue, p.Next.K))
   )
 
+  val inputSelectCounter = Array.range(0, numberOfQueues)
+    .map(i => Module(new WrappingCounter(i, numberOfQueues,
+                                         numberOfQueues - p.Previous.NumberOfCores)))
+    .toArray
+  val inputEnables = Vec.fill(p.Previous.NumberOfCores){ Bool(true) } ++
+                     Vec.fill(numberOfQueues - p.Previous.NumberOfCores) { Bool(false) }
+
+  val outputSelectCounter = Array.range(0, p.Next.NumberOfCores)
+    .map(i => Module(new WrappingCounter(i, numberOfQueues, p.Next.NumberOfCores)))
+    .toArray
+
+
+
+
+
   /*
    *  From here on we assume a 1-to-1 GearBox
    */
