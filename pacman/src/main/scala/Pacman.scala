@@ -59,7 +59,7 @@ class Pacman extends Module {
     )
   ).toList
 
-  val netTestHarness = Module(new NetTestHarness(layers, testInput))
+  val netTestHarness = Module(new NetLedHarness(layers, testInput))
   val io = new Bundle {
     val test_led = Vec.fill(4){Bits(width = 1)}.asOutput
   }

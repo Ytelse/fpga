@@ -2,28 +2,11 @@ package Pacman
 
 import Chisel._
 
-class NetTestHarnessTests(c: NetTestHarness) extends Tester(c) {
-  step(2000)
-  for(i <- 0 until 100) {
-    peek(c.io)
-    // peek(c.inputCycleCounter.io)
-    // peek(c.waitCounter.io)
-    // peek(c.currentInput.io)
-    // peek(c.bitBuffer.io.word)
-    peek(c.net.warps(0).io)
-    // peek(c.net.warps(0).memoryStreamer.io)
-    peek(c.net.warps(0).chains(0).processingUnits(0).io)
-    // peek(c.net.warps(1).io)
-    // peek(c.net.warps(2).io)
-    // peek(c.net.warps(3).io)
-    peek(c.net.gearBoxes(0).io)
-    // peek(c.net.gearBoxes(1).io)
-    // peek(c.net.gearBoxes(2).io)
-    step(1000)
-  }
+class NetSimulationHarnessTests(c: NetSimulationHarness) extends Tester(c) {
+  step(1)
 }
 
-object NetTestHarnessTest {
+object NetSimulation {
   def main(args: Array[String]) {
     val margs = Array("--backend", "c", "--genHarness", "--compile", "--test")
 
@@ -83,8 +66,8 @@ object NetTestHarnessTest {
       )
     ).toList
 
-    chiselMainTest(margs, () => Module(new NetTestHarness(layers, testInput))) {
-      c => new NetTestHarnessTests(c)
+    chiselMainTest(margs, () => Module(new NetSimulationHarness(layers, 1000000))) {
+      c => new NetSimulationHarnessTests(c)
     }
   }
 }

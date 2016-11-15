@@ -2,15 +2,15 @@ package Pacman
 
 import Chisel._
 
-class NetTestHarness(
+class NetLedHarness(
   layers: List[LayerData],
   testInput: Array[Array[Int]]
 ) extends Module {
   if(layers.last.parameters.NumberOfCores != 1) {
-    throw new AssertionError("NetTestHarness only support single output")
+    throw new AssertionError("NetLedHarness only support single output")
   }
   if(layers(0).parameters.NumberOfCores != 1) {
-    throw new AssertionError("NetTestHarness only support single input")
+    throw new AssertionError("NetLedHarness only support single input")
   }
 
   val waitCycles = 100000000
