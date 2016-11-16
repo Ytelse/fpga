@@ -32,6 +32,7 @@ class GearBoxTests(c: GearBox, p: GearBoxParameters) extends Tester(c) {
       if (prevStart >= 0) poke(c.io.prevStart, prevStart)
       if (nextReady >= 0) poke(c.io.nextReady, nextReady)
       step(1)
+    poke(c.io.prevStart, false)
       if (ready >= 0)     expect(c.io.ready, ready)
       if (startNext >= 0) expect(c.io.startNext, startNext)
       if (xsOut >= 0)     expect(c.io.xsOut(0), xsOut)
@@ -56,7 +57,7 @@ class GearBoxTests(c: GearBox, p: GearBoxParameters) extends Tester(c) {
   cycle(  0,      1,       0,        0,        1,        1,        0,    -1)
   cycle(  0,      0,       0,        0,        1,        1,        0,    -1)
   cycle(  0,      1,       0,        0,        1,        1,        0,    -1)
-  cycle(  1,      1,       0,        1,        1,        1,        0,    -1)
+  cycle(  1,      1,       0,        1,        1,        0,        0,    -1)
   cycle(  1,      1,       0,        0,        1,        0,        0,    -1)
   cycle(  1,      1,       1,        0,        1,        0,        0,    -1)
   // Numbers must propagate through the buffer and the queue before output
@@ -68,7 +69,7 @@ class GearBoxTests(c: GearBox, p: GearBoxParameters) extends Tester(c) {
   cycle(  0,      1,       0,        0,        1,        1,        0,     1)
   cycle(  1,      1,       0,        0,        1,        1,        0,     2)
   cycle(  1,      1,       0,        0,        1,        1,        0,     3)
-  cycle(  0,      1,       1,        1,        0,        1,        0,     1)
+  cycle(  0,      1,       1,        1,        0,        0,        0,     1)
   // Fill up queue
   cycle(  1,      1,       0,        0,        0,        0,        0,     2) // 116
   cycle(  0,      1,       0,        0,        0,        0,        0,     3) // 117
@@ -94,10 +95,10 @@ object GearBoxTest {
       new LayerParameters(
         MatrixHeight=6,
         NumberOfCores=1
-        ), new LayerParameters(
-          K=2,
-          NumberOfCores=1
-        ))
+      ), new LayerParameters(
+        K=2,
+        NumberOfCores=1
+      ))
     chiselMainTest(margs, () => Module(new GearBox(p))) {
       c => new GearBoxTests(c, p)
     }
