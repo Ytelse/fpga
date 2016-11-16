@@ -98,6 +98,7 @@ class AsyncUpDownCounter(start: Int, end: Int, step: Int = 1) extends Module {
   val reg = Reg(init = UInt(start, width=UInt(end).getWidth))
   when (io.up && io.down) {
     io.value := reg + UInt(step)
+    reg := reg
   } .elsewhen (io.up) {
     val v = reg + UInt(step)
     reg := v
@@ -108,6 +109,7 @@ class AsyncUpDownCounter(start: Int, end: Int, step: Int = 1) extends Module {
     io.value := reg
   } .otherwise {
     io.value := reg
+    reg := reg
   }
 }
 
@@ -117,7 +119,7 @@ class WrappingCounter(start: Int, end: Int, step: Int = 1) extends Module {
     val value = UInt().asOutput
   }
 
-  val startValue = UInt(start, width=UInt(end).getWidth)
+  val startValue = UInt(start, width=UInt(end + step).getWidth)
   val v = Reg(init = startValue)
   if (end == step || step == 0) {
     v := UInt(start)
@@ -125,7 +127,7 @@ class WrappingCounter(start: Int, end: Int, step: Int = 1) extends Module {
     when(io.enable) {
       // v := (v + UInt(step)) % UInt(end)
       when(v + UInt(step) >= UInt(end)) {
-        v := v + UInt(step) - UInt(end)
+        v := (v + UInt(step)) - UInt(end)
       }.otherwise{
         v := v + UInt(step)
       }

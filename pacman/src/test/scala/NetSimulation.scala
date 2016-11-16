@@ -72,7 +72,8 @@ class NetSimulationHarnessTests(
   }
   poke(c.io.start, false)
 
-  while (peek(c.io.done) == 0x0) { step(1) }
+  while (peek(c.io.done) == 0x0) { step(1)
+  peek(c.outputCounter.io)}
   for (i <- 0 until (testInputs.length / outputCores)) {
     val solution = groupedTestOutputs(i).flatMap(e => e)
     expect(peekAt(c.outputMem, i) == vecToBigInt(solution), "Image #%d".format(i))
@@ -109,7 +110,7 @@ object NetSimulation {
         NumberOfMS = 8,
         MatrixWidth = 256,
         MatrixHeight = 256,
-        NumberOfCores = 4
+        NumberOfCores = 2
       ),
       new LayerParameters(
         K = 16,
@@ -120,7 +121,7 @@ object NetSimulation {
         NumberOfMS = 8,
         MatrixWidth = 256,
         MatrixHeight = 256,
-        NumberOfCores = 4
+        NumberOfCores = 2
       ),
       new LayerParameters(
         K = 16,
@@ -131,7 +132,7 @@ object NetSimulation {
         NumberOfMS = 5,
         MatrixWidth = 256,
         MatrixHeight = 10,
-        NumberOfCores = 4
+        NumberOfCores = 2
       )
     )
     val layers = Range(0, 4).map(i =>

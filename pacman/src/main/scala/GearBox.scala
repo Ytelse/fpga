@@ -14,9 +14,9 @@ class GearBox(p: GearBoxParameters) extends Module {
   if (p.Next.K == 0) throw new AssertionError("p.Next.K needs to be set")
 
   val blocksPerQueue = 3
-  val maxReadyBlocksPerQueue = blocksPerQueue - 1
   val wordsPerBlock = p.Previous.MatrixHeight / p.Next.K
   val numberOfQueues = Math.max(p.Previous.NumberOfCores, p.Next.NumberOfCores)
+  val maxReadyBlocks = numberOfQueues * blocksPerQueue - p.Next.NumberOfCores
   // if (numberOfQueues != 1) {
   //   throw new AssertionError("GearBox does not support multiple cores yet!")
   // }
@@ -41,18 +41,21 @@ class GearBox(p: GearBoxParameters) extends Module {
   fillingBlock.io.down  := ShiftRegister(io.prevDone, 1)
 
   val bitCounter = Module(new Counter(0, p.Next.K))
-  val blocksReady = Module(new UpDownCounter(0, numberOfQueues * maxReadyBlocksPerQueue, p.Previous.NumberOfCores, p.Next.NumberOfCores))
+  val blocksReady = Module(new UpDownCounter(0, maxReadyBlocks, p.Previous.NumberOfCores, p.Next.NumberOfCores))
 
   val signalResetBitBuffers = bitCounter.io.value === UInt(p.Next.K - 1)
   val signalBitBuffersFull = ShiftRegister(io.validIn && signalResetBitBuffers, 1)
-  val signalNewPeekBlock = io.nextReady && blocksReady.io.value >= UInt(p.Next.NumberOfCores)
+  val signalDidNewPeekBlock = Reg(init=Bool(false))
+  val signalNewPeekBlock = io.nextReady && blocksReady.io.value >= UInt(p.Next.NumberOfCores) && !signalDidNewPeekBlock
+  signalDidNewPeekBlock := signalNewPeekBlock
+
 
   // Count how many ready blocks we have in the queue
   blocksReady.io.up   := ShiftRegister(io.prevDone, 1)
   blocksReady.io.down := signalNewPeekBlock
 
   val reservedBlocks = blocksReady.io.value + fillingBlock.io.value
-  val hasEnoughEmptyBlocks = reservedBlocks <= UInt(numberOfQueues * maxReadyBlocksPerQueue - p.Previous.NumberOfCores)
+  val hasEnoughEmptyBlocks = reservedBlocks <= UInt(maxReadyBlocks - p.Previous.NumberOfCores)
 
   io.ready := hasEnoughEmptyBlocks
   io.startNext := ShiftRegister(signalNewPeekBlock, 1)
@@ -80,6 +83,9 @@ class GearBox(p: GearBoxParameters) extends Module {
     .map(i => Module(new WrappingCounter(i, numberOfQueues,
                                          numberOfQueues - p.Previous.NumberOfCores)))
     .toArray
+  inputSelectCounters.foreach(c => {
+                                c.io.enable := signalBitBuffersFull
+                              })
 
   // Not every queue can take input if there are more queues than cores in Next
   val inputEnables = Vec(
@@ -97,8 +103,12 @@ class GearBox(p: GearBoxParameters) extends Module {
 
   // Make queueOutputSelectCounters -  outputs muxes over queues
   val queueOutputSelectCounters = Array.range(0, p.Next.NumberOfCores)
-    .map(i => Module(new WrappingCounter(i, numberOfQueues, p.Next.NumberOfCores)))
+    .map(i => Module(new WrappingCounter(i + numberOfQueues - p.Next.NumberOfCores, numberOfQueues, p.Next.NumberOfCores)))
     .toArray
+
+  queueOutputSelectCounters.foreach(c => {
+                                      c.io.enable := signalNewPeekBlock
+                                    })
 
   // Hook up output to queues
   io.xsOut.zip(queueOutputSelectCounters).foreach{
@@ -108,9 +118,13 @@ class GearBox(p: GearBoxParameters) extends Module {
   }
 
   // Make outputSelectCounters - queues muxes over outputs
-  val outputSelectCounters = Array.range(0, p.Next.NumberOfCores)
-    .map(i => Module(new WrappingCounter(i, numberOfQueues, p.Next.NumberOfCores)))
+  val outputSelectCounters = Array.range(0, numberOfQueues)
+    .map(i => Module(new WrappingCounter(i, numberOfQueues, numberOfQueues - p.Next.NumberOfCores)))
     .toArray
+
+  outputSelectCounters.foreach(c => {
+                                 c.io.enable := signalNewPeekBlock
+                               })
 
   val outputEnables = Vec(
     Array.fill(p.Next.NumberOfCores)(Bool(true))

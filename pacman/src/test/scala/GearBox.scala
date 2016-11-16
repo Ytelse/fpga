@@ -87,6 +87,17 @@ class GearBoxTests5x2(c: GearBox, p: GearBoxParameters) extends Tester(c) {
     peek(c.bitCounter.io)
     peek(c.blocksReady.io)
     peek(c.queues(0).io)
+    peek(c.queues(1).io)
+    peek(c.queues(2).io)
+    peek(c.queues(3).io)
+    peek(c.queues(4).io)
+    peek(c.outputSelectCounters(0).io)
+    peek(c.outputSelectCounters(1).io)
+    peek(c.outputSelectCounters(2).io)
+    peek(c.outputSelectCounters(3).io)
+    peek(c.outputSelectCounters(4).io)
+    peek(c.queueOutputSelectCounters(0).io)
+    peek(c.queueOutputSelectCounters(1).io)
   }
 
   def cycle(xsIn: Array[Int],
@@ -104,6 +115,7 @@ class GearBoxTests5x2(c: GearBox, p: GearBoxParameters) extends Tester(c) {
       if (prevDone >= 0)  poke(c.io.prevDone, prevDone)
       if (prevStart >= 0) poke(c.io.prevStart, prevStart)
       if (nextReady >= 0) poke(c.io.nextReady, nextReady)
+    peeks()
       step(1)
     poke(c.io.prevStart, false)
       if (ready >= 0)     expect(c.io.ready, ready)
@@ -128,16 +140,54 @@ class GearBoxTests5x2(c: GearBox, p: GearBoxParameters) extends Tester(c) {
   step(19) // 100
 
   def i(is: Int*): Array[Int] = { is.toArray }
-  println(i(1,2,3))
 
   //       xsIn       validIn prevDone prevStart nextReady /**/ ready startNext xsOut
-  cycle(i(1,0,2,3,0),      1,       0,        0,        1, /**/    1,        0, i()) // 101
-  cycle(i(3,3,3,1,1),      0,       0,        0,        1, /**/    1,        0, i())
-  cycle(i(3,3,3,1,1),      1,       0,        0,        1, /**/    1,        0, i())
-  cycle(i(2,0,0,0,3),      1,       1,        0,        1, /**/    1,        0, i())
+  cycle(i(1,0,0,1,0),      1,       0,        0,        1, /**/    1,        0, i()) // 101
+  cycle(i(1,0,1,0,1),      0,       0,        0,        1, /**/    1,        0, i())
+  cycle(i(0,0,1,1,0),      1,       0,        0,        1, /**/    1,        0, i())
+  cycle(i(1,1,1,1,1),      1,       0,        0,        1, /**/    1,        0, i())
+  cycle(i(1,1,1,0,0),      1,       0,        0,        1, /**/    1,        0, i())
+  cycle(i(0,0,0,0,1),      1,       0,        0,        1, /**/    1,        0, i())
+  cycle(i(1,0,0,0,1),      1,       1,        0,        1, /**/    1,        0, i()) // 107
 
   cycle(i(         ),      0,       0,        0,        1, /**/    1,        0, i())
   cycle(i(         ),      0,       0,        0,        1, /**/    1,        1, i(1, 0))
+  cycle(i(         ),      0,       0,        0,        0, /**/    1,        0, i(3, 3)) // 110
+  cycle(i(         ),      0,       0,        0,        0, /**/    1,        0, i(2, 0))
+  cycle(i(         ),      0,       0,        0,        0, /**/    1,        0, i(1, 0))
+
+  cycle(i(         ),      0,       0,        0,        1, /**/    1,        1, i(2, 3))
+  cycle(i(         ),      0,       0,        1,        1, /**/    1,        0, i(3, 1))
+  cycle(i(         ),      0,       0,        0,        1, /**/    1,        0, i(0, 0)) // 115
+  cycle(i(         ),      0,       0,        0,        1, /**/    1,        0, i(2, 3))
+  cycle(i(         ),      0,       0,        0,        1, /**/    1,        0, i(3, 1))
+  cycle(i(         ),      0,       0,        0,        1, /**/    1,        0, i(0, 0))
+
+  cycle(i(1,1,1,0,0),      1,       0,        0,        1, /**/    1,        0, i(2, 3)) // 119
+  cycle(i(1,0,0,1,1),      1,       0,        0,        1, /**/    1,        0, i(3, 1))
+  cycle(i(0,0,1,1,1),      1,       0,        0,        1, /**/    1,        0, i(0, 0))
+  cycle(i(1,1,0,1,0),      1,       0,        1,        1, /**/    0,        0, i(2, 3)) // 122
+  cycle(i(1,1,0,1,0),      1,       0,        0,        1, /**/    0,        0, i(3, 1))
+  cycle(i(0,1,0,1,1),      1,       1,        0,        1, /**/    0,        0, i(0, 0))
+
+  cycle(i(0,0,0,1,1),      1,       0,        0,        0, /**/    0,        0, i(2, 3))
+  cycle(i(1,1,1,1,0),      1,       0,        0,        0, /**/    0,        0, i(3, 1))
+  cycle(i(0,1,0,0,0),      1,       0,        0,        0, /**/    0,        0, i(0, 0))
+  cycle(i(1,1,0,1,1),      1,       0,        0,        0, /**/    0,        0, i(2, 3))
+  cycle(i(0,1,0,0,0),      1,       0,        0,        0, /**/    0,        0, i(3, 1))
+  cycle(i(1,0,1,0,1),      1,       1,        0,        0, /**/    0,        0, i(0, 0))
+
+  cycle(i(         ),      0,       0,        0,        0, /**/    0,        0, i(2, 3))
+  cycle(i(         ),      0,       0,        0,        0, /**/    0,        0, i(3, 1))
+
+  cycle(i(         ),      0,       0,        0,        1, /**/    0,        1, i(0, 3))
+  cycle(i(         ),      0,       0,        0,        0, /**/    0,        0, i(1, 2))
+  cycle(i(         ),      0,       0,        0,        0, /**/    0,        0, i(3, 1))
+
+  cycle(i(         ),      0,       0,        0,        1, /**/    1,        1, i(1, 1))
+  cycle(i(         ),      0,       0,        0,        0, /**/    1,        0, i(2, 1))
+  cycle(i(         ),      0,       0,        0,        0, /**/    1,        0, i(3, 0))
+
 
 
 
