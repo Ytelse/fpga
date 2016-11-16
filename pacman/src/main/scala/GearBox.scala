@@ -17,9 +17,9 @@ class GearBox(p: GearBoxParameters) extends Module {
   val maxReadyBlocksPerQueue = blocksPerQueue - 1
   val wordsPerBlock = p.Previous.MatrixHeight / p.Next.K
   val numberOfQueues = Math.max(p.Previous.NumberOfCores, p.Next.NumberOfCores)
-  if (numberOfQueues != 1) {
-    throw new AssertionError("GearBox does not support multiple cores yet!")
-  }
+  // if (numberOfQueues != 1) {
+  //   throw new AssertionError("GearBox does not support multiple cores yet!")
+  // }
 
   val io = new Bundle {
     val xsIn = Vec.fill(p.Previous.NumberOfCores) { Bits(width = 1) }.asInput
@@ -93,7 +93,7 @@ class GearBox(p: GearBoxParameters) extends Module {
       q.io.writeEnable := signalBitBuffersFull && inputEnables(c.io.value)
       q.io.input := bitBufferWords(c.io.value)
     }
-}
+  }
 
   // Make queueOutputSelectCounters -  outputs muxes over queues
   val queueOutputSelectCounters = Array.range(0, p.Next.NumberOfCores)
@@ -106,7 +106,6 @@ class GearBox(p: GearBoxParameters) extends Module {
       xs := queueOutputs(c.io.value)
     }
   }
-
 
   // Make outputSelectCounters - queues muxes over outputs
   val outputSelectCounters = Array.range(0, p.Next.NumberOfCores)

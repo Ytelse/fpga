@@ -8,6 +8,15 @@ class NetSimulationHarnessTests(
   testInputs: Array[Array[Int]],
   testOutputs: Array[Array[Int]]
 ) extends Tester(c) {
+  val inputCores = layers(0).parameters.NumberOfCores
+  val inputK = layers(0).parameters.K
+  val outputCores = layers.last.parameters.NumberOfCores
+  val chunksInImage = layers(0).parameters.MatrixWidth / inputK
+  val groupedTestInputs = testInputs.grouped(inputCores)
+    .map(testGroup => testGroup.map(test => test.grouped(inputK).toArray))
+    .toArray
+  val groupedTestOutputs = testOutputs.grouped(outputCores).toArray
+
   poke(c.io.start, false)
   poke(c.io.xInValid, false)
 
@@ -27,16 +36,21 @@ class NetSimulationHarnessTests(
   var Cycle = 0;
 
   def push(num: Int) {
-    testInputs.slice(pushedTests, pushedTests + num)
-              .foreach(test => {
-                test.grouped(layers(0).parameters.K).foreach(chunk => {
-                  poke(c.io.xIn(0), vecToBigInt(chunk))
-                  poke(c.io.xInValid, true)
-                  step(1)
-                  Cycle += 1
-                  poke(c.io.xInValid, false)
-                })
-              })
+    groupedTestInputs.slice(pushedTests, pushedTests + num)
+      .foreach(groupedTests => {
+        for (chunk <- 0 until chunksInImage) {
+          for (testI <- 0 until groupedTests.length) {
+            val asd = groupedTests(testI)(chunk)
+            println(asd)
+            println(asd.length)
+            poke(c.io.xIn(testI), vecToBigInt(asd))
+          }
+          poke(c.io.xInValid, true)
+          step(1)
+          Cycle += 1
+          poke(c.io.xInValid, false)
+        }
+    })
     pushedTests += num
   }
 
@@ -44,22 +58,24 @@ class NetSimulationHarnessTests(
 
   poke(c.io.start, true)
   step(1)
+  Cycle += 1
   poke(c.io.start, false)
 
-  while (peek(c.io.inputCount) < numTests) {
+  while (peek(c.io.inputCount) < numTests / inputCores) {
     if (pushedTests - peek(c.io.inputCount) < defaultPush) {
       val toPush = Math.min(defaultPush, numTests - pushedTests)
       push(toPush)
     }
     step(1000)
     Cycle += 1000
-    print("pushed %d/%d".format(pushedTests, testInputs.length))
+    print("pushed %d/%d".format(pushedTests * inputCores, testInputs.length))
   }
   poke(c.io.start, false)
 
   while (peek(c.io.done) == 0x0) { step(1) }
-  for (i <- 0 until testInputs.length) {
-    expect(peekAt(c.outputMem, i) == vecToBigInt(testOutputs(i)), "Image #%d".format(i))
+  for (i <- 0 until (testInputs.length / outputCores)) {
+    val solution = groupedTestOutputs(i).flatMap(e => e)
+    expect(peekAt(c.outputMem, i) == vecToBigInt(solution), "Image #%d".format(i))
   }
   println("Total cycles: %d".format(Cycle))
   println("  %5.2f cycles per image".format(Cycle.toFloat / testInputs.length))
@@ -82,7 +98,7 @@ object NetSimulation {
         NumberOfMS = 16,
         MatrixWidth = 784,
         MatrixHeight = 256,
-        NumberOfCores = 1
+        NumberOfCores = 4
       ),
       new LayerParameters(
         K = 16,
@@ -93,7 +109,7 @@ object NetSimulation {
         NumberOfMS = 8,
         MatrixWidth = 256,
         MatrixHeight = 256,
-        NumberOfCores = 1
+        NumberOfCores = 4
       ),
       new LayerParameters(
         K = 16,
@@ -104,7 +120,7 @@ object NetSimulation {
         NumberOfMS = 8,
         MatrixWidth = 256,
         MatrixHeight = 256,
-        NumberOfCores = 1
+        NumberOfCores = 4
       ),
       new LayerParameters(
         K = 16,
@@ -115,7 +131,7 @@ object NetSimulation {
         NumberOfMS = 5,
         MatrixWidth = 256,
         MatrixHeight = 10,
-        NumberOfCores = 1
+        NumberOfCores = 4
       )
     )
     val layers = Range(0, 4).map(i =>
@@ -126,7 +142,7 @@ object NetSimulation {
       )
     ).toList
 
-    chiselMainTest(margs, () => Module(new NetSimulationHarness(layers, testInput.length, 128))) {
+    chiselMainTest(margs, () => Module(new NetSimulationHarness(layers, testInput.length / parametersList(0).NumberOfCores, 128))) {
       c => new NetSimulationHarnessTests(c, layers, testInput, testOutput)
     }
   }

@@ -18,7 +18,7 @@ class NetSimulationHarness(
   val inputBlockSize = totalInputWidth * inputCycles
 
   val io = new Bundle {
-    val xIn = Vec.fill(parallelInputs)(Bits(width=totalInputWidth)).asInput
+    val xIn = Vec.fill(parallelInputs)(Bits(width=inputWordSize)).asInput
     val xInValid = Bool().asInput
     val inputCount = UInt().asOutput
     val start = Bool().asInput
@@ -54,8 +54,8 @@ class NetSimulationHarness(
   net.io.xsIn := Vec(
     Range(0, parallelInputs)
       .map(i => {
-             val upper = (i + 1) * totalInputWidth - 1
-             val lower = i * totalInputWidth
+             val upper = (i + 1) * inputWordSize - 1
+             val lower = i * inputWordSize
              queue.io.output(upper, lower)
            }).toArray
   )

@@ -25,7 +25,7 @@ class NetLedHarnessTests(c: NetLedHarness) extends Tester(c) {
 
 object NetLedHarnessTest {
   def main(args: Array[String]) {
-    val margs = Array("--backend", "c", "--genHarness", "--compile", "--test")
+    val margs = Array("--backend", "v", "--genHarness", "--compile", "--test")
 
     val testData = Utils.readDumpFile()
     val testInput = testData.vectors.map(_(0)).toArray
