@@ -85,7 +85,7 @@ class GearBox(p: GearBoxParameters) extends Module {
     .toArray
 
   inputSelectCounters.foreach(c => {
-                                c.io.enable := signalBitBuffersFull
+                                c.io.enable := ShiftRegister(io.prevDone, 1)
                                 c.setName("inputSelectCounter")
                               })
 

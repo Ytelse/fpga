@@ -119,11 +119,11 @@ class WrappingCounter(start: Int, end: Int, step: Int = 1) extends Module {
     val value = UInt().asOutput
   }
 
-  val startValue = UInt(start, width=UInt(end + step).getWidth)
-  val v = Reg(init = startValue)
   if (end == step || step == 0) {
-    v := UInt(start)
+    io.value := UInt(start)
   } else {
+    val startValue = UInt(start, width=UInt(end + step).getWidth)
+    val v = Reg(init = startValue)
     when(io.enable) {
       // v := (v + UInt(step)) % UInt(end)
       when(v + UInt(step) >= UInt(end)) {
@@ -132,6 +132,6 @@ class WrappingCounter(start: Int, end: Int, step: Int = 1) extends Module {
         v := v + UInt(step)
       }
     }
+    io.value := v
   }
-  io.value := v
 }

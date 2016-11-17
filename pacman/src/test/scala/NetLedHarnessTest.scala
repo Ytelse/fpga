@@ -39,7 +39,7 @@ object NetLedHarnessTest {
         NumberOfMS = 16,
         MatrixWidth = 784,
         MatrixHeight = 256,
-        NumberOfCores = 1
+        NumberOfCores = 5
       ),
       new LayerParameters(
         K = 16,
@@ -50,7 +50,7 @@ object NetLedHarnessTest {
         NumberOfMS = 8,
         MatrixWidth = 256,
         MatrixHeight = 256,
-        NumberOfCores = 1
+        NumberOfCores = 3
       ),
       new LayerParameters(
         K = 16,
@@ -61,7 +61,7 @@ object NetLedHarnessTest {
         NumberOfMS = 8,
         MatrixWidth = 256,
         MatrixHeight = 256,
-        NumberOfCores = 1
+        NumberOfCores = 3
       ),
       new LayerParameters(
         K = 16,

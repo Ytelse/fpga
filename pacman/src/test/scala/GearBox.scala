@@ -187,45 +187,100 @@ class GearBoxTests5x2(c: GearBox, p: GearBoxParameters) extends Tester(c) {
   cycle(i(         ),      0,       0,        0,        1, /**/    1,        1, i(1, 1)) // 136
   cycle(i(         ),      0,       0,        0,        0, /**/    1,        0, i(2, 1)) // 137
   cycle(i(         ),      0,       0,        0,        0, /**/    1,        0, i(3, 0)) // 138
+}
 
+class GearBoxTests2x3(c: GearBox, p: GearBoxParameters) extends Tester(c) {
+  def peeks() {
+    peek(c.io)
+    peek(c.fillingBlock.io)
+    peek(c.bitCounter.io)
+    peek(c.blocksReady.io)
+    peek(c.queues(0).io)
+    peek(c.queues(1).io)
+    peek(c.queues(2).io)
+    peek(c.inputSelectCounters(0).io)
+    peek(c.inputSelectCounters(1).io)
+    peek(c.inputSelectCounters(2).io)
+    peek(c.outputSelectCounters(0).io)
+    peek(c.outputSelectCounters(1).io)
+    peek(c.outputSelectCounters(2).io)
+    peek(c.queueOutputSelectCounters(0).io)
+    peek(c.queueOutputSelectCounters(1).io)
+    peek(c.queueOutputSelectCounters(2).io)
+  }
 
+  def cycle(xsIn: Array[Int],
+    validIn: Int,
+    prevDone: Int,
+    prevStart: Int,
+    nextReady: Int,
+    ready: Int,
+    startNext: Int,
+    xsOut: Array[Int]) {
+      if (xsIn.length > 0)
+        for (i <- 0 until p.Previous.NumberOfCores)
+          poke(c.io.xsIn(i), xsIn(i))
+      if (validIn >= 0)   poke(c.io.validIn, validIn)
+      if (prevDone >= 0)  poke(c.io.prevDone, prevDone)
+      if (prevStart >= 0) poke(c.io.prevStart, prevStart)
+      if (nextReady >= 0) poke(c.io.nextReady, nextReady)
+      step(1)
+      poke(c.io.prevStart, false)
+      poke(c.io.prevDone, false)
+      if (ready >= 0)     expect(c.io.ready, ready)
+      if (startNext >= 0) expect(c.io.startNext, startNext)
+      if (xsOut.length > 0)
+        for (i <- 0 until p.Next.NumberOfCores)
+          expect(c.io.xsOut(i), xsOut(i))
+  }
 
+  poke(c.io.prevStart, false)
+  poke(c.io.validIn, false)
+  poke(c.io.prevDone, false)
+  poke(c.io.prevStart, false)
+  poke(c.io.nextReady, false)
+  // poke(c.io.xsIn(0), 0)
+  step(80)
+  expect(c.io.ready, true)
+  expect(c.io.startNext, false)
+  poke(c.io.prevStart, true)
+  step(1)
+  poke(c.io.prevStart, false)
+  step(19) // 100
 
+  def i(is: Int*): Array[Int] = { is.toArray }
 
+  //       xsIn  validIn prevDone prevStart nextReady /**/ ready startNext xsOut
+  cycle(i(1, 1),      1,       0,        0,        1, /**/    1,        0, i(       )) // 101
+  cycle(i(9, 9),      0,       0,        0,        1, /**/    1,        0, i(       )) // 102
+  cycle(i(1, 1),      1,       0,        0,        1, /**/    1,        0, i(       )) // 103
 
+  cycle(i(0, 0),      1,       0,        0,        1, /**/    1,        0, i(       )) // 104
+  cycle(i(1, 0),      1,       0,        1,        1, /**/    1,        0, i(       )) // 105
 
+  cycle(i(1, 1),      1,       0,        0,        1, /**/    1,        0, i(       )) // 106
+  cycle(i(0, 1),      1,       1,        0,        1, /**/    1,        0, i(       )) // 107
 
+  cycle(i(0, 1),      1,       0,        0,        1, /**/    1,        0, i(       )) // 108
+  cycle(i(0, 0),      1,       0,        0,        1, /**/    1,        0, i(       )) // 109
 
+  cycle(i(0, 0),      1,       0,        0,        1, /**/    1,        0, i(       )) // 110
+  cycle(i(0, 1),      1,       0,        0,        1, /**/    1,        0, i(       )) // 111
 
+  cycle(i(1, 0),      1,       0,        0,        1, /**/    1,        0, i(       )) // 112
+  cycle(i(0, 1),      1,       1,        0,        1, /**/    1,        0, i(       )) // 113
 
+  cycle(i(    ),      1,       0,        0,        1, /**/    1,        0, i(       )) // 113
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  cycle(i(    ),      1,       0,        0,        1, /**/    1,        1, i(3, 3, 0)) // 113
+  // It worked
 }
 
 object GearBoxTest {
   def main(args: Array[String]) {
     val margs = Array("--backend", "c", "--genHarness", "--compile", "--test")
     // Random.setSeed(12)
-    if (false) {
+    if (true) {
       val p = new GearBoxParameters(
         new LayerParameters(
           MatrixHeight=6,
@@ -249,6 +304,19 @@ object GearBoxTest {
         ))
       chiselMainTest(margs, () => Module(new GearBox(p))) {
         c => new GearBoxTests5x2(c, p)
+      }
+    }
+    if (true) {
+      val p = new GearBoxParameters(
+        new LayerParameters(
+          MatrixHeight=6,
+          NumberOfCores=2
+        ), new LayerParameters(
+          K=2,
+          NumberOfCores=3
+        ))
+      chiselMainTest(margs, () => Module(new GearBox(p))) {
+        c => new GearBoxTests2x3(c, p)
       }
     }
   }

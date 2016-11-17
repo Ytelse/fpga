@@ -9,6 +9,7 @@ class NetSimulationHarnessTests(
   testOutputs: Array[Array[Int]]
 ) extends Tester(c) {
   def peeks() {
+    return
     peek(c.net.io)
     peek(c.net.gearBoxes(0).io)
     for (i <- 0 until 4)
@@ -82,7 +83,7 @@ class NetSimulationHarnessTests(
       val toPush = Math.min(defaultPush, numTests - pushedTests)
       push(toPush)
     }
-    Step(1)
+    Step(1000)
     print("pushed %d/%d".format(pushedTests * inputCores, testInputs.length))
     val isDone = peek(c.io.done) == 0x1
     if (isDone) {
@@ -120,7 +121,7 @@ object NetSimulation {
         NumberOfMS = 16,
         MatrixWidth = 784,
         MatrixHeight = 256,
-        NumberOfCores = 4
+        NumberOfCores = 3
       ),
       new LayerParameters(
         K = 16,
@@ -153,7 +154,7 @@ object NetSimulation {
         NumberOfMS = 5,
         MatrixWidth = 256,
         MatrixHeight = 10,
-        NumberOfCores = 2
+        NumberOfCores = 5
       )
     )
     val layers = Range(0, 4).map(i =>
