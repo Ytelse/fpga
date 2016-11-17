@@ -62,10 +62,13 @@ class NetSimulationHarness(
 
   net.io.start := ShiftRegister(signalNewInput, 1)
 
+  val numberOfTestOutputs = numberOfTestInputs * parallelInputs / parallelOutputs
+  println(("numberOfTestOutputs", numberOfTestOutputs))
+
   /*
    * Output
    */
-  val outputMem = Mem(Bits(width=totalOutputWidth), numberOfTestInputs, true)
+  val outputMem = Mem(Bits(width=totalOutputWidth), numberOfTestOutputs, true)
 
   for (i <- 0 until 1) {
     io.mem(i) := UInt(outputMem(i))
@@ -80,13 +83,12 @@ class NetSimulationHarness(
   }
 
   val signalNewOutput = ShiftRegister(net.io.done, 1)
-  val outputCounter = Module(new Counter(0, numberOfTestInputs + 1))
+  val outputCounter = Module(new Counter(0, numberOfTestOutputs + 1))
   outputCounter.io.enable := signalNewOutput
   outputCounter.io.rst := Bool(false)
   when(signalNewOutput) {
     outputMem(outputCounter.io.value) := bitBuffers.map(_.io.word).reduceLeft(Cat(_, _))
   }
 
-  val numberOfTestOutputs = numberOfTestInputs * parallelInputs / parallelOutputs
   io.done := outputCounter.io.value === UInt(numberOfTestOutputs)
 }

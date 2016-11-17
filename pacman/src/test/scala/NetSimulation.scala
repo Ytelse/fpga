@@ -8,6 +8,22 @@ class NetSimulationHarnessTests(
   testInputs: Array[Array[Int]],
   testOutputs: Array[Array[Int]]
 ) extends Tester(c) {
+  def peeks() {
+    peek(c.net.io)
+    peek(c.net.gearBoxes(0).io)
+    for (i <- 0 until 4)
+      peek(c.net.gearBoxes(0).inputSelectCounters(i).io)
+    for (i <- 0 until 2)
+      peek(c.net.gearBoxes(0).queueOutputSelectCounters(i).io)
+    for (i <- 0 until 4)
+      peek(c.net.gearBoxes(0).outputSelectCounters(i).io)
+    // peek(c.net.warps(0).io)
+    // peek(c.net.warps(1).io)
+    // peek(c.net.warps(2).io)
+    // peek(c.net.warps(3).io)
+    // peek(c.outputCounter.io)
+  }
+
   val inputCores = layers(0).parameters.NumberOfCores
   val inputK = layers(0).parameters.K
   val outputCores = layers.last.parameters.NumberOfCores
@@ -61,22 +77,34 @@ class NetSimulationHarnessTests(
   Cycle += 1
   poke(c.io.start, false)
 
-  while (peek(c.io.inputCount) < numTests / inputCores) {
+  var stop = false;
+  while (!stop && peek(c.io.inputCount) < numTests / inputCores) {
     if (pushedTests - peek(c.io.inputCount) < defaultPush) {
       val toPush = Math.min(defaultPush, numTests - pushedTests)
       push(toPush)
     }
-    step(1000)
-    Cycle += 1000
+    step(1)
+    Cycle += 1
+    peeks()
     print("pushed %d/%d".format(pushedTests * inputCores, testInputs.length))
+    val isDone = peek(c.io.done) == 0x1
+    if (isDone) {
+      println("WAS DONE INSIDE WHILE LOOP!!")
+      stop = true
+    }
   }
   poke(c.io.start, false)
 
-  while (peek(c.io.done) == 0x0) { step(1)
-  peek(c.outputCounter.io)}
+  println("ENTERING WHILE NOT DONE LOOP")
+  while (peek(c.io.done) == 0x0) {
+    step(1)
+    Cycle += 1
+    peeks()
+  }
   for (i <- 0 until (testInputs.length / outputCores)) {
-    val solution = groupedTestOutputs(i).flatMap(e => e)
-    expect(peekAt(c.outputMem, i) == vecToBigInt(solution), "Image #%d".format(i))
+    val solution = vecToBigInt(groupedTestOutputs(i).flatMap(e => e))
+    expect(peekAt(c.outputMem, i) == solution,
+      "Image #%d (should be %x)".format(i, solution))
   }
   println("Total cycles: %d".format(Cycle))
   println("  %5.2f cycles per image".format(Cycle.toFloat / testInputs.length))
