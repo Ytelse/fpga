@@ -29,7 +29,7 @@ class NetSimulationHarness(
   /*
    * Input
    */
-  val catXIn = io.xIn.reduceLeft(Cat(_, _))
+  val catXIn = io.xIn.reverse.reduceLeft(Cat(_, _))
 
   val net = Module(new Net(layers))
   net.io.pipeReady := Bool(true)
@@ -87,7 +87,7 @@ class NetSimulationHarness(
   outputCounter.io.enable := signalNewOutput
   outputCounter.io.rst := Bool(false)
   when(signalNewOutput) {
-    outputMem(outputCounter.io.value) := bitBuffers.map(_.io.word).reduceLeft(Cat(_, _))
+    outputMem(outputCounter.io.value) := bitBuffers.map(_.io.word).reverse.reduceLeft(Cat(_, _))
   }
 
   io.done := outputCounter.io.value === UInt(numberOfTestOutputs)

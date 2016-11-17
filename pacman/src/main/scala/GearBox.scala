@@ -83,8 +83,10 @@ class GearBox(p: GearBoxParameters) extends Module {
     .map(i => Module(new WrappingCounter(i, numberOfQueues,
                                          numberOfQueues - p.Previous.NumberOfCores)))
     .toArray
+
   inputSelectCounters.foreach(c => {
                                 c.io.enable := signalBitBuffersFull
+                                c.setName("inputSelectCounter")
                               })
 
   // Not every queue can take input if there are more queues than cores in Next
@@ -107,6 +109,7 @@ class GearBox(p: GearBoxParameters) extends Module {
     .toArray
 
   queueOutputSelectCounters.foreach(c => {
+                                      c.setName("queueOutputSelectCounters")
                                       c.io.enable := signalNewPeekBlock
                                     })
 
@@ -123,6 +126,7 @@ class GearBox(p: GearBoxParameters) extends Module {
     .toArray
 
   outputSelectCounters.foreach(c => {
+                                 c.setName("outputSelectCounters")
                                  c.io.enable := signalNewPeekBlock
                                })
 
@@ -136,5 +140,4 @@ class GearBox(p: GearBoxParameters) extends Module {
       q.io.nextBlock := signalNewPeekBlock && outputEnables(c.io.value)
     }
   }
-
 }
