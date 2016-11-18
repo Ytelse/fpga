@@ -1,7 +1,11 @@
 ## Clock signal
 
-set_property -dict { PACKAGE_PIN D4    IOSTANDARD LVCMOS33 } [get_ports { CLK100MHZ }]; #IO_L12P_T1_MRCC_35 Sch=gclk[100]
-create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports { CLK100MHZ }];
+set_property -dict { PACKAGE_PIN D4    IOSTANDARD LVCMOS33 } [get_ports { clk }]; #IO_L12P_T1_MRCC_35 Sch=gclk[100]
+create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports { clk }];
+
+# set_property -dict { PACKAGE_PIN E3    IOSTANDARD LVCMOS33 } [get_ports { clk }]; #IO_L12P_T1_MRCC_35 Sch=gclk[100]
+# create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports {clk}];
+
 
 ##Quad SPI Flash
 
@@ -34,7 +38,7 @@ create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports { C
 
 ##Reset Button
 
-#set_property -dict { PACKAGE_PIN T10 IOSTANDARD LVCMOS33 } [get_ports { reset }]; #IO_L22N_T3_A04_D20_14 Sch=reset
+set_property -dict { PACKAGE_PIN T10 IOSTANDARD LVCMOS33 } [get_ports { reset }]; #IO_L22N_T3_A04_D20_14 Sch=reset
 
 ## MCU CTRL
 
@@ -135,13 +139,13 @@ create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports { C
 
 ## FPGA LED
 
-#set_property -dict { PACKAGE_PIN H1 IOSTANDARD LVCMOS33 } [get_ports { led[0] }]; #IO_L20N_T3_35 Sch=led[0]
-#set_property -dict { PACKAGE_PIN J3 IOSTANDARD LVCMOS33 } [get_ports { led[1] }]; #IO_L21P_T3_DQS_35 Sch=led[1]
-#set_property -dict { PACKAGE_PIN H3 IOSTANDARD LVCMOS33 } [get_ports { led[2] }]; #IO_L21N_T3_DQS_35 Sch=led[2]
-#set_property -dict { PACKAGE_PIN K1 IOSTANDARD LVCMOS33 } [get_ports { led[3] }]; #IO_L22P_T3_35 Sch=led[3]
-#set_property -dict { PACKAGE_PIN J1 IOSTANDARD LVCMOS33 } [get_ports { led[4] }]; #IO_L22N_T3_35 Sch=led[4]
-#set_property -dict { PACKAGE_PIN L3 IOSTANDARD LVCMOS33 } [get_ports { led[5] }]; #IO_L23P_T3_35 Sch=led[5]
-#set_property -dict { PACKAGE_PIN L2 IOSTANDARD LVCMOS33 } [get_ports { led[6] }]; #IO_L23N_T3_35 Sch=led[6]
-#set_property -dict { PACKAGE_PIN K3 IOSTANDARD LVCMOS33 } [get_ports { led[7] }]; #IO_L24P_T3_35 Sch=led[7]
+#set_property -dict { PACKAGE_PIN H1 IOSTANDARD LVCMOS33 } [get_ports { lel_led }]; #IO_L20N_T3_35 Sch=led[0]
+#set_property -dict { PACKAGE_PIN J3 IOSTANDARD LVCMOS33 } [get_ports { io_test_led_1 }]; #IO_L21P_T3_DQS_35 Sch=led[1]
+#set_property -dict { PACKAGE_PIN H3 IOSTANDARD LVCMOS33 } [get_ports { io_test_led_2 }]; #IO_L21N_T3_DQS_35 Sch=led[2]
+#set_property -dict { PACKAGE_PIN K1 IOSTANDARD LVCMOS33 } [get_ports { io_test_led_3 }]; #IO_L22P_T3_35 Sch=led[3]
+set_property -dict { PACKAGE_PIN J1 IOSTANDARD LVCMOS33 } [get_ports { io_test_led_0 }]; #IO_L22N_T3_35 Sch=led[4]
+set_property -dict { PACKAGE_PIN L3 IOSTANDARD LVCMOS33 } [get_ports { io_test_led_1 }]; #IO_L23P_T3_35 Sch=led[5]
+set_property -dict { PACKAGE_PIN L2 IOSTANDARD LVCMOS33 } [get_ports { io_test_led_2 }]; #IO_L23N_T3_35 Sch=led[6]
+set_property -dict { PACKAGE_PIN K3 IOSTANDARD LVCMOS33 } [get_ports { io_test_led_3 }]; #IO_L24P_T3_35 Sch=led[7]
 
 

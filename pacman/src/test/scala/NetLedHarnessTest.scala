@@ -3,23 +3,23 @@ package Pacman
 import Chisel._
 
 class NetLedHarnessTests(c: NetLedHarness) extends Tester(c) {
-  step(2000)
+  step(3000)
   for(i <- 0 until 100) {
     peek(c.io)
     // peek(c.inputCycleCounter.io)
     // peek(c.waitCounter.io)
     // peek(c.currentInput.io)
     // peek(c.bitBuffer.io.word)
-    peek(c.net.warps(0).io)
+    // peek(c.net.warps(0).io)
     // peek(c.net.warps(0).memoryStreamer.io)
-    peek(c.net.warps(0).chains(0).processingUnits(0).io)
+    // peek(c.net.warps(0).chains(0).processingUnits(0).io)
     // peek(c.net.warps(1).io)
     // peek(c.net.warps(2).io)
     // peek(c.net.warps(3).io)
-    peek(c.net.gearBoxes(0).io)
+    // peek(c.net.gearBoxes(0).io)
     // peek(c.net.gearBoxes(1).io)
     // peek(c.net.gearBoxes(2).io)
-    step(1000)
+    step(100)
   }
 }
 
@@ -39,7 +39,7 @@ object NetLedHarnessTest {
         NumberOfMS = 16,
         MatrixWidth = 784,
         MatrixHeight = 256,
-        NumberOfCores = 5
+        NumberOfCores = 4
       ),
       new LayerParameters(
         K = 16,
@@ -50,7 +50,7 @@ object NetLedHarnessTest {
         NumberOfMS = 8,
         MatrixWidth = 256,
         MatrixHeight = 256,
-        NumberOfCores = 3
+        NumberOfCores = 2
       ),
       new LayerParameters(
         K = 16,
@@ -61,7 +61,7 @@ object NetLedHarnessTest {
         NumberOfMS = 8,
         MatrixWidth = 256,
         MatrixHeight = 256,
-        NumberOfCores = 3
+        NumberOfCores = 2
       ),
       new LayerParameters(
         K = 16,

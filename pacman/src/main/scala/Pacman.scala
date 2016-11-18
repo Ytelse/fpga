@@ -4,7 +4,7 @@ import Chisel._
 
 class Pacman extends Module {
   val testData = Utils.readDumpFile()
-  val testInput = testData.vectors.map(_(0)).toArray
+  val testInput = testData.vectors.take(40).map(_(0)).toArray
     val parametersList = Array(
       new LayerParameters(
         K = 16,
@@ -26,7 +26,7 @@ class Pacman extends Module {
         NumberOfMS = 8,
         MatrixWidth = 256,
         MatrixHeight = 256,
-        NumberOfCores = 4
+        NumberOfCores = 3
       ),
       new LayerParameters(
         K = 16,
@@ -37,7 +37,7 @@ class Pacman extends Module {
         NumberOfMS = 8,
         MatrixWidth = 256,
         MatrixHeight = 256,
-        NumberOfCores = 4
+        NumberOfCores = 3
       ),
       new LayerParameters(
         K = 16,
@@ -48,7 +48,7 @@ class Pacman extends Module {
         NumberOfMS = 5,
         MatrixWidth = 256,
         MatrixHeight = 10,
-        NumberOfCores = 4
+        NumberOfCores = 1
       )
     )
   val layers = Range(0, 4).map(i =>

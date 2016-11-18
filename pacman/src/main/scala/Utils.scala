@@ -67,7 +67,7 @@ object Utils {
     val fourthBiases = lines(i).split(" ").filter(s => s.length != 0)
                       .map(s => Integer.parseInt(s, 10)).toArray
     i += 2
-    val NImages = 1200
+    val NImages = 12000
     val NResults = 5
     val results = List.range(0, NImages).map(_ => {
       List.range(0, NResults).map(_ => {

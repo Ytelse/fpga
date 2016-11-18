@@ -121,6 +121,17 @@ object NetSimulation {
         NumberOfMS = 16,
         MatrixWidth = 784,
         MatrixHeight = 256,
+        NumberOfCores = 4
+      ),
+      new LayerParameters(
+        K = 16,
+        BiasWidth = 8,
+        AccumulatorWidth = 10,
+        NumberOfPUs = 16,
+        AddressWidth = 0,
+        NumberOfMS = 8,
+        MatrixWidth = 256,
+        MatrixHeight = 256,
         NumberOfCores = 3
       ),
       new LayerParameters(
@@ -132,18 +143,7 @@ object NetSimulation {
         NumberOfMS = 8,
         MatrixWidth = 256,
         MatrixHeight = 256,
-        NumberOfCores = 2
-      ),
-      new LayerParameters(
-        K = 16,
-        BiasWidth = 8,
-        AccumulatorWidth = 10,
-        NumberOfPUs = 16,
-        AddressWidth = 0,
-        NumberOfMS = 8,
-        MatrixWidth = 256,
-        MatrixHeight = 256,
-        NumberOfCores = 2
+        NumberOfCores = 3
       ),
       new LayerParameters(
         K = 16,
@@ -154,7 +154,7 @@ object NetSimulation {
         NumberOfMS = 5,
         MatrixWidth = 256,
         MatrixHeight = 10,
-        NumberOfCores = 5
+        NumberOfCores = 1
       )
     )
     val layers = Range(0, 4).map(i =>
