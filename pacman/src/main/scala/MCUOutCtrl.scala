@@ -1,4 +1,4 @@
-package Pacman 
+package Pacman
 
 import scala.language.reflectiveCalls
 import Chisel._
@@ -6,11 +6,16 @@ import Chisel._
 class MCUOutCtrl extends Module {
   val io = new Bundle{
     val fillIn = Bool().asInput
-    val valid = Bool().asInput 
+    val validIn = Bool().asInput 
+    val validOut = Bool().asOutput
+    val readyLow = Bool().asInput
     val state = Vec.fill(5) { Bits(width=1) }.asOutput
-    val addr = UInt(width=4).asOutput
+    val addrIn = UInt(width=10).asOutput
+    val addrOut = UInt(width=10).asOutput
+    val offset = UInt(width=10).asOutput
   }
-  val fifoAddr = Reg(init=UInt(0,width=4))
+  val fifoAddrIn = Reg(init=UInt(0,width=10))
+  val fifoAddrOut = Reg(init=UInt(0,width=10))
   val fillToggle = Reg(init=Bool(false))
   val fill = Reg(init=Bool(false))
   val fillState = Vec(
@@ -20,24 +25,34 @@ class MCUOutCtrl extends Module {
     Reg(init=Bits(0)), // Fill reg 3
     Reg(init=Bits(1))  // Idle state
   ) 
+  val valid = Reg(init=Bool(false))
+  val offset = fifoAddrIn - fifoAddrOut
  
   // Outputs
   io.state := fillState
-  io.addr := fifoAddr
+  io.addrIn := fifoAddrIn
+  io.addrOut := fifoAddrOut
+  io.validOut := valid
+  io.offset := offset
+
+  //valid is recieved and ready went low, setting valid low
+  when (valid && io.readyLow){
+    valid := ~valid 
+  }
 
   // The fifo gets 1 valid number
-  when (io.valid && ~fill) {
-    fifoAddr := fifoAddr + UInt(1)
+  when (io.validIn && ~fill) {
+    fifoAddrIn := fifoAddrIn + UInt(1)
   }
 
   // Data is available and the states will cycle once
-  when ((fifoAddr >= Bits(4)) && fillToggle){
+  when ((offset >= UInt(4) && fillToggle) && ~valid){
     fill := ~fill
     fillToggle := ~fillToggle
   }
 
-  // Toggle that the MCU wants data
-  when (io.fillIn &&  ~fill ){
+  // Toggle that the MCU has recieved data, and can replace data on the bus
+  when (io.fillIn &&  ~fillToggle ){
     fillToggle := ~fillToggle
   }
 
@@ -50,8 +65,9 @@ class MCUOutCtrl extends Module {
 
     when(fillState(3)===Bits(1)){ 
       fill := ~fill // resets when the state machine reaches Idle
-    } .elsewhen (~io.valid) {
-      fifoAddr := fifoAddr - UInt(1)
+      valid := ~valid
+    } .elsewhen (~io.validIn) {
+      fifoAddrOut := fifoAddrOut + UInt(1)
     } 
 
   }
