@@ -29,7 +29,7 @@ class WarpTests(c: Warp,
       Matrix.matrixMul(weights, vec)
         .zip(biases)
         .map({ case (dot, bias) => {
-          val a = dot * 2 - p.MatrixWidth + ((bias / 2) * 2)
+                val a = dot * 2 - p.MatrixWidth + (Math.floor(bias / 2.0).toInt * 2)
           if (a >= 0) 1 else 0
         }})))
 
@@ -70,7 +70,7 @@ class WarpTests(c: Warp,
   poke(c.io.pipeReady, true)
   for (iter <- 0 until Iters) {
     poke(c.io.start, true)
-    expect(c.io.ready, true)
+    expect(c.io.ready, false)
     val nextReadyCycle = Cycle + passesRequired * cyclesPerPass + PUsPerMUs - 2
     expectQueue.enqueue((nextReadyCycle, () => {
       expect(c.io.ready, true)

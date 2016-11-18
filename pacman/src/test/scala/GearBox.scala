@@ -57,7 +57,7 @@ class GearBoxTests(c: GearBox, p: GearBoxParameters) extends Tester(c) {
   cycle( -1,      0,       0,        0,        1,        0,        0,    -1)
   // We get output
   cycle( -1,      0,       0,        0,        1,        1,        1,     1)
-  cycle(  1,      1,       0,        0,        1,        1,        0,     2) // 110
+  cycle(  1,      1,       0,        0,        0,        1,        0,     2) // 110
   cycle(  1,      1,       0,        0,        1,        1,        0,     3)
   cycle(  0,      1,       0,        0,        1,        1,        0,     1)
   cycle(  1,      1,       0,        0,        1,        1,        0,     2)
@@ -157,7 +157,7 @@ class GearBoxTests5x2(c: GearBox, p: GearBoxParameters) extends Tester(c) {
   cycle(i(         ),      0,       0,        0,        0, /**/    1,        0, i(1, 0)) // 112
 
   cycle(i(         ),      0,       0,        0,        1, /**/    1,        1, i(2, 3)) // 113
-  cycle(i(         ),      0,       0,        1,        1, /**/    1,        0, i(3, 1)) // 114
+  cycle(i(         ),      0,       0,        1,        0, /**/    1,        0, i(3, 1)) // 114
   cycle(i(         ),      0,       0,        0,        1, /**/    1,        0, i(0, 0)) // 115
   cycle(i(         ),      0,       0,        0,        1, /**/    1,        0, i(2, 3)) // 116
   cycle(i(         ),      0,       0,        0,        1, /**/    1,        0, i(3, 1)) // 117
@@ -224,6 +224,7 @@ class GearBoxTests2x3(c: GearBox, p: GearBoxParameters) extends Tester(c) {
       if (prevDone >= 0)  poke(c.io.prevDone, prevDone)
       if (prevStart >= 0) poke(c.io.prevStart, prevStart)
       if (nextReady >= 0) poke(c.io.nextReady, nextReady)
+    peek(c.blocksReady.io)
       step(1)
       poke(c.io.prevStart, false)
       poke(c.io.prevDone, false)
@@ -239,8 +240,9 @@ class GearBoxTests2x3(c: GearBox, p: GearBoxParameters) extends Tester(c) {
   poke(c.io.prevDone, false)
   poke(c.io.prevStart, false)
   poke(c.io.nextReady, false)
-  // poke(c.io.xsIn(0), 0)
+  peek(c.blocksReady.io)
   step(80)
+  peek(c.blocksReady.io)
   expect(c.io.ready, true)
   expect(c.io.startNext, false)
   poke(c.io.prevStart, true)
