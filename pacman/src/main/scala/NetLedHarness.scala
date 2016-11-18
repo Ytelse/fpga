@@ -88,7 +88,7 @@ class NetLedHarness(
 
   currentInput.io.enable := signalNewInput
 
-  net.io.start := ShiftRegister(signalNewInput, 1)
+  net.io.start := Reg(init=Bool(false), next=signalNewInput)
   net.io.xsIn := Vec(
     Range(0, inputCores)
       .map(i => {

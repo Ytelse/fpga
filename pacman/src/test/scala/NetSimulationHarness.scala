@@ -39,8 +39,7 @@ class NetSimulationHarness(
   hasStarted.io.rst := Bool(false)
 
   val inputCounter = Module(new Counter(0, numberOfTestInputs + 1))
-  val signalNewInputShifted = ShiftRegister(net.io.ready && hasStarted.io.state && (inputCounter.io.value < UInt(numberOfTestInputs)), 1)
-  val signalNewInput = net.io.ready && hasStarted.io.state && (inputCounter.io.value < UInt(numberOfTestInputs)) && !signalNewInputShifted
+  val signalNewInput = net.io.ready && hasStarted.io.state && (inputCounter.io.value < UInt(numberOfTestInputs))
 
   val queue = Module(new CircularPeekQueue(inputCycles, bufferLength + 1, totalInputWidth))
   queue.io.input := catXIn
@@ -60,7 +59,7 @@ class NetSimulationHarness(
            }).toArray
   )
 
-  net.io.start := ShiftRegister(signalNewInput, 1)
+  net.io.start := Reg(init=Bool(false), next=signalNewInput)
 
   val numberOfTestOutputs = numberOfTestInputs * parallelInputs / parallelOutputs
   println(("numberOfTestOutputs", numberOfTestOutputs))
@@ -82,7 +81,7 @@ class NetSimulationHarness(
     }
   }
 
-  val signalNewOutput = ShiftRegister(net.io.done, 1)
+  val signalNewOutput = Reg(init=Bool(false), next=net.io.done)
   val outputCounter = Module(new Counter(0, numberOfTestOutputs + 1))
   outputCounter.io.enable := signalNewOutput
   outputCounter.io.rst := Bool(false)

@@ -38,27 +38,25 @@ class GearBox(p: GearBoxParameters) extends Module {
   val bitBufferWords = Vec(bitBuffers.map(_.io.word))
   val fillingBlock = Module(new AsyncUpDownCounter(0, 2*p.Previous.NumberOfCores, p.Previous.NumberOfCores))
   fillingBlock.io.up    := io.prevStart
-  fillingBlock.io.down  := ShiftRegister(io.prevDone, 1)
+  fillingBlock.io.down  := Reg(init=Bool(false), next=io.prevDone)
 
   val bitCounter = Module(new Counter(0, p.Next.K))
   val blocksReady = Module(new UpDownCounter(0, maxReadyBlocks, p.Previous.NumberOfCores, p.Next.NumberOfCores))
 
   val signalResetBitBuffers = bitCounter.io.value === UInt(p.Next.K - 1)
-  val signalBitBuffersFull = ShiftRegister(io.validIn && signalResetBitBuffers, 1)
-  val signalDidNewPeekBlock = Reg(init=Bool(false))
-  val signalNewPeekBlock = io.nextReady && blocksReady.io.value >= UInt(p.Next.NumberOfCores) && !signalDidNewPeekBlock
-  signalDidNewPeekBlock := signalNewPeekBlock
+  val signalBitBuffersFull = Reg(init=Bool(false), next=io.validIn && signalResetBitBuffers)
+  val signalNewPeekBlock = io.nextReady && blocksReady.io.value >= UInt(p.Next.NumberOfCores)
 
 
   // Count how many ready blocks we have in the queue
-  blocksReady.io.up   := ShiftRegister(io.prevDone, 1)
+  blocksReady.io.up   := Reg(init=Bool(false), next=io.prevDone)
   blocksReady.io.down := signalNewPeekBlock
 
   val reservedBlocks = blocksReady.io.value + fillingBlock.io.value
   val hasEnoughEmptyBlocks = reservedBlocks <= UInt(maxReadyBlocks - p.Previous.NumberOfCores)
 
   io.ready := hasEnoughEmptyBlocks
-  io.startNext := ShiftRegister(signalNewPeekBlock, 1)
+  io.startNext := Reg(init=Bool(false), next=signalNewPeekBlock)
 
   // Hook up bitBuffers to input so they get filled up
   bitBuffers.zip(io.xsIn).foreach {
@@ -85,7 +83,7 @@ class GearBox(p: GearBoxParameters) extends Module {
     .toArray
 
   inputSelectCounters.foreach(c => {
-                                c.io.enable := ShiftRegister(io.prevDone, 1)
+                                c.io.enable := Reg(init=Bool(false), next=io.prevDone)
                                 c.setName("inputSelectCounter")
                               })
 

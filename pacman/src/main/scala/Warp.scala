@@ -124,7 +124,7 @@ class WarpControl(p: LayerParameters) extends Module {
 
   io.selectX        := selectX.io.value
   io.valid          := isOutputting.io.state
-  io.ready          := isReady.io.state && io.nextReady
+  io.ready          := isReady.io.state && io.nextReady && !io.start
   io.done           := signalDone
   io.chainRestart   := signalStartNewPass
   io.memoryRestart  := (isReady.io.state || signalLastActiveCycle) && !io.start
