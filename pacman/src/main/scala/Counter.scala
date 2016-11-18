@@ -21,7 +21,7 @@ class Counter(start: Int, max: Int, step: Int = 1) extends Module {
   io.value := v
 }
 
-class UpDownCounter(start: Int, end: Int, step: Int = 1) extends Module {
+class UpDownCounter(start: Int, end: Int, upStep: Int = 1, downStep: Int = 1) extends Module {
   val io = new Bundle {
     val up    = Bool().asInput
     val down  = Bool().asInput
@@ -30,9 +30,9 @@ class UpDownCounter(start: Int, end: Int, step: Int = 1) extends Module {
   val reg = Reg(init = UInt(start, width=UInt(end).getWidth))
   when (io.up && io.down) {
   } .elsewhen (io.up) {
-    reg := reg + UInt(step)
+    reg := reg + UInt(upStep)
   } .elsewhen (io.down) {
-    reg := reg - UInt(step)
+    reg := reg - UInt(downStep)
   }
   io.value := reg
 }
@@ -98,6 +98,7 @@ class AsyncUpDownCounter(start: Int, end: Int, step: Int = 1) extends Module {
   val reg = Reg(init = UInt(start, width=UInt(end).getWidth))
   when (io.up && io.down) {
     io.value := reg + UInt(step)
+    reg := reg
   } .elsewhen (io.up) {
     val v = reg + UInt(step)
     reg := v
@@ -108,5 +109,29 @@ class AsyncUpDownCounter(start: Int, end: Int, step: Int = 1) extends Module {
     io.value := reg
   } .otherwise {
     io.value := reg
+    reg := reg
+  }
+}
+
+class WrappingCounter(start: Int, end: Int, step: Int = 1) extends Module {
+  val io = new Bundle {
+    val enable = Bool().asInput
+    val value = UInt().asOutput
+  }
+
+  if (end == step || step == 0) {
+    io.value := UInt(start)
+  } else {
+    val startValue = UInt(start, width=UInt(end + step).getWidth)
+    val v = Reg(init = startValue)
+    when(io.enable) {
+      // v := (v + UInt(step)) % UInt(end)
+      when(v + UInt(step) >= UInt(end)) {
+        v := (v + UInt(step)) - UInt(end)
+      }.otherwise{
+        v := v + UInt(step)
+      }
+    }
+    io.value := v
   }
 }

@@ -2,7 +2,7 @@ package Pacman
 
 import Chisel._
 
-class NetTestHarnessTests(c: NetTestHarness) extends Tester(c) {
+class NetLedHarnessTests(c: NetLedHarness) extends Tester(c) {
   step(2000)
   for(i <- 0 until 100) {
     peek(c.io)
@@ -23,9 +23,9 @@ class NetTestHarnessTests(c: NetTestHarness) extends Tester(c) {
   }
 }
 
-object NetTestHarnessTest {
+object NetLedHarnessTest {
   def main(args: Array[String]) {
-    val margs = Array("--backend", "c", "--genHarness", "--compile", "--test")
+    val margs = Array("--backend", "v", "--genHarness", "--compile", "--test")
 
     val testData = Utils.readDumpFile()
     val testInput = testData.vectors.map(_(0)).toArray
@@ -39,7 +39,7 @@ object NetTestHarnessTest {
         NumberOfMS = 16,
         MatrixWidth = 784,
         MatrixHeight = 256,
-        NumberOfCores = 1
+        NumberOfCores = 5
       ),
       new LayerParameters(
         K = 16,
@@ -50,7 +50,7 @@ object NetTestHarnessTest {
         NumberOfMS = 8,
         MatrixWidth = 256,
         MatrixHeight = 256,
-        NumberOfCores = 1
+        NumberOfCores = 3
       ),
       new LayerParameters(
         K = 16,
@@ -61,7 +61,7 @@ object NetTestHarnessTest {
         NumberOfMS = 8,
         MatrixWidth = 256,
         MatrixHeight = 256,
-        NumberOfCores = 1
+        NumberOfCores = 3
       ),
       new LayerParameters(
         K = 16,
@@ -83,8 +83,8 @@ object NetTestHarnessTest {
       )
     ).toList
 
-    chiselMainTest(margs, () => Module(new NetTestHarness(layers, testInput))) {
-      c => new NetTestHarnessTests(c)
+    chiselMainTest(margs, () => Module(new NetLedHarness(layers, testInput))) {
+      c => new NetLedHarnessTests(c)
     }
   }
 }

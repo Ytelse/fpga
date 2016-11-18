@@ -30,6 +30,7 @@ BLOCK_PERIOD := 1234
 
 chisel: ${CHISELFILES} ${SRCDIR} all-dirs
 	@sbt "runMain ${PACKAGE_NAME}.Main --backend v --targetDir ${SRCDIR}"
+	@-ln -s ${CURDIR}/src/DualPortBRAM.v ${SRCDIR}/DualPortBRAM.v
 
 all-dirs:
 	@mkdir -p ${CURDIR}/reports

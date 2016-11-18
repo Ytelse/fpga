@@ -1,116 +1,82 @@
-package Pacman
+package Pacman 
 
+import scala.language.reflectiveCalls
 import Chisel._
 
 class AToN(width_in : Int, width_out : Int) extends Module
 {
 	val io = new Bundle
 	{
-		val a_data = UInt(INPUT, width_in)
-		val a_rdy = Bool(INPUT)
-		val a_val = Bool(OUTPUT)
-
-		val n_data = UInt(OUTPUT, width_out)
-		val n_rdy = Bool(OUTPUT)
-		val n_val = Bool(INPUT)
+		val a = Decoupled(Bits(width=width_in)).flip
+		val n = Decoupled(Bits(width=width_out))
 	}
 	if(width_in == width_out)
 	{
-		io.n_data := io.a_data
-		io.n_rdy := io.a_rdy
-		io.a_val := io.n_val
+		io.n.bits := io.a.bits
+		io.n.valid := io.a.valid
+		io.a.ready := io.n.ready
 	}
 	else if(width_in < width_out)
 	{
 		var number_of_registers = width_out / width_in
-		//TODO make sure that width_in divides width_out evenly
-		var regs:Array[UInt] = new Array[UInt](number_of_registers)
-		val cnt_reg = Reg(init = UInt(0,number_of_registers)) //TODO this could use fewer bits
+		val regs = Array.fill(number_of_registers)(Reg(init=Bits(0,width_in)))
+		val cnt_reg = Reg(init = UInt(0,log2Up(number_of_registers+1)))
 		val cnt_reg_incremented = cnt_reg + UInt(1)
 		val last_input = cnt_reg === UInt(number_of_registers)
 		val a_value = ~last_input
-		val valid_a_trans = io.a_rdy && a_value
-		val valid_n_trans = io.n_val && last_input
-
-		when(valid_n_trans)
-		{
+		val valid_a_trans = io.a.valid && a_value
+		val valid_n_trans = io.n.ready && last_input
+		when (valid_n_trans) {
 			cnt_reg := UInt(0)
 		}
-		.elsewhen(valid_a_trans)
+		when(valid_a_trans)
 		{
 			cnt_reg := cnt_reg_incremented
 		}
-
-		
-		for (i <- 0 until number_of_registers)
-		{
-			regs(i) = Reg(init = UInt(0,width_in))
+		when(valid_a_trans){
+			regs.zip(regs.drop(1))
+			.foreach({
+				case (a, b) => {
+					b := a
+				}
+      			})
+			regs(0) := io.a.bits
 		}
+		io.n.bits := Cat(regs)
 
-		when(valid_a_trans)
-		{
-			regs(0) := io.a_data
-		}
-
-		for (i <- 1 until number_of_registers)
-		{
-			when(valid_a_trans)
-			{
-				regs(i) := regs(i-1)
-			}
-
-		}
-		io.n_data := UInt(0)
-		for (i <- 0 until number_of_registers)
-		{
-			io.n_data((i+1)*width_in - 1,i*width_in) := regs(number_of_registers - 1 - i)
-		}
-
-		io.a_val := a_value
-		io.n_rdy := last_input
+		io.a.ready := a_value
+		io.n.valid := last_input
 	}
 	else
 	{
 		var number_of_registers = width_in / width_out
-		var regs:Array[UInt] = new Array[UInt](number_of_registers)
-		val cnt_reg = Reg(init = UInt(number_of_registers,number_of_registers)) //TODO bit width can be smaller
+		var regs=Vec.fill(number_of_registers)(Reg(init=Bits(0,width_out)))
+		val cnt_reg = Reg(init = UInt(number_of_registers,log2Up(number_of_registers+1)))
 		val cnt_incremented = cnt_reg + UInt(1)
 		val last_output = cnt_reg === UInt(number_of_registers)		
-		val n_rdy = !last_output
-		val valid_a_trans = io.a_rdy && last_output
-		val valid_n_trans = io.n_val && n_rdy
+		val n_val = ~last_output
+		val valid_a_trans = io.a.valid && last_output
+		val valid_n_trans = io.n.ready && n_val
 
 		when(valid_n_trans)
 		{
 			cnt_reg := cnt_incremented
 		}
-		.elsewhen(valid_a_trans)
+		when(valid_a_trans)
 		{
 			cnt_reg := UInt(0)
-		}
-
-		for (i <- 0 until number_of_registers)
-		{
-			regs(i) = Reg(UInt(0,width_out))
 		}
 
 		for(i <- 0 until number_of_registers)
 		{
 			when(valid_a_trans)
 			{
-				regs(i) := io.a_data((i+1)*width_out - 1, i*width_out)
+				regs(i) := io.a.bits((i+1)*width_out - 1, i*width_out)
 			}
 		}
 		
-		io.n_data := UInt(0)
-		for(i <- 0 until number_of_registers)
-		{
-			when(cnt_reg === UInt(i))
-			{
-				io.n_data := regs(i)
-			}
-		}
-		io.a_val := last_output
-		io.n_rdy := n_rdy
+		io.n.bits := regs(cnt_reg)
+		io.a.ready := last_output
+		io.n.valid := n_val
 	}
 }
