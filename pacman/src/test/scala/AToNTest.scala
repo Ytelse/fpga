@@ -56,7 +56,7 @@ class AToNTests(c: AToN, width_in : Int, width_out : Int) extends Tester(c)
 		expect(c.io.a.ready,true)
 		expect(c.io.n.valid,false)		
 		step(1)
-		var inputVal = 0xa5c6
+		var inputVal = 0x445d27a
 		var inputMask = 0
 		var outputMask = 0
 		for (i <- 0 until width_in){
@@ -96,7 +96,7 @@ class AToNTests(c: AToN, width_in : Int, width_out : Int) extends Tester(c)
 			}
 		}
 		
-		inputVal = 0x5ac3
+		inputVal = 0x257dc0
 		for(i <- 0 until width_out/width_in)
 		{
 			val sendVal = (inputVal >>> (i * width_in)) & inputMask
@@ -144,7 +144,7 @@ class AToNTests(c: AToN, width_in : Int, width_out : Int) extends Tester(c)
 		expect(c.io.a.ready,true)
 		expect(c.io.n.valid,false)		
 		step(2)
-		var inputVal = 0xa5c6
+		var inputVal = 0xb87c86
 		var outputMask = 0
 		var inputMask = 0
 		for (i <- 0 until width_out){
@@ -178,7 +178,8 @@ class AToNTests(c: AToN, width_in : Int, width_out : Int) extends Tester(c)
 		expect(c.io.n.valid, false)
 
 		
-		inputVal = 0xb35a
+		inputVal = 0x56b424
+
 		poke(c.io.a.bits, inputVal & inputMask)
 		step(1)
 		expect(c.io.a.ready,true)
@@ -208,7 +209,7 @@ object AToNTest
 {
 	def test(width_in: Int, width_out : Int)
 	{
-		val margs = Array("--backend", "c", "--genHarness","--compile","--test")
+		val margs = Array("--backend", "v", "--genHarness","--compile"/*,"--test"*/)
 		
 		chiselMainTest(margs,() => Module(new AToN(width_in, width_out)))
 		{
@@ -218,7 +219,7 @@ object AToNTest
 	}
 	def main(args: Array[String]): Unit =
 	{
-		println("Testing equal size on input and output")
+		/*println("Testing equal size on input and output")
 		test(3,3)
 		test(8,8)
 
@@ -228,6 +229,9 @@ object AToNTest
 
 		println("Testing width in greater than width out")
 		test(9,3)
-		test(8,4)
+		test(8,4)*/
+
+		println("Generating the actual case")
+		test(8,72)
 	}
 }
