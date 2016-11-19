@@ -7,7 +7,7 @@ class NetSimulationHarnessTests(
   layers: List[LayerData],
   testInputs: Array[Array[Int]],
   testOutputs: Array[Array[Int]]
-) extends Tester(c) {
+) extends Tester(c, isTrace=false) {
   def peeks() {
     return
     peek(c.net.io)
@@ -84,7 +84,7 @@ class NetSimulationHarnessTests(
       push(toPush)
     }
     Step(1000)
-    print("pushed %d/%d".format(pushedTests * inputCores, testInputs.length))
+    println("pushed %d/%d".format(pushedTests * inputCores, testInputs.length))
     val isDone = peek(c.io.done) == 0x1
     if (isDone) {
       println("WAS DONE INSIDE WHILE LOOP!!")
