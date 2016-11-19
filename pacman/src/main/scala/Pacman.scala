@@ -112,21 +112,21 @@ class Pacman(
   net.io.start := buffer.io.startOut
   buffer.io.pipeReady := net.io.ready
 
-  // deinterleaver.io.doneIn := net.io.done
-  // deinterleaver.io.oneBitPerCore.bits := net.io.xsOut.reduceLeft(Cat(_, _))
-  // deinterleaver.io.oneBitPerCore.valid := net.io.xsOutValid
-  // net.io.pipeReady := deinterleaver.io.oneBitPerCore.ready
+  deinterleaver.io.doneIn := net.io.done
+  deinterleaver.io.oneBitPerCore.bits := net.io.xsOut.reduceLeft(Cat(_, _))
+  deinterleaver.io.oneBitPerCore.valid := net.io.xsOutValid
+  net.io.pipeReady := deinterleaver.io.oneBitPerCore.ready
 
-  // io.digitOut.bits := OHToUInt(deinterleaver.io.oneHotOut.bits)
-  // io.digitOut.valid := deinterleaver.io.oneHotOut.valid
-  // deinterleaver.io.oneHotOut.ready := io.digitOut.ready
+  io.digitOut.bits := OHToUInt(deinterleaver.io.oneHotOut.bits)
+  io.digitOut.valid := deinterleaver.io.oneHotOut.valid
+  deinterleaver.io.oneHotOut.ready := io.digitOut.ready
 
-  val bitBuffer = Module(new BitToWord(10))
-  bitBuffer.io.bit := net.io.xsOut(0)
-  bitBuffer.io.enable := net.io.xsOutValid
+  // val bitBuffer = Module(new BitToWord(10))
+  // bitBuffer.io.bit := net.io.xsOut(0)
+  // bitBuffer.io.enable := net.io.xsOutValid
 
-  io.digitOut.bits := OHToUInt(bitBuffer.io.word)
-  io.digitOut.valid := Reg(init=Bool(false), next=net.io.done)
-  net.io.pipeReady := io.digitOut.ready
+  // io.digitOut.bits := OHToUInt(bitBuffer.io.word)
+  // io.digitOut.valid := Reg(init=Bool(false), next=net.io.done)
+  // net.io.pipeReady := io.digitOut.ready
 
 }
