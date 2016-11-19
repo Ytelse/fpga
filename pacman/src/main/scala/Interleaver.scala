@@ -14,6 +14,11 @@ class Interleaver(parameters: LayerParameters) extends Module {
   val doneDelay = Reg(init=Bool(false))
   val send = Reg(init=Bool(false))
   val count = Reg(init=UInt(0,width=log2Up(parameters.NumberOfCores)))
+  if (parameters.NumberOfCores != 1){
+    when(send && io.oneHotOut.ready){
+      count :=count+UInt(1)
+    }
+  } 
   for ( i <- 0 until parameters.NumberOfCores) {
     regs(i).io.bit := io.oneBitPerCore.bits(i)
     regs(i).io.enable := io.oneBitPerCore.valid
@@ -28,9 +33,6 @@ class Interleaver(parameters: LayerParameters) extends Module {
   io.oneBitPerCore.ready := io.oneHotOut.ready
   io.oneHotOut.bits := regsBuf(count)
   io.oneHotOut.valid := send
-  when(send && io.oneHotOut.ready){
-    count :=count+UInt(1)
-  }
 }
 
 
