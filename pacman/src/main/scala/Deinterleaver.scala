@@ -3,7 +3,7 @@ package Pacman
 import scala.language.reflectiveCalls
 import Chisel._
 
-class Interleaver(parameters: LayerParameters) extends Module {
+class Deinterleaver(parameters: LayerParameters) extends Module {
   val io = new Bundle {
     val oneBitPerCore = Decoupled(Bits(width=parameters.NumberOfCores )).flip
     val oneHotOut = Decoupled(Bits(OUTPUT,width=parameters.MatrixHeight ))
