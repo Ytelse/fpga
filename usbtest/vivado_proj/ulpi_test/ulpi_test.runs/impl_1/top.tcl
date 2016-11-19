@@ -42,6 +42,7 @@ proc step_failed { step } {
   close $ch
 }
 
+set_msg_config -id {Common 17-41} -limit 10000000
 set_msg_config -id {HDL 9-1061} -limit 100000
 set_msg_config -id {HDL 9-1654} -limit 100000
 set_msg_config -id {Synth 8-256} -limit 10000
@@ -50,16 +51,13 @@ set_msg_config -id {Synth 8-638} -limit 10000
 start_step init_design
 set rc [catch {
   create_msg_db init_design.pb
-  set_property design_mode GateLvl [current_fileset]
-  set_param project.singleFileAddWarning.threshold 0
-  set_property webtalk.parent_dir /home/ulrich/vivado_proj/ulpi_test/ulpi_test.cache/wt [current_project]
-  set_property parent.project_path /home/ulrich/vivado_proj/ulpi_test/ulpi_test.xpr [current_project]
-  set_property ip_repo_paths /home/ulrich/vivado_proj/ulpi_test/ulpi_test.cache/ip [current_project]
-  set_property ip_output_repo /home/ulrich/vivado_proj/ulpi_test/ulpi_test.cache/ip [current_project]
-  add_files -quiet /home/ulrich/vivado_proj/ulpi_test/ulpi_test.runs/synth_1/top.dcp
-  read_xdc /home/ulrich/vivado_proj/ulpi_test/ulpi_test.srcs/constrs_1/new/constraints.xdc
-  read_xdc /home/ulrich/vivado_proj/ulpi_test/ulpi_test.srcs/constrs_1/new/debug.xdc
-  link_design -top top -part xc7a35tftg256-2
+  set_param xicom.use_bs_reader 1
+  reset_param project.defaultXPMLibraries 
+  open_checkpoint /home/ulrich/chisel/fpga/usbtest/vivado_proj/ulpi_test/ulpi_test.runs/impl_1/top.dcp
+  set_property webtalk.parent_dir /home/ulrich/chisel/fpga/usbtest/vivado_proj/ulpi_test/ulpi_test.cache/wt [current_project]
+  set_property parent.project_path /home/ulrich/chisel/fpga/usbtest/vivado_proj/ulpi_test/ulpi_test.xpr [current_project]
+  set_property ip_repo_paths /home/ulrich/chisel/fpga/usbtest/vivado_proj/ulpi_test/ulpi_test.cache/ip [current_project]
+  set_property ip_output_repo /home/ulrich/chisel/fpga/usbtest/vivado_proj/ulpi_test/ulpi_test.cache/ip [current_project]
   write_hwdef -file top.hwdef
   close_msg_db -file init_design.pb
 } RESULT]

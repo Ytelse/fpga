@@ -1,7 +1,7 @@
 Copyright 1986-2016 Xilinx, Inc. All Rights Reserved.
 -------------------------------------------------------------------------------------------------------------------------------
 | Tool Version     : Vivado v.2016.2 (lin64) Build 1577090 Thu Jun  2 16:32:35 MDT 2016
-| Date             : Fri Nov 18 13:29:14 2016
+| Date             : Sat Nov 19 14:06:01 2016
 | Host             : ytelse running 64-bit Ubuntu 16.04.1 LTS
 | Command          : report_power -file top_power_routed.rpt -pb top_power_summary_routed.pb -rpx top_power_routed.rpx
 | Design           : top
@@ -30,12 +30,12 @@ Table of Contents
 ----------
 
 +--------------------------+-------+
-| Total On-Chip Power (W)  | 0.087 |
-| Dynamic (W)              | 0.015 |
-| Device Static (W)        | 0.072 |
+| Total On-Chip Power (W)  | 0.320 |
+| Dynamic (W)              | 0.247 |
+| Device Static (W)        | 0.074 |
 | Effective TJA (C/W)      | 4.9   |
-| Max Ambient (C)          | 84.6  |
-| Junction Temperature (C) | 25.4  |
+| Max Ambient (C)          | 83.4  |
+| Junction Temperature (C) | 26.6  |
 | Confidence Level         | Low   |
 | Setting File             | ---   |
 | Simulation Activity File | ---   |
@@ -49,20 +49,20 @@ Table of Contents
 +--------------------------+-----------+----------+-----------+-----------------+
 | On-Chip                  | Power (W) | Used     | Available | Utilization (%) |
 +--------------------------+-----------+----------+-----------+-----------------+
-| Clocks                   |     0.005 |        6 |       --- |             --- |
-| Slice Logic              |     0.002 |     3843 |       --- |             --- |
-|   LUT as Logic           |     0.002 |     1465 |     20800 |            7.04 |
-|   Register               |    <0.001 |     1679 |     41600 |            4.04 |
+| Clocks                   |     0.025 |        6 |       --- |             --- |
+| Slice Logic              |     0.079 |    12857 |       --- |             --- |
+|   LUT as Logic           |     0.074 |     5415 |     20800 |           26.03 |
+|   Register               |     0.002 |     4535 |     41600 |           10.90 |
+|   CARRY4                 |     0.002 |      432 |      8150 |            5.30 |
 |   LUT as Distributed RAM |    <0.001 |       32 |      9600 |            0.33 |
-|   LUT as Shift Register  |    <0.001 |       72 |      9600 |            0.75 |
-|   CARRY4                 |    <0.001 |       37 |      8150 |            0.45 |
-|   F7/F8 Muxes            |    <0.001 |       15 |     32600 |            0.05 |
-|   Others                 |     0.000 |      188 |       --- |             --- |
-| Signals                  |     0.003 |     2887 |       --- |             --- |
-| Block RAM                |    <0.001 |        1 |        50 |            2.00 |
-| I/O                      |     0.005 |       22 |       170 |           12.94 |
-| Static Power             |     0.072 |          |           |                 |
-| Total                    |     0.087 |          |           |                 |
+|   F7/F8 Muxes            |    <0.001 |       44 |     32600 |            0.13 |
+|   LUT as Shift Register  |    <0.001 |       80 |      9600 |            0.83 |
+|   Others                 |     0.000 |      519 |       --- |             --- |
+| Signals                  |     0.069 |    11099 |       --- |             --- |
+| Block RAM                |     0.074 |       22 |        50 |           44.00 |
+| I/O                      |    <0.001 |       22 |       170 |           12.94 |
+| Static Power             |     0.074 |          |           |                 |
+| Total                    |     0.320 |          |           |                 |
 +--------------------------+-----------+----------+-----------+-----------------+
 
 
@@ -72,16 +72,16 @@ Table of Contents
 +-----------+-------------+-----------+-------------+------------+
 | Source    | Voltage (V) | Total (A) | Dynamic (A) | Static (A) |
 +-----------+-------------+-----------+-------------+------------+
-| Vccint    |       1.000 |     0.021 |       0.011 |      0.010 |
+| Vccint    |       1.000 |     0.252 |       0.241 |      0.011 |
 | Vccaux    |       1.800 |     0.013 |       0.000 |      0.013 |
-| Vcco33    |       3.300 |     0.002 |       0.001 |      0.001 |
+| Vcco33    |       3.300 |     0.001 |       0.000 |      0.001 |
 | Vcco25    |       2.500 |     0.000 |       0.000 |      0.000 |
 | Vcco18    |       1.800 |     0.000 |       0.000 |      0.000 |
 | Vcco15    |       1.500 |     0.000 |       0.000 |      0.000 |
 | Vcco135   |       1.350 |     0.000 |       0.000 |      0.000 |
 | Vcco12    |       1.200 |     0.000 |       0.000 |      0.000 |
 | Vccaux_io |       1.800 |     0.000 |       0.000 |      0.000 |
-| Vccbram   |       1.000 |     0.000 |       0.000 |      0.000 |
+| Vccbram   |       1.000 |     0.006 |       0.006 |      0.001 |
 | MGTAVcc   |       1.000 |     0.000 |       0.000 |      0.000 |
 | MGTAVtt   |       1.200 |     0.000 |       0.000 |      0.000 |
 | Vccadc    |       1.800 |     0.020 |       0.000 |      0.020 |
@@ -144,16 +144,216 @@ Table of Contents
 +-------------------------------------------------------------------------+-----------+
 | Name                                                                    | Power (W) |
 +-------------------------------------------------------------------------+-----------+
-| top                                                                     |     0.015 |
-|   clockDomainBridge_inst                                                |     0.002 |
-|     AToN_inst                                                           |    <0.001 |
-|     AsyncFifo_inst                                                      |     0.001 |
+| top                                                                     |     0.247 |
+|   PacmanWrapper_inst                                                    |     0.230 |
+|     AsyncFifo_inst                                                      |    <0.001 |
 |       mem_reg_0_15_0_5                                                  |    <0.001 |
 |       mem_reg_0_15_6_7                                                  |    <0.001 |
-|   dbg_hub                                                               |     0.002 |
-|     inst                                                                |     0.002 |
-|       CORE_XSDB.UUT_MASTER                                              |     0.002 |
-|         U_ICON_INTERFACE                                                |     0.001 |
+|     Pacman_inst                                                         |     0.229 |
+|       bitBuffer                                                         |    <0.001 |
+|       buffer                                                            |     0.002 |
+|         queue                                                           |     0.002 |
+|           currentBlockOffset                                            |    <0.001 |
+|           inBlockReadOffset                                             |    <0.001 |
+|           queue                                                         |     0.001 |
+|         readyBlocks                                                     |    <0.001 |
+|         wordCounter                                                     |    <0.001 |
+|       net                                                               |     0.226 |
+|         GearBox                                                         |     0.003 |
+|           BitToWord                                                     |    <0.001 |
+|           CircularPeekQueue                                             |     0.003 |
+|             currentBlockOffset                                          |    <0.001 |
+|             inBlockReadOffset                                           |    <0.001 |
+|             queue                                                       |     0.002 |
+|           bitCounter                                                    |    <0.001 |
+|           blocksReady                                                   |    <0.001 |
+|           fillingBlock                                                  |    <0.001 |
+|         GearBox_1                                                       |     0.003 |
+|           BitToWord                                                     |    <0.001 |
+|           CircularPeekQueue                                             |     0.002 |
+|             currentBlockOffset                                          |    <0.001 |
+|             inBlockReadOffset                                           |    <0.001 |
+|             queue                                                       |     0.002 |
+|           bitCounter                                                    |    <0.001 |
+|           blocksReady                                                   |    <0.001 |
+|           fillingBlock                                                  |    <0.001 |
+|         GearBox_2                                                       |     0.003 |
+|           BitToWord                                                     |    <0.001 |
+|           CircularPeekQueue                                             |     0.003 |
+|             currentBlockOffset                                          |    <0.001 |
+|             inBlockReadOffset                                           |    <0.001 |
+|             queue                                                       |     0.002 |
+|           bitCounter                                                    |    <0.001 |
+|           blocksReady                                                   |    <0.001 |
+|           fillingBlock                                                  |    <0.001 |
+|         Warp                                                            |     0.098 |
+|           Chain                                                         |     0.055 |
+|             ProcessingUnit                                              |     0.002 |
+|             ProcessingUnit_1                                            |     0.002 |
+|             ProcessingUnit_10                                           |     0.002 |
+|             ProcessingUnit_11                                           |     0.002 |
+|             ProcessingUnit_12                                           |     0.002 |
+|             ProcessingUnit_13                                           |     0.002 |
+|             ProcessingUnit_14                                           |     0.002 |
+|             ProcessingUnit_15                                           |     0.002 |
+|             ProcessingUnit_16                                           |     0.002 |
+|             ProcessingUnit_17                                           |     0.002 |
+|             ProcessingUnit_18                                           |     0.002 |
+|             ProcessingUnit_19                                           |     0.002 |
+|             ProcessingUnit_2                                            |     0.002 |
+|             ProcessingUnit_20                                           |     0.002 |
+|             ProcessingUnit_21                                           |     0.002 |
+|             ProcessingUnit_22                                           |     0.002 |
+|             ProcessingUnit_23                                           |     0.002 |
+|             ProcessingUnit_24                                           |     0.002 |
+|             ProcessingUnit_25                                           |     0.002 |
+|             ProcessingUnit_26                                           |     0.002 |
+|             ProcessingUnit_27                                           |     0.002 |
+|             ProcessingUnit_28                                           |     0.002 |
+|             ProcessingUnit_29                                           |     0.002 |
+|             ProcessingUnit_3                                            |     0.002 |
+|             ProcessingUnit_30                                           |     0.002 |
+|             ProcessingUnit_31                                           |    <0.001 |
+|             ProcessingUnit_4                                            |     0.002 |
+|             ProcessingUnit_5                                            |     0.002 |
+|             ProcessingUnit_6                                            |     0.002 |
+|             ProcessingUnit_7                                            |     0.002 |
+|             ProcessingUnit_8                                            |     0.002 |
+|             ProcessingUnit_9                                            |     0.002 |
+|           control                                                       |    <0.001 |
+|             cycle                                                       |    <0.001 |
+|             cycleInPass                                                 |    <0.001 |
+|             isActive                                                    |    <0.001 |
+|             isOutputting                                                |    <0.001 |
+|             isReady                                                     |    <0.001 |
+|             isTailing                                                   |    <0.001 |
+|             selectX                                                     |    <0.001 |
+|             tailCycle                                                   |    <0.001 |
+|           memoryStreamer                                                |     0.042 |
+|             MemoryUnit                                                  |     0.003 |
+|             MemoryUnit_1                                                |     0.002 |
+|             MemoryUnit_10                                               |     0.002 |
+|             MemoryUnit_11                                               |     0.002 |
+|             MemoryUnit_12                                               |     0.002 |
+|             MemoryUnit_13                                               |     0.002 |
+|             MemoryUnit_14                                               |     0.002 |
+|             MemoryUnit_15                                               |     0.002 |
+|             MemoryUnit_2                                                |     0.002 |
+|             MemoryUnit_3                                                |     0.002 |
+|             MemoryUnit_4                                                |     0.002 |
+|             MemoryUnit_5                                                |     0.002 |
+|             MemoryUnit_6                                                |     0.002 |
+|             MemoryUnit_7                                                |     0.002 |
+|             MemoryUnit_8                                                |     0.002 |
+|             MemoryUnit_9                                                |     0.002 |
+|             biasMemoryUnit                                              |     0.004 |
+|         Warp_1                                                          |     0.050 |
+|           Chain                                                         |     0.028 |
+|             ProcessingUnit                                              |     0.002 |
+|             ProcessingUnit_1                                            |     0.002 |
+|             ProcessingUnit_10                                           |     0.002 |
+|             ProcessingUnit_11                                           |     0.002 |
+|             ProcessingUnit_12                                           |     0.002 |
+|             ProcessingUnit_13                                           |     0.002 |
+|             ProcessingUnit_14                                           |     0.002 |
+|             ProcessingUnit_15                                           |    <0.001 |
+|             ProcessingUnit_2                                            |     0.002 |
+|             ProcessingUnit_3                                            |     0.002 |
+|             ProcessingUnit_4                                            |     0.002 |
+|             ProcessingUnit_5                                            |     0.002 |
+|             ProcessingUnit_6                                            |     0.002 |
+|             ProcessingUnit_7                                            |     0.002 |
+|             ProcessingUnit_8                                            |     0.002 |
+|             ProcessingUnit_9                                            |     0.002 |
+|           control                                                       |    <0.001 |
+|             cycle                                                       |    <0.001 |
+|             cycleInPass                                                 |    <0.001 |
+|             isActive                                                    |    <0.001 |
+|             isOutputting                                                |    <0.001 |
+|             isReady                                                     |    <0.001 |
+|             isTailing                                                   |    <0.001 |
+|             selectX                                                     |    <0.001 |
+|             tailCycle                                                   |    <0.001 |
+|           memoryStreamer                                                |     0.022 |
+|             MemoryUnit                                                  |     0.002 |
+|             MemoryUnit_1                                                |     0.002 |
+|             MemoryUnit_2                                                |     0.002 |
+|             MemoryUnit_3                                                |     0.002 |
+|             MemoryUnit_4                                                |     0.002 |
+|             MemoryUnit_5                                                |     0.002 |
+|             MemoryUnit_6                                                |     0.002 |
+|             MemoryUnit_7                                                |     0.002 |
+|             biasMemoryUnit                                              |     0.003 |
+|         Warp_2                                                          |     0.049 |
+|           Chain                                                         |     0.027 |
+|             ProcessingUnit                                              |     0.002 |
+|             ProcessingUnit_1                                            |     0.002 |
+|             ProcessingUnit_10                                           |     0.002 |
+|             ProcessingUnit_11                                           |     0.002 |
+|             ProcessingUnit_12                                           |     0.002 |
+|             ProcessingUnit_13                                           |     0.002 |
+|             ProcessingUnit_14                                           |     0.002 |
+|             ProcessingUnit_15                                           |    <0.001 |
+|             ProcessingUnit_2                                            |     0.002 |
+|             ProcessingUnit_3                                            |     0.002 |
+|             ProcessingUnit_4                                            |     0.002 |
+|             ProcessingUnit_5                                            |     0.002 |
+|             ProcessingUnit_6                                            |     0.002 |
+|             ProcessingUnit_7                                            |     0.002 |
+|             ProcessingUnit_8                                            |     0.002 |
+|             ProcessingUnit_9                                            |     0.002 |
+|           control                                                       |    <0.001 |
+|             cycle                                                       |    <0.001 |
+|             cycleInPass                                                 |    <0.001 |
+|             isActive                                                    |    <0.001 |
+|             isOutputting                                                |    <0.001 |
+|             isReady                                                     |    <0.001 |
+|             isTailing                                                   |    <0.001 |
+|             selectX                                                     |    <0.001 |
+|             tailCycle                                                   |    <0.001 |
+|           memoryStreamer                                                |     0.022 |
+|             MemoryUnit                                                  |     0.002 |
+|             MemoryUnit_1                                                |     0.002 |
+|             MemoryUnit_2                                                |     0.002 |
+|             MemoryUnit_3                                                |     0.002 |
+|             MemoryUnit_4                                                |     0.002 |
+|             MemoryUnit_5                                                |     0.002 |
+|             MemoryUnit_6                                                |     0.002 |
+|             MemoryUnit_7                                                |     0.002 |
+|             biasMemoryUnit                                              |     0.003 |
+|         Warp_3                                                          |     0.020 |
+|           Chain                                                         |     0.015 |
+|             ProcessingUnit                                              |     0.002 |
+|             ProcessingUnit_1                                            |     0.002 |
+|             ProcessingUnit_2                                            |     0.002 |
+|             ProcessingUnit_3                                            |     0.002 |
+|             ProcessingUnit_4                                            |     0.001 |
+|             ProcessingUnit_5                                            |     0.002 |
+|             ProcessingUnit_6                                            |     0.002 |
+|             ProcessingUnit_7                                            |     0.002 |
+|             ProcessingUnit_8                                            |     0.002 |
+|             ProcessingUnit_9                                            |    <0.001 |
+|           control                                                       |    <0.001 |
+|             cycle                                                       |    <0.001 |
+|             cycleInPass                                                 |    <0.001 |
+|             isActive                                                    |    <0.001 |
+|             isOutputting                                                |    <0.001 |
+|             isReady                                                     |    <0.001 |
+|             isTailing                                                   |    <0.001 |
+|             selectX                                                     |    <0.001 |
+|             tailCycle                                                   |    <0.001 |
+|           memoryStreamer                                                |     0.004 |
+|             MemoryUnit                                                  |    <0.001 |
+|             MemoryUnit_1                                                |    <0.001 |
+|             MemoryUnit_2                                                |    <0.001 |
+|             MemoryUnit_3                                                |    <0.001 |
+|             MemoryUnit_4                                                |    <0.001 |
+|             biasMemoryUnit                                              |    <0.001 |
+|       widthConverter                                                    |    <0.001 |
+|   dbg_hub                                                               |     0.003 |
+|     inst                                                                |     0.003 |
+|       CORE_XSDB.UUT_MASTER                                              |     0.003 |
+|         U_ICON_INTERFACE                                                |     0.002 |
 |           U_CMD1                                                        |    <0.001 |
 |           U_CMD2                                                        |    <0.001 |
 |           U_CMD3                                                        |    <0.001 |
@@ -221,27 +421,30 @@ Table of Contents
 |         U_STAT                                                          |    <0.001 |
 |         U_SYNC                                                          |    <0.001 |
 |       N_EXT_BSCAN.bscan_inst                                            |    <0.001 |
-|   test_inst                                                             |     0.003 |
+|   inputBridge_inst                                                      |     0.004 |
 |     usb_serial_inst                                                     |     0.003 |
 |       usb_control_inst                                                  |    <0.001 |
 |       usb_init_inst                                                     |    <0.001 |
 |       usb_packet_inst                                                   |    <0.001 |
 |       usb_transact_inst                                                 |    <0.001 |
-|   u_ila_0                                                               |     0.004 |
-|     inst                                                                |     0.004 |
-|       ila_core_inst                                                     |     0.004 |
+|   u_ila_0                                                               |     0.010 |
+|     inst                                                                |     0.010 |
+|       ila_core_inst                                                     |     0.010 |
 |         ila_trace_memory_inst                                           |    <0.001 |
 |           SUBCORE_RAM_BLK_MEM_1.trace_block_memory                      |    <0.001 |
 |             inst_blk_mem_gen                                            |    <0.001 |
 |               gnbram.gnativebmg.native_blk_mem_gen                      |    <0.001 |
 |                 valid.cstr                                              |    <0.001 |
+|                   has_mux_b.B                                           |    <0.001 |
 |                   ramloop[0].ram.r                                      |    <0.001 |
 |                     prim_noinit.ram                                     |    <0.001 |
-|         u_ila_cap_ctrl                                                  |    <0.001 |
+|                   ramloop[1].ram.r                                      |    <0.001 |
+|                     prim_noinit.ram                                     |    <0.001 |
+|         u_ila_cap_ctrl                                                  |     0.001 |
 |           U_CDONE                                                       |    <0.001 |
 |           U_NS0                                                         |    <0.001 |
 |           U_NS1                                                         |    <0.001 |
-|           u_cap_addrgen                                                 |    <0.001 |
+|           u_cap_addrgen                                                 |     0.001 |
 |             U_CMPRESET                                                  |    <0.001 |
 |             u_cap_sample_counter                                        |    <0.001 |
 |               U_SCE                                                     |    <0.001 |
@@ -290,11 +493,13 @@ Table of Contents
 |                       u_srlB                                            |    <0.001 |
 |                       u_srlC                                            |    <0.001 |
 |                       u_srlD                                            |    <0.001 |
-|         u_ila_regs                                                      |     0.003 |
+|         u_ila_regs                                                      |     0.007 |
 |           MU_SRL[0].mu_srl_reg                                          |    <0.001 |
 |           MU_SRL[1].mu_srl_reg                                          |    <0.001 |
+|           MU_SRL[2].mu_srl_reg                                          |    <0.001 |
+|           MU_SRL[3].mu_srl_reg                                          |    <0.001 |
 |           TC_SRL[0].tc_srl_reg                                          |    <0.001 |
-|           U_XSDB_SLAVE                                                  |    <0.001 |
+|           U_XSDB_SLAVE                                                  |     0.001 |
 |           reg_15                                                        |    <0.001 |
 |             I_EN_CTL_EQ1.U_CTL                                          |    <0.001 |
 |           reg_16                                                        |    <0.001 |
@@ -371,15 +576,31 @@ Table of Contents
 |                     u_srlB                                              |    <0.001 |
 |                     u_srlC                                              |    <0.001 |
 |                     u_srlD                                              |    <0.001 |
+|             N_DDR_MODE.G_NMU[2].U_M                                     |    <0.001 |
+|               allx_typeA_match_detection.ltlib_v1_0_0_allx_typeA_inst   |    <0.001 |
+|                 DUT                                                     |    <0.001 |
+|                   I_WHOLE_SLICE.G_SLICE_IDX[0].U_ALL_SRL_SLICE          |    <0.001 |
+|                     u_srlA                                              |    <0.001 |
+|                     u_srlB                                              |    <0.001 |
+|                     u_srlC                                              |    <0.001 |
+|                     u_srlD                                              |    <0.001 |
+|             N_DDR_MODE.G_NMU[3].U_M                                     |    <0.001 |
+|               allx_typeA_match_detection.ltlib_v1_0_0_allx_typeA_inst   |    <0.001 |
+|                 DUT                                                     |    <0.001 |
+|                   I_WHOLE_SLICE.G_SLICE_IDX[0].U_ALL_SRL_SLICE          |    <0.001 |
+|                     u_srlA                                              |    <0.001 |
+|                     u_srlB                                              |    <0.001 |
+|                     u_srlC                                              |    <0.001 |
+|                     u_srlD                                              |    <0.001 |
 |         xsdb_memory_read_inst                                           |    <0.001 |
-|   ulpi_data_IOBUF[0]_inst                                               |    <0.001 |
-|   ulpi_data_IOBUF[1]_inst                                               |    <0.001 |
-|   ulpi_data_IOBUF[2]_inst                                               |    <0.001 |
-|   ulpi_data_IOBUF[3]_inst                                               |    <0.001 |
-|   ulpi_data_IOBUF[4]_inst                                               |    <0.001 |
-|   ulpi_data_IOBUF[5]_inst                                               |    <0.001 |
-|   ulpi_data_IOBUF[6]_inst                                               |    <0.001 |
-|   ulpi_data_IOBUF[7]_inst                                               |    <0.001 |
+|   ulpi_data_IOBUF[0]_inst                                               |     0.000 |
+|   ulpi_data_IOBUF[1]_inst                                               |     0.000 |
+|   ulpi_data_IOBUF[2]_inst                                               |     0.000 |
+|   ulpi_data_IOBUF[3]_inst                                               |     0.000 |
+|   ulpi_data_IOBUF[4]_inst                                               |     0.000 |
+|   ulpi_data_IOBUF[5]_inst                                               |     0.000 |
+|   ulpi_data_IOBUF[6]_inst                                               |     0.000 |
+|   ulpi_data_IOBUF[7]_inst                                               |     0.000 |
 |   ulpi_port_inst                                                        |    <0.001 |
 +-------------------------------------------------------------------------+-----------+
 

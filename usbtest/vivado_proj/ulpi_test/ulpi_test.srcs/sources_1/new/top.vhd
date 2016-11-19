@@ -15,13 +15,13 @@ entity top is
 end top;
 
 architecture Behavioral of top is
-    component ClockDomainBridge
+    component PacmanWrapper
         port(   io_usb_data_bits : in std_logic_vector(7 downto 0);
                 io_usb_data_ready : out std_logic;
                 io_usb_data_valid : in std_logic;
-                io_net_data_bits : out std_logic_vector(31 downto 0);
-                io_net_data_ready : in std_logic;
-                io_net_data_valid : out std_logic;
+                io_net_result_bits : out std_logic_vector(3 downto 0);
+                io_net_result_ready : in std_logic;
+                io_net_result_valid : out std_logic;
                 clk : in std_logic;
                 ulpi_clk : in std_logic;
                 reset : in std_logic);
@@ -49,10 +49,12 @@ architecture Behavioral of top is
     signal usb_rxdat : std_logic_vector(7 downto 0);
     signal usb_rxrdy : std_logic;
     signal usb_rxval : std_logic;
-    signal n_dat : std_logic_vector(31 downto 0);
+    signal n_dat : std_logic_vector(3 downto 0);
     signal n_rdy : std_logic;
     signal n_val : std_logic;
     signal led_reg : std_logic_vector(7 downto 0);
+    
+    signal ready : std_logic;
 begin
 
     ulpi_data <= temp_data_out when ulpi_dir = '0'
@@ -68,30 +70,36 @@ begin
     process is
     begin
         wait until rising_edge(CLK100MHZ);
+        if(ready = '1') then
+            led_reg(7 downto 4) <= (others => '0');
+        else
+            led_reg(7 downto 4) <= (others => '1');
+        end if; 
         if n_val = '1' then
-            led_reg <= n_dat(7 downto 0);
+            led_reg(3 downto 0) <= n_dat(3 downto 0);
         end if;
     end process;
     --end a small test
-
-    clockDomainBridge_inst : ClockDomainBridge
+    
+    PacmanWrapper_inst : PacmanWrapper
         port map(
             io_usb_data_bits => usb_rxdat,
             io_usb_data_ready => usb_rxrdy,
             io_usb_data_valid => usb_rxval,
-            io_net_data_bits => n_dat,
-            io_net_data_ready => n_rdy,
-            io_net_data_valid => n_val,
+            io_net_result_bits => n_dat,
+            io_net_result_ready => n_rdy,
+            io_net_result_valid => n_val,
             clk => CLK100MHZ,
             ulpi_clk => ulpi_clk60,
             reset => '0'
             );
 
-    test_inst : entity work.InputBridge
+    inputBridge_inst : entity work.InputBridge
      port map(
      rxdat => usb_rxdat,
      rxval => usb_rxval,
      rxrdy => usb_rxrdy,
+     ready => ready,
              
     PHY_DATABUS16_8 => PHY_DATABUS16_8,
     PHY_RESET =>       PHY_RESET,

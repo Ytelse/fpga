@@ -3,10 +3,10 @@
 <!--The data in this file is primarily intended for consumption by Xilinx tools.
 The structure and the elements are likely to change over the next few releases.
 This means code written to parse this file will need to be revisited each subsequent release.-->
-<application name="pa" timeStamp="Fri Nov 18 13:40:17 2016">
+<application name="pa" timeStamp="Sat Nov 19 14:03:19 2016">
 <section name="Project Information" visible="false">
 <property name="ProjectID" value="92db1a6ae9a14e8a9b79c2665ab22771" type="ProjectID"/>
-<property name="ProjectIteration" value="64" type="ProjectIteration"/>
+<property name="ProjectIteration" value="86" type="ProjectIteration"/>
 </section>
 <section name="PlanAhead Usage" visible="true">
 <item name="Project Data">
@@ -17,62 +17,43 @@ This means code written to parse this file will need to be revisited each subseq
 <property name="ImplStrategy" value="Vivado Implementation Defaults" type="ImplStrategy"/>
 </item>
 <item name="Java Command Handlers">
-<property name="AddSources" value="6" type="JavaHandler"/>
-<property name="AutoConnectTarget" value="5" type="JavaHandler"/>
+<property name="AddSources" value="8" type="JavaHandler"/>
+<property name="AutoConnectTarget" value="7" type="JavaHandler"/>
 <property name="CreateHardwareDashboards" value="1" type="JavaHandler"/>
-<property name="DebugWizardCmdHandler" value="1" type="JavaHandler"/>
-<property name="EditDelete" value="2" type="JavaHandler"/>
+<property name="DebugWizardCmdHandler" value="5" type="JavaHandler"/>
+<property name="EditDelete" value="4" type="JavaHandler"/>
 <property name="EditPaste" value="1" type="JavaHandler"/>
-<property name="EditProperties" value="1" type="JavaHandler"/>
-<property name="LaunchProgramFpga" value="51" type="JavaHandler"/>
-<property name="MarkDebug" value="2" type="JavaHandler"/>
+<property name="EditProperties" value="2" type="JavaHandler"/>
+<property name="LaunchProgramFpga" value="64" type="JavaHandler"/>
+<property name="MarkDebug" value="13" type="JavaHandler"/>
 <property name="NewProject" value="3" type="JavaHandler"/>
-<property name="OpenHardwareManager" value="16" type="JavaHandler"/>
+<property name="OpenHardwareDashboard" value="2" type="JavaHandler"/>
+<property name="OpenHardwareManager" value="28" type="JavaHandler"/>
+<property name="OpenProject" value="1" type="JavaHandler"/>
 <property name="OpenRecentTarget" value="10" type="JavaHandler"/>
 <property name="OpenTarget" value="3" type="JavaHandler"/>
-<property name="ProgramDevice" value="7" type="JavaHandler"/>
-<property name="ReloadDesign" value="2" type="JavaHandler"/>
-<property name="RunBitgen" value="60" type="JavaHandler"/>
-<property name="RunImplementation" value="4" type="JavaHandler"/>
-<property name="RunSchematic" value="1" type="JavaHandler"/>
-<property name="RunTrigger" value="1" type="JavaHandler"/>
-<property name="SaveDesign" value="1" type="JavaHandler"/>
+<property name="ProgramDevice" value="10" type="JavaHandler"/>
+<property name="ProjectSettingsCmdHandler" value="1" type="JavaHandler"/>
+<property name="RefreshDevice" value="1" type="JavaHandler"/>
+<property name="ReloadDesign" value="3" type="JavaHandler"/>
+<property name="ReportUtilization" value="1" type="JavaHandler"/>
+<property name="RunBitgen" value="80" type="JavaHandler"/>
+<property name="RunImplementation" value="7" type="JavaHandler"/>
+<property name="RunNoiseAnalysis" value="1" type="JavaHandler"/>
+<property name="RunSchematic" value="8" type="JavaHandler"/>
+<property name="RunSynthesis" value="4" type="JavaHandler"/>
+<property name="RunTrigger" value="6" type="JavaHandler"/>
+<property name="SaveDesign" value="7" type="JavaHandler"/>
 <property name="SaveFileProxyHandler" value="2" type="JavaHandler"/>
-<property name="ShowView" value="55" type="JavaHandler"/>
-<property name="StopTrigger" value="1" type="JavaHandler"/>
+<property name="ShowSource" value="1" type="JavaHandler"/>
+<property name="ShowView" value="70" type="JavaHandler"/>
+<property name="StopTrigger" value="2" type="JavaHandler"/>
+<property name="UnmarkDebug" value="6" type="JavaHandler"/>
 <property name="ViewLayoutCmd" value="1" type="JavaHandler"/>
-<property name="ViewTaskImplementation" value="7" type="JavaHandler"/>
-<property name="ViewTaskProjectManager" value="5" type="JavaHandler"/>
-<property name="ViewTaskRTLAnalysis" value="5" type="JavaHandler"/>
-</item>
-<item name="Gui Resources Info">
-<property name="PAResourceAtoD.ClosePlanner_YES, Yes" value="1" type="GuiResourceData"/>
-<property name="PAResourceCommand.PACommandNames_AUTO_CONNECT_TARGET, Auto Connect" value="1" type="GuiResourceData"/>
-<property name="PAResourceCommand.PACommandNames_PROGRAM_FPGA, Program Device..." value="1" type="GuiResourceData"/>
-<property name="PAResourceEtoH.FlowNavigatorTreePanel_FLOW_NAVIGATOR_TREE, [, Program and Debug, Open Hardware Manager], 48, true" value="1" type="GuiResourceData"/>
-<property name="PAResourceEtoH.HardwareTreePanel_HARDWARE_TREE_TABLE, hw_ila_1 ; Idle, 4, hw_ila_1, 0, false" value="1" type="GuiResourceData"/>
-<property name="PAResourceEtoH.HardwareTreePanel_HARDWARE_TREE_TABLE, hw_ila_1 ; Idle, 4, hw_ila_1, 0, false, false, false, false, true, false" value="1" type="GuiResourceData"/>
-<property name="PAResourceEtoH.HardwareTreePanel_HARDWARE_TREE_TABLE, xc7a35t_0 (2" value="2" type="GuiResourceData"/>
-<property name="PAResourceOtoP.PAViews_DEVICE, 158031, 307220, false, true, true, false, false" value="1" type="GuiResourceData"/>
-<property name="PAResourceOtoP.PAViews_DEVICE, 168210, 335446, false, true, true, false, false" value="1" type="GuiResourceData"/>
-<property name="PAResourceOtoP.PAViews_DEVICE, 192902, 366225, false, true, true, false, false" value="1" type="GuiResourceData"/>
-<property name="PAResourceOtoP.PAViews_DEVICE, 220236, 243678, false, false, true, false, false" value="1" type="GuiResourceData"/>
-<property name="PAResourceOtoP.PAViews_DEVICE, 221187, 308145, false, false, true, false, false" value="1" type="GuiResourceData"/>
-<property name="PAResourceOtoP.PAViews_DEVICE, 221264, 349376, false, false, true, false, false" value="1" type="GuiResourceData"/>
-<property name="PAResourceOtoP.PAViews_DEVICE, 225455, 380006, false, true, true, false, false" value="1" type="GuiResourceData"/>
-<property name="PAResourceOtoP.PAViews_DEVICE, 232163, 351843, false, false, true, false, false" value="1" type="GuiResourceData"/>
-<property name="PAResourceOtoP.ProgramDebugTab_OPEN_TARGET, Open target" value="1" type="GuiResourceData"/>
-<property name="PAResourceOtoP.ProgramFpgaDialog_PROGRAM, Program" value="1" type="GuiResourceData"/>
-<property name="PAResourceOtoP.ProgramFpgaDialog_SPECIFY_DEBUG_PROBES_FILE, (String" value="2" type="GuiResourceData"/>
-<property name="RDIResource.BaseDialog_OK, OK" value="1" type="GuiResourceData"/>
-<property name="top.vhd, 590, 143" value="1" type="GuiResourceData"/>
-<property name="top.vhd, 77, 459" value="1" type="GuiResourceData"/>
-<property name="top.vhd, 933, 230" value="1" type="GuiResourceData"/>
-</item>
-<item name="Other">
-<property name="GuiMode" value="5" type="GuiMode"/>
-<property name="BatchMode" value="0" type="BatchMode"/>
-<property name="TclMode" value="2" type="TclMode"/>
+<property name="ViewTaskImplementation" value="10" type="JavaHandler"/>
+<property name="ViewTaskProjectManager" value="8" type="JavaHandler"/>
+<property name="ViewTaskRTLAnalysis" value="11" type="JavaHandler"/>
+<property name="ViewTaskSynthesis" value="3" type="JavaHandler"/>
 </item>
 </section>
 </application>

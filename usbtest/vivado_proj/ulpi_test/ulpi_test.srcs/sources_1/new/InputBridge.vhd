@@ -54,6 +54,7 @@ entity InputBridge is
         rxdat:  out std_logic_vector(7 downto 0);
         rxval : out std_logic;
         rxrdy : in std_logic;
+        ready : out std_logic;
         
 	PHY_DATABUS16_8 : out std_logic;
 	PHY_RESET :       out std_logic;
@@ -74,6 +75,7 @@ end entity InputBridge;
 
 architecture arch of InputBridge is
 
+    constant waitCycles : integer := 60000000 * 30;
     constant RXBUFSIZE_BITS : integer := 11;
     constant TXBUFSIZE_BITS : integer := 7;
     --constant BLAST_DUTY_OFF : integer := 7;
@@ -103,7 +105,9 @@ architecture arch of InputBridge is
 
     -- Things i have tried myself.
     signal lastByte : std_logic_vector(7 downto 0) := (others => '0');
-
+    signal clock_count : std_logic_vector(31 downto 0) := (others => '0');
+    signal wait_over : std_logic := '0';
+    
 begin
 
     -- Direct interface to serial data transfer component
@@ -164,15 +168,21 @@ begin
     s_txcork <= '0';
     
     usb_rxrdy <= rxrdy;
-    rxval <= usb_rxval;
+    rxval <= usb_rxval when wait_over = '1' else '0';
     rxdat <= usb_rxdat;
+    ready <= wait_over;
     
-    --process is
-    --begin
-    --    wait until rising_edge(CLK);
-    --    if usb_rxval = '1' and usb_online = '1' then
-    --        lastByte <= usb_rxdat;
-    --    end if;
-    --end process;
+    process is
+    begin
+        wait until rising_edge(CLK);
+        clock_count <= std_logic_vector(unsigned(clock_count) + 1);
+        if(unsigned(clock_count) = waitCycles) then
+            wait_over <= '1';
+        end if;
+        if(usb_online = '0') then
+            clock_count <= (others => '0');
+            wait_over <= '0';
+        end if;
+    end process;
 
 end architecture arch;

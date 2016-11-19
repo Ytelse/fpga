@@ -20,7 +20,7 @@ else
 fi
 export LD_LIBRARY_PATH
 
-HD_PWD='/home/ulrich/vivado_proj/ulpi_test/ulpi_test.runs/synth_1'
+HD_PWD='/home/ulrich/chisel/fpga/usbtest/vivado_proj/ulpi_test/ulpi_test.runs/synth_1'
 cd "$HD_PWD"
 
 HD_LOG=runme.log

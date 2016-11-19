@@ -137,11 +137,13 @@ set_property -dict {PACKAGE_PIN C3 IOSTANDARD LVCMOS33} [get_ports ulpi_stp]
 
 ## FPGA LED
 
-set_property -dict { PACKAGE_PIN H1 IOSTANDARD LVCMOS33 } [get_ports { led[0] }];
-set_property -dict { PACKAGE_PIN J3 IOSTANDARD LVCMOS33 } [get_ports { led[1] }]; #IO_L21P_T3_DQS_35 Sch=led[1] 
-set_property -dict { PACKAGE_PIN J1 IOSTANDARD LVCMOS33 } [get_ports { led[2] }]; #IO_L22N_T3_35 Sch=led[2]
-set_property -dict { PACKAGE_PIN K1 IOSTANDARD LVCMOS33 } [get_ports { led[3] }]; #IO_L22P_T3_35 Sch=led[3]
-set_property -dict { PACKAGE_PIN K3 IOSTANDARD LVCMOS33 } [get_ports { led[4] }]; #IO_L24P_T3_35 Sch=led[4]
-set_property -dict { PACKAGE_PIN L2 IOSTANDARD LVCMOS33 } [get_ports { led[5] }]; #IO_L23N_T3_35 Sch=led[5]
-set_property -dict { PACKAGE_PIN L3 IOSTANDARD LVCMOS33 } [get_ports { led[6] }]; #IO_L23P_T3_35 Sch=led[6]
-set_property -dict { PACKAGE_PIN H3 IOSTANDARD LVCMOS33 } [get_ports { led[7] }]; #IO_L21N_T3_DQS_35 Sch=led[7]
+set_property -dict {PACKAGE_PIN H1 IOSTANDARD LVCMOS33} [get_ports {led[0]}]
+set_property -dict {PACKAGE_PIN J3 IOSTANDARD LVCMOS33} [get_ports {led[1]}]
+set_property -dict {PACKAGE_PIN J1 IOSTANDARD LVCMOS33} [get_ports {led[2]}]
+set_property -dict {PACKAGE_PIN K1 IOSTANDARD LVCMOS33} [get_ports {led[3]}]
+set_property -dict {PACKAGE_PIN K3 IOSTANDARD LVCMOS33} [get_ports {led[4]}]
+set_property -dict {PACKAGE_PIN L2 IOSTANDARD LVCMOS33} [get_ports {led[5]}]
+set_property -dict {PACKAGE_PIN L3 IOSTANDARD LVCMOS33} [get_ports {led[6]}]
+set_property -dict {PACKAGE_PIN H3 IOSTANDARD LVCMOS33} [get_ports {led[7]}]
+
+
