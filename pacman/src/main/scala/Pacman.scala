@@ -100,7 +100,7 @@ class Pacman(
   val widthConverter = Module(new AToN(inDataWordWidth, netInputWordWidth))
   val buffer = Module(new CircularPeekBuffer(3, netInputWordPerBlock, netInputWordWidth))
   val net = Module(new Net(layers))
-  val deinterleaver = Module(new Interleaver(lastLayer.parameters))
+  val deinterleaver = Module(new Deinterleaver(lastLayer.parameters))
 
   io.inDataStream <> widthConverter.io.a
 
