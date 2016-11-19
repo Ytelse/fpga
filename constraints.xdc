@@ -147,3 +147,11 @@ set_property -dict { PACKAGE_PIN T10 IOSTANDARD LVCMOS33 } [get_ports { reset }]
 #set_property -dict { PACKAGE_PIN L2 IOSTANDARD LVCMOS33 } [get_ports { led[5] }]; #IO_L23N_T3_35 Sch=led[5]
 #set_property -dict { PACKAGE_PIN L3 IOSTANDARD LVCMOS33 } [get_ports { led[6] }]; #IO_L23P_T3_35 Sch=led[6]
 #set_property -dict { PACKAGE_PIN H3 IOSTANDARD LVCMOS33 } [get_ports { led[7] }]; #IO_L21N_T3_DQS_35 Sch=led[7]
+
+## Config Mode
+set_property CONFIG_MODE SPIx4 [current_design]
+set_property CONFIG_VOLTAGE 3.3 [current_design]
+set_property CFGBVS VCCO [current_design]
+set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]
+set_property BITSTREAM.CONFIG.SPI_FALL_EDGE YES [current_design]
+set_property BITSTREAM.CONFIG.CONFIGRATE 66 [current_design]
