@@ -23,6 +23,7 @@ class CircularPeekBuffer(
 
   val signalLastInputWord = io.wordIn.valid && wordCounter.io.value === UInt(wordPerBlock - 1)
   val signalNewPeekBlock = io.pipeReady && readyBlocks.io.value =/= UInt(0)
+  val isReady = readyBlocks.io.value =/= UInt(numberOfBlocks - 1)
 
   wordCounter.io.enable := io.wordIn.valid
   wordCounter.io.rst := wordCounter.io.value === UInt(wordPerBlock - 1)
@@ -31,10 +32,10 @@ class CircularPeekBuffer(
   readyBlocks.io.down := signalNewPeekBlock
 
   queue.io.input := io.wordIn.bits
-  queue.io.writeEnable := io.wordIn.valid
+  queue.io.writeEnable := io.wordIn.valid && isReady
   queue.io.nextBlock := signalNewPeekBlock
 
   io.wordOut := queue.io.output
   io.startOut := Reg(init=Bool(false), next=signalNewPeekBlock)
-  io.wordIn.ready := readyBlocks.io.value =/= UInt(wordPerBlock - 1)
+  io.wordIn.ready := isReady
 }

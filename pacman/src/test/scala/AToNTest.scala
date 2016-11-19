@@ -209,7 +209,7 @@ object AToNTest
 {
 	def test(width_in: Int, width_out : Int)
 	{
-		val margs = Array("--backend", "v", "--genHarness","--compile"/*,"--test"*/)
+		val margs = Array("--backend", "c", "--genHarness","--compile"/*,"--test"*/)
 		
 		chiselMainTest(margs,() => Module(new AToN(width_in, width_out)))
 		{
@@ -219,7 +219,7 @@ object AToNTest
 	}
 	def main(args: Array[String]): Unit =
 	{
-		/*println("Testing equal size on input and output")
+		println("Testing equal size on input and output")
 		test(3,3)
 		test(8,8)
 
@@ -229,7 +229,7 @@ object AToNTest
 
 		println("Testing width in greater than width out")
 		test(9,3)
-		test(8,4)*/
+		test(8,4)
 
 		println("Generating the actual case")
 		test(8,72)

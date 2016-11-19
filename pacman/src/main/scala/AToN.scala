@@ -53,7 +53,7 @@ class AToN(width_in : Int, width_out : Int) extends Module
 		var regs=Vec.fill(number_of_registers)(Reg(init=Bits(0,width_out)))
 		val cnt_reg = Reg(init = UInt(number_of_registers,log2Up(number_of_registers+1)))
 		val cnt_incremented = cnt_reg + UInt(1)
-		val last_output = cnt_reg === UInt(number_of_registers)		
+		val last_output = cnt_reg === UInt(number_of_registers)
 		val n_val = ~last_output
 		val valid_a_trans = io.a.valid && last_output
 		val valid_n_trans = io.n.ready && n_val
@@ -74,7 +74,7 @@ class AToN(width_in : Int, width_out : Int) extends Module
 				regs(i) := io.a.bits((i+1)*width_out - 1, i*width_out)
 			}
 		}
-		
+
 		io.n.bits := regs(cnt_reg)
 		io.a.ready := last_output
 		io.n.valid := n_val
