@@ -68,7 +68,7 @@ class PacmanTests(
   }
 
   println("Total cycles: %d".format(cycles))
-  println("Total images: %d".format(cycles))
+  println("Total images: %d".format(totalImages))
   println("Cycles per image: %f".format(cycles.toFloat / totalImages))
 
 }
