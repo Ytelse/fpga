@@ -12,7 +12,7 @@ class PacmanTests(
     peek(c.widthConverter.io)
     peek(c.buffer.io)
     peek(c.net.io)
-    peek(c.deinterleaver.io)
+    //peek(c.deinterleaver.io)
   }
   def vecToBigInt(vec: Seq[Int]): BigInt = {
     int(Bits(vec.reverse.map((n) => n.toString).fold("b")(_ + _)))

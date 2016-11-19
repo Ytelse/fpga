@@ -15,7 +15,7 @@ object PacmanSetup {
         NumberOfMS = 16,
         MatrixWidth = 784,
         MatrixHeight = 256,
-        NumberOfCores = 4
+        NumberOfCores = 1
       ),
       new LayerParameters(
         K = 16,
@@ -26,7 +26,7 @@ object PacmanSetup {
         NumberOfMS = 8,
         MatrixWidth = 256,
         MatrixHeight = 256,
-        NumberOfCores = 3
+        NumberOfCores = 1
       ),
       new LayerParameters(
         K = 16,
@@ -37,7 +37,7 @@ object PacmanSetup {
         NumberOfMS = 8,
         MatrixWidth = 256,
         MatrixHeight = 256,
-        NumberOfCores = 3
+        NumberOfCores = 1
       ),
       new LayerParameters(
         K = 16,
@@ -100,7 +100,7 @@ class Pacman(
   val widthConverter = Module(new AToN(inDataWordWidth, netInputWordWidth))
   val buffer = Module(new CircularPeekBuffer(3, netInputWordPerBlock, netInputWordWidth))
   val net = Module(new Net(layers))
-  val deinterleaver = Module(new Interleaver(lastLayer.parameters))
+  //val deinterleaver = Module(new Interleaver(lastLayer.parameters))
 
   io.inDataStream <> widthConverter.io.a
 

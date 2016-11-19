@@ -4,7 +4,7 @@ import Chisel._
 
 
 
-class ClockDomainBridge extends Module
+class ClockDomainBridge() extends Module
 {
 	val queueSize = 16
 	val io = new Bundle
@@ -29,10 +29,7 @@ object ClockDomainBridgeTest
 	def main(args: Array[String]): Unit =
 	{
 		val margs = Array("--backend", "v", "--genHarness","--compile")
-		chiselMainTest(margs,() => Module(new ClockDomainBridge()))
-		{
-			c => new Tester(c)
-		}
+		chiselMain(margs,() => Module(new ClockDomainBridge()))
 	}
 }
 
