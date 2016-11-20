@@ -135,3 +135,21 @@ class WrappingCounter(start: Int, end: Int, step: Int = 1) extends Module {
     io.value := v
   }
 }
+
+class CounterWithNonBlockingReset(start: Int, max: Int, step: Int = 1) extends Module {
+  val io = new Bundle {
+    val enable = Bool().asInput
+    val rst = Bool().asInput
+    val value = UInt().asOutput
+  }
+
+  val startValue = UInt(start, width=UInt(max - 1).getWidth)
+  val reg = Reg(init = startValue)
+  val base = Mux(io.rst, startValue, reg)
+  when(io.enable) {
+    reg := UInt(base) + UInt(step)
+  }.otherwise {
+    reg := reg
+  }
+  io.value := reg
+}
