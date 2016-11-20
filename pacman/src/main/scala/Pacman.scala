@@ -69,27 +69,12 @@ class Pacman(
   val layers: List[LayerData] = PacmanSetup.getLayers
 ) extends Module {
 
-  def split(bits: Bits, n: Int) = Vec[Bits] {
-    if(bits.getWidth % n != 0) {
-      throw new AssertionError("Can't split %d bits in %d parts".format(bits.getWidth, n))
-    }
-    val wordWidth = bits.getWidth / n
-    Vec(
-      Range(0, n)
-        .map(i => {
-               val upper = (i + 1) * wordWidth - 1
-               val lower = i * wordWidth
-               bits(upper, lower)
-             }).toArray
-    )
-  }
-
   val lastLayer = layers.last
   val firstLayer = layers(0)
   val inputCores = firstLayer.parameters.NumberOfCores
   val outputCores = lastLayer.parameters.NumberOfCores
   val netAnswerWidth = lastLayer.parameters.MatrixHeight
-  val netInputWordWidth = firstLayer.parameters.K * firstLayer.parameters.NumberOfCores
+  val netInputWordWidth = firstLayer.parameters.K
   val netInputWordPerBlock = firstLayer.parameters.MatrixWidth / firstLayer.parameters.K
 
   val io = new Bundle {
@@ -97,20 +82,18 @@ class Pacman(
     val digitOut = Decoupled(UInt(width=log2Up(netAnswerWidth)))
   }
 
-  val widthConverter = Module(new AToN(inDataWordWidth, netInputWordWidth))
-  val buffer = Module(new CircularPeekBuffer(3, netInputWordPerBlock, netInputWordWidth))
+  val widthConverter = Module(new WidthConverter(inDataWordWidth, netInputWordWidth))
+  val interleaver = Module(new Interleaver(firstLayer.parameters))
   val net = Module(new Net(layers))
   val deinterleaver = Module(new Deinterleaver(lastLayer.parameters))
 
-  io.inDataStream <> widthConverter.io.a
+  io.inDataStream <> widthConverter.io.wordIn
 
-  widthConverter.io.n <> buffer.io.wordIn
+  widthConverter.io.wordOut <> interleaver.io.wordIn
 
-  // io.inDataStream <> buffer.io.wordIn
-
-  net.io.xsIn := split(buffer.io.wordOut, net.io.xsIn.length)
-  net.io.start := buffer.io.startOut
-  buffer.io.pipeReady := net.io.ready
+  net.io.xsIn := interleaver.io.interleavedOut
+  net.io.start := interleaver.io.startOut
+  interleaver.io.pipeReady := net.io.ready
 
   deinterleaver.io.doneIn := net.io.done
   deinterleaver.io.oneBitPerCore.bits := net.io.xsOut.reduceLeft(Cat(_, _))
@@ -120,13 +103,4 @@ class Pacman(
   io.digitOut.bits := OHToUInt(deinterleaver.io.oneHotOut.bits)
   io.digitOut.valid := deinterleaver.io.oneHotOut.valid
   deinterleaver.io.oneHotOut.ready := io.digitOut.ready
-
-  // val bitBuffer = Module(new BitToWord(10))
-  // bitBuffer.io.bit := net.io.xsOut(0)
-  // bitBuffer.io.enable := net.io.xsOutValid
-
-  // io.digitOut.bits := OHToUInt(bitBuffer.io.word)
-  // io.digitOut.valid := Reg(init=Bool(false), next=net.io.done)
-  // net.io.pipeReady := io.digitOut.ready
-
 }
