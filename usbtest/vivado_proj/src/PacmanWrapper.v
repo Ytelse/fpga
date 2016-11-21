@@ -221,156 +221,114 @@ module AsyncFifo(input ulpi_clk, input clk, input reset,
   end
 endmodule
 
-module AToN(input clk, input reset,
-    output io_a_ready,
-    input  io_a_valid,
-    input [7:0] io_a_bits,
-    input  io_n_ready,
-    output io_n_valid,
-    output[63:0] io_n_bits
+module CounterWithNonBlockingReset(input clk, input reset,
+    input  io_enable,
+    input  io_rst,
+    output[1:0] io_value
 );
 
-  wire[63:0] T0;
-  wire[31:0] T1;
-  wire[15:0] T2;
-  reg [7:0] R3;
-  wire[7:0] T31;
-  wire[7:0] T4;
-  wire T5;
-  wire T6;
-  wire T7;
-  reg [3:0] R8;
-  wire[3:0] T32;
-  wire[3:0] T9;
-  wire[3:0] T10;
-  wire T11;
-  wire[3:0] T12;
-  reg [7:0] R13;
-  wire[7:0] T33;
-  wire[7:0] T14;
-  reg [7:0] R15;
-  wire[7:0] T34;
-  wire[7:0] T16;
-  reg [7:0] R17;
-  wire[7:0] T35;
-  wire[7:0] T18;
-  reg [7:0] R19;
-  wire[7:0] T36;
-  wire[7:0] T20;
-  reg [7:0] R21;
-  wire[7:0] T37;
-  wire[7:0] T22;
-  reg [7:0] R23;
-  wire[7:0] T38;
-  wire[7:0] T24;
-  reg [7:0] R25;
-  wire[7:0] T39;
-  wire[7:0] T26;
-  wire[15:0] T27;
-  wire[31:0] T28;
-  wire[15:0] T29;
-  wire[15:0] T30;
+  reg [1:0] reg_;
+  wire[1:0] T4;
+  wire[1:0] T0;
+  wire[1:0] T1;
+  wire[1:0] T2;
+  wire[1:0] base;
+  wire T3;
 
 `ifndef SYNTHESIS
 // synthesis translate_off
   integer initvar;
   initial begin
     #0.002;
-    R3 = {1{$random}};
-    R8 = {1{$random}};
-    R13 = {1{$random}};
-    R15 = {1{$random}};
-    R17 = {1{$random}};
-    R19 = {1{$random}};
-    R21 = {1{$random}};
-    R23 = {1{$random}};
-    R25 = {1{$random}};
+    reg_ = {1{$random}};
   end
 // synthesis translate_on
 `endif
 
-  assign io_n_bits = T0;
-  assign T0 = {T28, T1};
-  assign T1 = {T27, T2};
-  assign T2 = {R13, R3};
-  assign T31 = reset ? 8'h0 : T4;
-  assign T4 = T5 ? R13 : R3;
-  assign T5 = io_a_valid & T6;
-  assign T6 = ~ T7;
-  assign T7 = R8 == 4'h8;
-  assign T32 = reset ? 4'h0 : T9;
-  assign T9 = T5 ? T12 : T10;
-  assign T10 = T11 ? 4'h0 : R8;
-  assign T11 = io_n_ready & T7;
-  assign T12 = R8 + 4'h1;
-  assign T33 = reset ? 8'h0 : T14;
-  assign T14 = T5 ? R15 : R13;
-  assign T34 = reset ? 8'h0 : T16;
-  assign T16 = T5 ? R17 : R15;
-  assign T35 = reset ? 8'h0 : T18;
-  assign T18 = T5 ? R19 : R17;
-  assign T36 = reset ? 8'h0 : T20;
-  assign T20 = T5 ? R21 : R19;
-  assign T37 = reset ? 8'h0 : T22;
-  assign T22 = T5 ? R23 : R21;
-  assign T38 = reset ? 8'h0 : T24;
-  assign T24 = T5 ? R25 : R23;
-  assign T39 = reset ? 8'h0 : T26;
-  assign T26 = T5 ? io_a_bits : R25;
-  assign T27 = {R17, R15};
-  assign T28 = {T30, T29};
-  assign T29 = {R21, R19};
-  assign T30 = {R25, R23};
-  assign io_n_valid = T7;
-  assign io_a_ready = T6;
+  assign io_value = reg_;
+  assign T4 = reset ? 2'h0 : T0;
+  assign T0 = T3 ? reg_ : T1;
+  assign T1 = io_enable ? T2 : reg_;
+  assign T2 = base + 2'h1;
+  assign base = io_rst ? 2'h0 : reg_;
+  assign T3 = io_enable ^ 1'h1;
 
   always @(posedge clk) begin
     if(reset) begin
-      R3 <= 8'h0;
-    end else if(T5) begin
-      R3 <= R13;
+      reg_ <= 2'h0;
+    end else if(T3) begin
+      reg_ <= reg_;
+    end else if(io_enable) begin
+      reg_ <= T2;
     end
-    if(reset) begin
-      R8 <= 4'h0;
-    end else if(T5) begin
-      R8 <= T12;
-    end else if(T11) begin
-      R8 <= 4'h0;
+  end
+endmodule
+
+module WidthConverter(input clk, input reset,
+    output io_wordIn_ready,
+    input  io_wordIn_valid,
+    input [7:0] io_wordIn_bits,
+    input  io_wordOut_ready,
+    output io_wordOut_valid,
+    output[15:0] io_wordOut_bits
+);
+
+  wire T0;
+  wire T1;
+  wire T2;
+  wire T3;
+  wire T4;
+  wire[15:0] T5;
+  reg [7:0] R6;
+  wire[7:0] T7;
+  wire[7:0] T8;
+  wire T9;
+  reg [7:0] R10;
+  wire[7:0] T11;
+  wire[7:0] T12;
+  wire[1:0] CounterWithNonBlockingReset_io_value;
+
+`ifndef SYNTHESIS
+// synthesis translate_off
+  integer initvar;
+  initial begin
+    #0.002;
+    R6 = {1{$random}};
+    R10 = {1{$random}};
+  end
+// synthesis translate_on
+`endif
+
+  assign T0 = T1 & io_wordOut_ready;
+  assign T1 = CounterWithNonBlockingReset_io_value == 2'h2;
+  assign T2 = T3 & io_wordIn_valid;
+  assign T3 = T4 | io_wordOut_ready;
+  assign T4 = T1 ^ 1'h1;
+  assign io_wordOut_bits = T5;
+  assign T5 = {R10, R6};
+  assign T7 = T9 ? R6 : T8;
+  assign T8 = T2 ? R10 : R6;
+  assign T9 = T2 ^ 1'h1;
+  assign T11 = T9 ? R10 : T12;
+  assign T12 = T2 ? io_wordIn_bits : R10;
+  assign io_wordOut_valid = T1;
+  assign io_wordIn_ready = T3;
+  CounterWithNonBlockingReset CounterWithNonBlockingReset(.clk(clk), .reset(reset),
+       .io_enable( T2 ),
+       .io_rst( T0 ),
+       .io_value( CounterWithNonBlockingReset_io_value )
+  );
+
+  always @(posedge clk) begin
+    if(T9) begin
+      R6 <= R6;
+    end else if(T2) begin
+      R6 <= R10;
     end
-    if(reset) begin
-      R13 <= 8'h0;
-    end else if(T5) begin
-      R13 <= R15;
-    end
-    if(reset) begin
-      R15 <= 8'h0;
-    end else if(T5) begin
-      R15 <= R17;
-    end
-    if(reset) begin
-      R17 <= 8'h0;
-    end else if(T5) begin
-      R17 <= R19;
-    end
-    if(reset) begin
-      R19 <= 8'h0;
-    end else if(T5) begin
-      R19 <= R21;
-    end
-    if(reset) begin
-      R21 <= 8'h0;
-    end else if(T5) begin
-      R21 <= R23;
-    end
-    if(reset) begin
-      R23 <= 8'h0;
-    end else if(T5) begin
-      R23 <= R25;
-    end
-    if(reset) begin
-      R25 <= 8'h0;
-    end else if(T5) begin
-      R25 <= io_a_bits;
+    if(T9) begin
+      R10 <= R10;
+    end else if(T2) begin
+      R10 <= io_wordIn_bits;
     end
   end
 endmodule
@@ -480,8 +438,8 @@ endmodule
 module CircularPeekQueue_0(input clk, input reset,
     input  io_writeEnable,
     input  io_nextBlock,
-    input [63:0] io_input,
-    output[63:0] io_output
+    input [15:0] io_input,
+    output[15:0] io_output
 );
 
   reg [7:0] writeAddr;
@@ -499,7 +457,7 @@ module CircularPeekQueue_0(input clk, input reset,
   wire T9;
   wire[7:0] currentBlockOffset_io_value;
   wire[5:0] inBlockReadOffset_io_value;
-  wire[63:0] queue_b_dout;
+  wire[15:0] queue_b_dout;
 
 `ifndef SYNTHESIS
 // synthesis translate_off
@@ -535,7 +493,7 @@ module CircularPeekQueue_0(input clk, input reset,
        .io_value( inBlockReadOffset_io_value )
   );
   DualPortBRAM # (
-    .DATA(64),
+    .DATA(16),
     .ADDR(8)
   ) queue(.clk(clk),
        .b_addr( T7 ),
@@ -549,7 +507,7 @@ module CircularPeekQueue_0(input clk, input reset,
   );
 `ifndef SYNTHESIS
 // synthesis translate_off
-    assign queue.b_din = {2{$random}};
+    assign queue.b_din = {1{$random}};
 // synthesis translate_on
 `endif
 
@@ -609,6 +567,51 @@ module Counter_0(input clk, input reset,
   end
 endmodule
 
+module Counter_1(input clk, input reset,
+    input  io_enable,
+    input  io_rst,
+    output[1:0] io_value
+);
+
+  reg [1:0] v;
+  wire[1:0] T6;
+  wire[1:0] T0;
+  wire[1:0] T1;
+  wire T2;
+  wire[1:0] T3;
+  wire T4;
+  wire T5;
+
+`ifndef SYNTHESIS
+// synthesis translate_off
+  integer initvar;
+  initial begin
+    #0.002;
+    v = {1{$random}};
+  end
+// synthesis translate_on
+`endif
+
+  assign io_value = v;
+  assign T6 = reset ? 2'h0 : T0;
+  assign T0 = T4 ? T3 : T1;
+  assign T1 = T2 ? 2'h0 : v;
+  assign T2 = io_enable & io_rst;
+  assign T3 = v + 2'h1;
+  assign T4 = io_enable & T5;
+  assign T5 = io_rst ^ 1'h1;
+
+  always @(posedge clk) begin
+    if(reset) begin
+      v <= 2'h0;
+    end else if(T4) begin
+      v <= T3;
+    end else if(T2) begin
+      v <= 2'h0;
+    end
+  end
+endmodule
+
 module UpDownCounter_0(input clk, input reset,
     input  io_up,
     input  io_down,
@@ -662,76 +665,127 @@ module UpDownCounter_0(input clk, input reset,
   end
 endmodule
 
-module CircularPeekBuffer(input clk, input reset,
+module Interleaver(input clk, input reset,
     output io_wordIn_ready,
     input  io_wordIn_valid,
-    input [63:0] io_wordIn_bits,
-    output[63:0] io_wordOut,
+    input [15:0] io_wordIn_bits,
+    output[15:0] io_interleavedOut_3,
+    output[15:0] io_interleavedOut_2,
+    output[15:0] io_interleavedOut_1,
+    output[15:0] io_interleavedOut_0,
     output io_startOut,
     input  io_pipeReady
 );
 
   wire signalNewPeekBlock;
   wire T0;
-  wire signalLastInputWord;
-  wire T1;
+  wire signalWritingLastWordInLastQueue;
+  wire isLastQueue;
+  wire signalWritingLastWord;
+  wire isLastInputWordInBlock;
   wire signalReadingInput;
   wire isReady;
+  wire T1;
   wire T2;
-  reg  R3;
+  wire T3;
   wire T4;
+  wire T5;
+  wire T6;
+  wire T7;
+  wire T8;
+  reg  R9;
+  wire T10;
   wire[5:0] wordCounter_io_value;
+  wire[1:0] queueCounter_io_value;
   wire[1:0] readyBlocks_io_value;
-  wire[63:0] queue_io_output;
+  wire[15:0] CircularPeekQueue_io_output;
+  wire[15:0] CircularPeekQueue_1_io_output;
+  wire[15:0] CircularPeekQueue_2_io_output;
+  wire[15:0] CircularPeekQueue_3_io_output;
 
 `ifndef SYNTHESIS
 // synthesis translate_off
   integer initvar;
   initial begin
     #0.002;
-    R3 = {1{$random}};
+    R9 = {1{$random}};
   end
 // synthesis translate_on
 `endif
 
   assign signalNewPeekBlock = io_pipeReady & T0;
   assign T0 = readyBlocks_io_value != 2'h0;
-  assign signalLastInputWord = signalReadingInput & T1;
-  assign T1 = wordCounter_io_value == 6'h30;
+  assign signalWritingLastWordInLastQueue = signalWritingLastWord & isLastQueue;
+  assign isLastQueue = queueCounter_io_value == 2'h3;
+  assign signalWritingLastWord = signalReadingInput & isLastInputWordInBlock;
+  assign isLastInputWordInBlock = wordCounter_io_value == 6'h30;
   assign signalReadingInput = io_wordIn_valid & isReady;
   assign isReady = readyBlocks_io_value != 2'h2;
-  assign T2 = wordCounter_io_value == 6'h30;
-  assign io_startOut = R3;
-  assign T4 = reset ? 1'h0 : signalNewPeekBlock;
-  assign io_wordOut = queue_io_output;
+  assign T1 = T2 & signalReadingInput;
+  assign T2 = queueCounter_io_value == 2'h3;
+  assign T3 = T4 & signalReadingInput;
+  assign T4 = queueCounter_io_value == 2'h2;
+  assign T5 = T6 & signalReadingInput;
+  assign T6 = queueCounter_io_value == 2'h1;
+  assign T7 = T8 & signalReadingInput;
+  assign T8 = queueCounter_io_value == 2'h0;
+  assign io_startOut = R9;
+  assign T10 = reset ? 1'h0 : signalNewPeekBlock;
+  assign io_interleavedOut_0 = CircularPeekQueue_io_output;
+  assign io_interleavedOut_1 = CircularPeekQueue_1_io_output;
+  assign io_interleavedOut_2 = CircularPeekQueue_2_io_output;
+  assign io_interleavedOut_3 = CircularPeekQueue_3_io_output;
   assign io_wordIn_ready = isReady;
-  CircularPeekQueue_0 queue(.clk(clk), .reset(reset),
-       .io_writeEnable( signalReadingInput ),
+  CircularPeekQueue_0 CircularPeekQueue(.clk(clk), .reset(reset),
+       .io_writeEnable( T7 ),
        .io_nextBlock( signalNewPeekBlock ),
        .io_input( io_wordIn_bits ),
-       .io_output( queue_io_output )
+       .io_output( CircularPeekQueue_io_output )
+  );
+  CircularPeekQueue_0 CircularPeekQueue_1(.clk(clk), .reset(reset),
+       .io_writeEnable( T5 ),
+       .io_nextBlock( signalNewPeekBlock ),
+       .io_input( io_wordIn_bits ),
+       .io_output( CircularPeekQueue_1_io_output )
+  );
+  CircularPeekQueue_0 CircularPeekQueue_2(.clk(clk), .reset(reset),
+       .io_writeEnable( T3 ),
+       .io_nextBlock( signalNewPeekBlock ),
+       .io_input( io_wordIn_bits ),
+       .io_output( CircularPeekQueue_2_io_output )
+  );
+  CircularPeekQueue_0 CircularPeekQueue_3(.clk(clk), .reset(reset),
+       .io_writeEnable( T1 ),
+       .io_nextBlock( signalNewPeekBlock ),
+       .io_input( io_wordIn_bits ),
+       .io_output( CircularPeekQueue_3_io_output )
   );
   Counter_0 wordCounter(.clk(clk), .reset(reset),
        .io_enable( signalReadingInput ),
-       .io_rst( T2 ),
+       .io_rst( isLastInputWordInBlock ),
        .io_value( wordCounter_io_value )
   );
+  Counter_1 queueCounter(.clk(clk), .reset(reset),
+       .io_enable( signalWritingLastWord ),
+       .io_rst( isLastQueue ),
+       .io_value( queueCounter_io_value )
+  );
   UpDownCounter_0 readyBlocks(.clk(clk), .reset(reset),
-       .io_up( signalLastInputWord ),
+       .io_up( signalWritingLastWordInLastQueue ),
        .io_down( signalNewPeekBlock ),
        .io_value( readyBlocks_io_value )
   );
 
   always @(posedge clk) begin
     if(reset) begin
-      R3 <= 1'h0;
+      R9 <= 1'h0;
     end else begin
-      R3 <= signalNewPeekBlock;
+      R9 <= signalNewPeekBlock;
     end
   end
 endmodule
 
-module Counter_2(input clk, input reset,
+module Counter_3(input clk, input reset,
     input  io_enable,
     input  io_rst,
     output[8:0] io_value
@@ -776,7 +830,7 @@ module Counter_2(input clk, input reset,
   end
 endmodule
 
-module Counter_3(input clk, input reset,
+module Counter_4(input clk, input reset,
     input  io_enable,
     input  io_rst,
     output[4:0] io_value
@@ -1001,17 +1055,17 @@ module WarpControl_0(input clk, input reset,
        .io_rst( signalLastCycleInPass ),
        .io_value( cycleInPass_io_value )
   );
-  Counter_2 cycle(.clk(clk), .reset(reset),
+  Counter_3 cycle(.clk(clk), .reset(reset),
        .io_enable( isActive_io_state ),
        .io_rst( signalLastActiveCycle ),
        .io_value( cycle_io_value )
   );
-  Counter_3 tailCycle(.clk(clk), .reset(reset),
+  Counter_4 tailCycle(.clk(clk), .reset(reset),
        .io_enable( isTailing_io_state ),
        .io_rst( signalDone ),
        .io_value( tailCycle_io_value )
   );
-  Counter_3 selectX(.clk(clk), .reset(reset),
+  Counter_4 selectX(.clk(clk), .reset(reset),
        .io_enable( isOutputting_io_state ),
        .io_rst( signalResetSelectX ),
        .io_value( selectX_io_value )
@@ -12738,7 +12792,7 @@ module Warp_0(input clk, input reset,
   );
 endmodule
 
-module Counter_1(input clk, input reset,
+module Counter_2(input clk, input reset,
     input  io_enable,
     input  io_rst,
     output[3:0] io_value
@@ -12783,7 +12837,7 @@ module Counter_1(input clk, input reset,
   end
 endmodule
 
-module Counter_4(input clk, input reset,
+module Counter_5(input clk, input reset,
     input  io_enable,
     input  io_rst,
     output[7:0] io_value
@@ -12901,22 +12955,22 @@ module WarpControl_1(input clk, input reset,
   assign T5 = T7 & T6;
   assign T6 = io_start ^ 1'h1;
   assign T7 = isReady_io_state & io_nextReady;
-  Counter_1 cycleInPass(.clk(clk), .reset(reset),
+  Counter_2 cycleInPass(.clk(clk), .reset(reset),
        .io_enable( isActive_io_state ),
        .io_rst( signalLastCycleInPass ),
        .io_value( cycleInPass_io_value )
   );
-  Counter_4 cycle(.clk(clk), .reset(reset),
+  Counter_5 cycle(.clk(clk), .reset(reset),
        .io_enable( isActive_io_state ),
        .io_rst( signalLastActiveCycle ),
        .io_value( cycle_io_value )
   );
-  Counter_1 tailCycle(.clk(clk), .reset(reset),
+  Counter_2 tailCycle(.clk(clk), .reset(reset),
        .io_enable( isTailing_io_state ),
        .io_rst( signalDone ),
        .io_value( tailCycle_io_value )
   );
-  Counter_1 selectX(.clk(clk), .reset(reset),
+  Counter_2 selectX(.clk(clk), .reset(reset),
        .io_enable( isOutputting_io_state ),
        .io_rst( signalResetSelectX ),
        .io_value( selectX_io_value )
@@ -21610,22 +21664,22 @@ module WarpControl_2(input clk, input reset,
   assign T5 = T7 & T6;
   assign T6 = io_start ^ 1'h1;
   assign T7 = isReady_io_state & io_nextReady;
-  Counter_1 cycleInPass(.clk(clk), .reset(reset),
+  Counter_2 cycleInPass(.clk(clk), .reset(reset),
        .io_enable( isActive_io_state ),
        .io_rst( signalLastCycleInPass ),
        .io_value( cycleInPass_io_value )
   );
-  Counter_1 cycle(.clk(clk), .reset(reset),
+  Counter_2 cycle(.clk(clk), .reset(reset),
        .io_enable( isActive_io_state ),
        .io_rst( signalLastActiveCycle ),
        .io_value( cycle_io_value )
   );
-  Counter_1 tailCycle(.clk(clk), .reset(reset),
+  Counter_2 tailCycle(.clk(clk), .reset(reset),
        .io_enable( isTailing_io_state ),
        .io_rst( signalDone ),
        .io_value( tailCycle_io_value )
   );
-  Counter_1 selectX(.clk(clk), .reset(reset),
+  Counter_2 selectX(.clk(clk), .reset(reset),
        .io_enable( isOutputting_io_state ),
        .io_rst( signalResetSelectX ),
        .io_value( selectX_io_value )
@@ -24159,7 +24213,7 @@ module GearBox_0(input clk, input reset,
        .io_down( R53 ),
        .io_value( fillingBlock_io_value )
   );
-  Counter_1 bitCounter(.clk(clk), .reset(reset),
+  Counter_2 bitCounter(.clk(clk), .reset(reset),
        .io_enable( io_validIn ),
        .io_rst( signalResetBitBuffers ),
        .io_value( bitCounter_io_value )
@@ -24688,7 +24742,7 @@ module GearBox_1(input clk, input reset,
        .io_down( R35 ),
        .io_value( fillingBlock_io_value )
   );
-  Counter_1 bitCounter(.clk(clk), .reset(reset),
+  Counter_2 bitCounter(.clk(clk), .reset(reset),
        .io_enable( io_validIn ),
        .io_rst( signalResetBitBuffers ),
        .io_value( bitCounter_io_value )
@@ -25309,7 +25363,7 @@ module GearBox_2(input clk, input reset,
        .io_down( R35 ),
        .io_value( fillingBlock_io_value )
   );
-  Counter_1 bitCounter(.clk(clk), .reset(reset),
+  Counter_2 bitCounter(.clk(clk), .reset(reset),
        .io_enable( io_validIn ),
        .io_rst( signalResetBitBuffers ),
        .io_value( bitCounter_io_value )
@@ -25670,6 +25724,90 @@ module BitToWord_0(input clk,
   end
 endmodule
 
+module Deinterleaver(input clk, input reset,
+    output io_oneBitPerCore_ready,
+    input  io_oneBitPerCore_valid,
+    input  io_oneBitPerCore_bits,
+    input  io_oneHotOut_ready,
+    output io_oneHotOut_valid,
+    output[9:0] io_oneHotOut_bits,
+    input  io_doneIn
+);
+
+  reg [9:0] regsBuf_0;
+  wire[9:0] T7;
+  wire[9:0] T0;
+  reg  doneDelay;
+  wire T8;
+  reg  send;
+  wire T9;
+  wire T1;
+  wire T2;
+  wire T3;
+  reg  count;
+  wire T10;
+  wire T4;
+  wire T5;
+  wire T6;
+  wire[9:0] BitToWord_io_word;
+
+`ifndef SYNTHESIS
+// synthesis translate_off
+  integer initvar;
+  initial begin
+    #0.002;
+    regsBuf_0 = {1{$random}};
+    doneDelay = {1{$random}};
+    send = {1{$random}};
+    count = {1{$random}};
+  end
+// synthesis translate_on
+`endif
+
+  assign io_oneHotOut_bits = regsBuf_0;
+  assign T7 = reset ? 10'h0 : T0;
+  assign T0 = doneDelay ? BitToWord_io_word : regsBuf_0;
+  assign T8 = reset ? 1'h0 : io_doneIn;
+  assign io_oneHotOut_valid = send;
+  assign T9 = reset ? 1'h0 : T1;
+  assign T1 = T2 ? doneDelay : send;
+  assign T2 = doneDelay | T3;
+  assign T3 = count == 1'h0;
+  assign T10 = reset ? 1'h0 : T4;
+  assign T4 = T5 ? 1'h0 : count;
+  assign T5 = send & T6;
+  assign T6 = count == 1'h0;
+  assign io_oneBitPerCore_ready = io_oneHotOut_ready;
+  BitToWord_0 BitToWord(.clk(clk),
+       .io_enable( io_oneBitPerCore_valid ),
+       .io_bit( io_oneBitPerCore_bits ),
+       .io_word( BitToWord_io_word )
+  );
+
+  always @(posedge clk) begin
+    if(reset) begin
+      regsBuf_0 <= 10'h0;
+    end else if(doneDelay) begin
+      regsBuf_0 <= BitToWord_io_word;
+    end
+    if(reset) begin
+      doneDelay <= 1'h0;
+    end else begin
+      doneDelay <= io_doneIn;
+    end
+    if(reset) begin
+      send <= 1'h0;
+    end else if(T2) begin
+      send <= doneDelay;
+    end
+    if(reset) begin
+      count <= 1'h0;
+    end else if(T5) begin
+      count <= 1'h0;
+    end
+  end
+endmodule
+
 module Pacman(input clk, input reset,
     output io_inDataStream_ready,
     input  io_inDataStream_valid,
@@ -25679,115 +25817,99 @@ module Pacman(input clk, input reset,
     output[3:0] io_digitOut_bits
 );
 
-  wire[15:0] T0;
-  wire[15:0] T1;
-  wire[15:0] T2;
-  wire[15:0] T3;
-  wire[3:0] T6;
-  wire[2:0] T7;
-  wire[1:0] T8;
-  wire T9;
-  wire[1:0] T10;
+  wire[3:0] T1;
+  wire[2:0] T2;
+  wire[1:0] T3;
+  wire T4;
+  wire[1:0] T5;
+  wire[1:0] T6;
+  wire[3:0] T7;
+  wire[3:0] T8;
+  wire[7:0] T9;
+  wire[7:0] T10;
   wire[1:0] T11;
   wire[3:0] T12;
-  wire[3:0] T13;
-  wire[7:0] T14;
-  wire[7:0] T15;
-  wire[1:0] T16;
-  wire[3:0] T17;
-  wire[1:0] T18;
-  wire T19;
-  wire T20;
-  wire T21;
-  reg  R5;
-  wire T22;
-  wire widthConverter_io_a_ready;
-  wire widthConverter_io_n_valid;
-  wire[63:0] widthConverter_io_n_bits;
-  wire[9:0] bitBuffer_io_word;
-  wire buffer_io_wordIn_ready;
-  wire[63:0] buffer_io_wordOut;
-  wire buffer_io_startOut;
+  wire[1:0] T13;
+  wire T14;
+  wire T15;
+  wire T16;
+  wire widthConverter_io_wordIn_ready;
+  wire widthConverter_io_wordOut_valid;
+  wire[15:0] widthConverter_io_wordOut_bits;
+  wire deinterleaver_io_oneBitPerCore_ready;
+  wire deinterleaver_io_oneHotOut_valid;
+  wire[9:0] deinterleaver_io_oneHotOut_bits;
+  wire interleaver_io_wordIn_ready;
+  wire[15:0] interleaver_io_interleavedOut_3;
+  wire[15:0] interleaver_io_interleavedOut_2;
+  wire[15:0] interleaver_io_interleavedOut_1;
+  wire[15:0] interleaver_io_interleavedOut_0;
+  wire interleaver_io_startOut;
   wire net_io_ready;
   wire net_io_xsOut_0;
   wire net_io_xsOutValid;
   wire net_io_done;
 
-`ifndef SYNTHESIS
-// synthesis translate_off
-  integer initvar;
-  initial begin
-    #0.002;
-    R5 = {1{$random}};
-  end
-// synthesis translate_on
-`endif
 
-  assign T0 = buffer_io_wordOut[15:0];
-  assign T1 = buffer_io_wordOut[31:16];
-  assign T2 = buffer_io_wordOut[47:32];
-  assign T3 = buffer_io_wordOut[63:48];
-  assign io_digitOut_bits = T6;
-  assign T6 = {T21, T7};
-  assign T7 = {T20, T8};
-  assign T8 = {T19, T9};
-  assign T9 = T10[1];
-  assign T10 = T18 | T11;
-  assign T11 = T12[1:0];
-  assign T12 = T17 | T13;
-  assign T13 = T14[3:0];
-  assign T14 = T16 | T15;
-  assign T15 = bitBuffer_io_word[7:0];
-  assign T16 = bitBuffer_io_word[9:8];
-  assign T17 = T14[7:4];
-  assign T18 = T12[3:2];
-  assign T19 = T18 != 2'h0;
-  assign T20 = T17 != 4'h0;
-  assign T21 = T16 != 2'h0;
-  assign io_digitOut_valid = R5;
-  assign T22 = reset ? 1'h0 : net_io_done;
-  assign io_inDataStream_ready = widthConverter_io_a_ready;
-  AToN widthConverter(.clk(clk), .reset(reset),
-       .io_a_ready( widthConverter_io_a_ready ),
-       .io_a_valid( io_inDataStream_valid ),
-       .io_a_bits( io_inDataStream_bits ),
-       .io_n_ready( buffer_io_wordIn_ready ),
-       .io_n_valid( widthConverter_io_n_valid ),
-       .io_n_bits( widthConverter_io_n_bits )
+  assign io_digitOut_bits = T1;
+  assign T1 = {T16, T2};
+  assign T2 = {T15, T3};
+  assign T3 = {T14, T4};
+  assign T4 = T5[1];
+  assign T5 = T13 | T6;
+  assign T6 = T7[1:0];
+  assign T7 = T12 | T8;
+  assign T8 = T9[3:0];
+  assign T9 = T11 | T10;
+  assign T10 = deinterleaver_io_oneHotOut_bits[7:0];
+  assign T11 = deinterleaver_io_oneHotOut_bits[9:8];
+  assign T12 = T9[7:4];
+  assign T13 = T7[3:2];
+  assign T14 = T13 != 2'h0;
+  assign T15 = T12 != 4'h0;
+  assign T16 = T11 != 2'h0;
+  assign io_digitOut_valid = deinterleaver_io_oneHotOut_valid;
+  assign io_inDataStream_ready = widthConverter_io_wordIn_ready;
+  WidthConverter widthConverter(.clk(clk), .reset(reset),
+       .io_wordIn_ready( widthConverter_io_wordIn_ready ),
+       .io_wordIn_valid( io_inDataStream_valid ),
+       .io_wordIn_bits( io_inDataStream_bits ),
+       .io_wordOut_ready( interleaver_io_wordIn_ready ),
+       .io_wordOut_valid( widthConverter_io_wordOut_valid ),
+       .io_wordOut_bits( widthConverter_io_wordOut_bits )
   );
-  CircularPeekBuffer buffer(.clk(clk), .reset(reset),
-       .io_wordIn_ready( buffer_io_wordIn_ready ),
-       .io_wordIn_valid( widthConverter_io_n_valid ),
-       .io_wordIn_bits( widthConverter_io_n_bits ),
-       .io_wordOut( buffer_io_wordOut ),
-       .io_startOut( buffer_io_startOut ),
+  Interleaver interleaver(.clk(clk), .reset(reset),
+       .io_wordIn_ready( interleaver_io_wordIn_ready ),
+       .io_wordIn_valid( widthConverter_io_wordOut_valid ),
+       .io_wordIn_bits( widthConverter_io_wordOut_bits ),
+       .io_interleavedOut_3( interleaver_io_interleavedOut_3 ),
+       .io_interleavedOut_2( interleaver_io_interleavedOut_2 ),
+       .io_interleavedOut_1( interleaver_io_interleavedOut_1 ),
+       .io_interleavedOut_0( interleaver_io_interleavedOut_0 ),
+       .io_startOut( interleaver_io_startOut ),
        .io_pipeReady( net_io_ready )
   );
   Net net(.clk(clk), .reset(reset),
        .io_ready( net_io_ready ),
-       .io_start( buffer_io_startOut ),
-       .io_xsIn_3( T3 ),
-       .io_xsIn_2( T2 ),
-       .io_xsIn_1( T1 ),
-       .io_xsIn_0( T0 ),
+       .io_start( interleaver_io_startOut ),
+       .io_xsIn_3( interleaver_io_interleavedOut_3 ),
+       .io_xsIn_2( interleaver_io_interleavedOut_2 ),
+       .io_xsIn_1( interleaver_io_interleavedOut_1 ),
+       .io_xsIn_0( interleaver_io_interleavedOut_0 ),
        .io_xsOut_0( net_io_xsOut_0 ),
        .io_xsOutValid( net_io_xsOutValid ),
        .io_done( net_io_done ),
-       .io_pipeReady( io_digitOut_ready )
+       .io_pipeReady( deinterleaver_io_oneBitPerCore_ready )
   );
-  BitToWord_0 bitBuffer(.clk(clk),
-       .io_enable( net_io_xsOutValid ),
-       .io_bit( net_io_xsOut_0 ),
-       .io_word( bitBuffer_io_word )
+  Deinterleaver deinterleaver(.clk(clk), .reset(reset),
+       .io_oneBitPerCore_ready( deinterleaver_io_oneBitPerCore_ready ),
+       .io_oneBitPerCore_valid( net_io_xsOutValid ),
+       .io_oneBitPerCore_bits( net_io_xsOut_0 ),
+       .io_oneHotOut_ready( io_digitOut_ready ),
+       .io_oneHotOut_valid( deinterleaver_io_oneHotOut_valid ),
+       .io_oneHotOut_bits( deinterleaver_io_oneHotOut_bits ),
+       .io_doneIn( net_io_done )
   );
-
-  always @(posedge clk) begin
-    if(reset) begin
-      R5 <= 1'h0;
-    end else begin
-      R5 <= net_io_done;
-    end
-  end
 endmodule
 
 module PacmanWrapper(input ulpi_clk, input clk, input reset,

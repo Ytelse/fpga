@@ -36,9 +36,6 @@ foreach dcp [get_files -quiet -all *.dcp] {
 read_xdc /home/ulrich/chisel/fpga/usbtest/vivado_proj/ulpi_test/ulpi_test.srcs/constrs_1/new/constraints.xdc
 set_property used_in_implementation false [get_files /home/ulrich/chisel/fpga/usbtest/vivado_proj/ulpi_test/ulpi_test.srcs/constrs_1/new/constraints.xdc]
 
-read_xdc /home/ulrich/chisel/fpga/usbtest/vivado_proj/ulpi_test/ulpi_test.srcs/constrs_1/new/debug.xdc
-set_property used_in_implementation false [get_files /home/ulrich/chisel/fpga/usbtest/vivado_proj/ulpi_test/ulpi_test.srcs/constrs_1/new/debug.xdc]
-
 
 synth_design -top top -part xc7a35tftg256-2
 
