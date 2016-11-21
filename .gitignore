@@ -1,3 +1,5 @@
+.DS_Store
+
 # Output directory
 *target/
 
@@ -9,3 +11,4 @@
 # Executables
 pacman/Car
 pacman/ColumnRunner
+fpgahost/fpgahost
