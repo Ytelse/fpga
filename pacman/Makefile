@@ -18,6 +18,7 @@ PLACE_DCP := ${WORKDIR}/place.dcp
 ROUTE_DCP := ${WORKDIR}/route.dcp
 BITFILE   := ${WORKDIR}/${PACKAGE_NAME}-Top.bit
 BINFILE   := ${WORKDIR}/${PACKAGE_NAME}-Top.bin
+PRMFILE   := ${WORKDIR}/${PACKAGE_NAME}-Top.prm
 
 CHISELFILES := $(shell find ${CURDIR} -iname '*scala')
 BLOCK_PERIOD := 1234
@@ -59,6 +60,14 @@ bitgen: ${BITFILE}
 
 upload: chisel ${BITFILE}
 	${VIVADO} -mode batch -source ${SCRIPTDIR}/program_bitfile.tcl -tclargs ${BITFILE} | tee ${SYNTH_LOG}
+	@rm -f ${CURDIR}/vivado.log
+	@rm -f ${CURDIR}/vivado.jou
+	@rm -f ${CURDIR}/webtalk.log
+	@rm -f ${CURDIR}/webtalk.jou
+
+
+config: chisel ${BITFILE}
+	${VIVADO} -mode batch -source ${SCRIPTDIR}/config.tcl -tclargs ${BITFILE} ${BINFILE} ${PRMFILE}  | tee ${SYNTH_LOG}
 	@rm -f ${CURDIR}/vivado.log
 	@rm -f ${CURDIR}/vivado.jou
 	@rm -f ${CURDIR}/webtalk.log
