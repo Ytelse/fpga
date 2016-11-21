@@ -20,6 +20,7 @@ class PacmanTests(
   }
 
   val layers = c.layers
+  val RANDOM_WAITS = true
 
 
   poke(c.io.inDataStream.valid, false)
@@ -54,9 +55,15 @@ class PacmanTests(
     }
 
     if(ready == 1) {
-      poke(c.io.inDataStream.valid, true)
-      poke(c.io.inDataStream.bits, vecToBigInt(testInputWords(inputWordI)))
-      inputWordI = (inputWordI + 1) % testInputWords.length
+      if(RANDOM_WAITS && Random.nextInt(2) == 0) {
+        poke(c.io.inDataStream.valid, false)
+        poke(c.io.inDataStream.bits, Random.nextInt(12345678))
+      }
+      else {
+        poke(c.io.inDataStream.valid, true)
+        poke(c.io.inDataStream.bits, vecToBigInt(testInputWords(inputWordI)))
+        inputWordI = (inputWordI + 1) % testInputWords.length
+      }
     }
     else {
       poke(c.io.inDataStream.valid, false)

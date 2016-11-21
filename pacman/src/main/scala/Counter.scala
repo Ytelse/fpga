@@ -149,7 +149,7 @@ class CounterWithNonBlockingReset(start: Int, max: Int, step: Int = 1) extends M
   when(io.enable) {
     reg := UInt(base) + UInt(step)
   }.otherwise {
-    reg := reg
+    reg := base
   }
   io.value := reg
 }
