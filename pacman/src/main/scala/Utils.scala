@@ -68,7 +68,8 @@ object Utils {
                       .map(s => Integer.parseInt(s, 10)).toArray
     i += 2
 
-    val NImages = 10
+    val NImages = 8
+
     val NResults = 5
     val results = List.range(0, NImages).map(_ => {
       List.range(0, NResults).map(_ => {
@@ -83,5 +84,28 @@ object Utils {
       Array(firstBiases, secondBiases, thirdBiases, fourthBiases),
       results
     )
+  }
+
+  def createHostStream(
+    inputStreamWordWidth: Int,
+    inputK: Int,
+    inputCores: Int
+  ) {
+    val testData = readDumpFile()
+    val testInputs = testData.vectors.map(_(0)).take(4).toArray
+    val inputVectorSize = testData.vectors(0)(0).length
+
+    val chunksInImage = inputVectorSize / inputK
+    val kChunkedTestInputs = testInputs.map(_.grouped(inputK).toArray).toArray
+    val warpGrouped = kChunkedTestInputs.grouped(inputCores).map(_.transpose.toArray).toArray
+    val netInputWordArrays = warpGrouped.map(_.map(_.flatten.toArray).toArray).flatten.toArray
+    val inputStreamWordArrays = netInputWordArrays.flatten.grouped(inputStreamWordWidth).toArray
+
+    val inputStreamInts = inputStreamWordArrays.map(_.zipWithIndex.map{
+                                                      case (t, i) => t * Math.pow(2, i)
+                                                    }.sum.toInt).toArray
+
+
+    println(inputStreamInts.deep.mkString("\n"))
   }
 }

@@ -1,38 +1,61 @@
 package Pacman
 
-import scala.language.reflectiveCalls
 import Chisel._
 
-class Interleaver(parameters: LayerParameters) extends Module {
+class Interleaver(firstLayer: LayerParameters) extends Module {
+
+  val K = firstLayer.K
+  val cores = firstLayer.NumberOfCores
+  val numberOfBlocks = 3
+  val wordPerBlock = firstLayer.MatrixWidth / K
+
   val io = new Bundle {
-    val oneBitPerCore = Decoupled(Bits(width=parameters.NumberOfCores )).flip
-    val oneHotOut = Decoupled(Bits(OUTPUT,width=parameters.MatrixHeight ))
-    val doneIn = Bool(INPUT)
+    val wordIn = Decoupled(Bits(width=K)).flip
+
+    val interleavedOut = Vec.fill(cores)(Bits(width=K)).asOutput
+    val startOut = Bool().asOutput
+    val pipeReady = Bool().asInput
   }
-  val regs = List.fill(parameters.NumberOfCores)(Module(new BitToWord(parameters.MatrixHeight )))
-  val regsBuf = Vec.fill(parameters.NumberOfCores)(Reg(init=Bits(0,width=parameters.MatrixHeight )))
-  val doneDelay = Reg(init=Bool(false))
-  val send = Reg(init=Bool(false))
-  val count = Reg(init=UInt(0,width=log2Up(parameters.NumberOfCores)))
-  if (parameters.NumberOfCores != 1){
-    when(send && io.oneHotOut.ready){
-      count :=count+UInt(1)
+
+  val queues = Array.fill(cores)(Module(new CircularPeekQueue(wordPerBlock, numberOfBlocks, K)))
+
+
+  val wordCounter = Module(new Counter(0, wordPerBlock))
+  val queueCounter = Module(new Counter(0, cores))
+  val readyBlocks = Module(new UpDownCounter(0, numberOfBlocks))
+
+  val isReady = readyBlocks.io.value =/= UInt(numberOfBlocks - 1)
+  val signalReadingInput = io.wordIn.valid && isReady
+  val isLastInputWordInBlock = wordCounter.io.value === UInt(wordPerBlock - 1)
+  val signalWritingLastWord = signalReadingInput && isLastInputWordInBlock
+  val signalNewPeekBlock = io.pipeReady && readyBlocks.io.value =/= UInt(0)
+  val isLastQueue = queueCounter.io.value === UInt(cores - 1)
+  val signalWritingLastWordInLastQueue = signalWritingLastWord && isLastQueue
+
+  wordCounter.io.enable := signalReadingInput
+  wordCounter.io.rst := isLastInputWordInBlock
+
+  queueCounter.io.enable := signalWritingLastWord
+  queueCounter.io.rst := isLastQueue
+
+  readyBlocks.io.up := signalWritingLastWordInLastQueue
+  readyBlocks.io.down := signalNewPeekBlock
+
+  // queue.io.input := io.wordIn.bits
+  // queue.io.writeEnable := signalReadingInput
+  // queue.io.nextBlock := signalNewPeekBlock
+  queues.zipWithIndex.foreach
+  {
+    case (q, i) => {
+      q.io.input := io.wordIn.bits
+      q.io.writeEnable := (queueCounter.io.value === UInt(i)) && signalReadingInput
+      q.io.nextBlock :=
+        signalNewPeekBlock
+      io.interleavedOut(i) := q.io.output
     }
-  } 
-  for ( i <- 0 until parameters.NumberOfCores) {
-    regs(i).io.bit := io.oneBitPerCore.bits(i)
-    regs(i).io.enable := io.oneBitPerCore.valid
-    when (doneDelay) {
-      regsBuf(i) := regs(i).io.word
-    } 
   }
-  doneDelay := io.doneIn
-  when(doneDelay || count===UInt(parameters.NumberOfCores-1)) {
-    send := doneDelay
-  }
-  io.oneBitPerCore.ready := io.oneHotOut.ready
-  io.oneHotOut.bits := regsBuf(count)
-  io.oneHotOut.valid := send
+
+  // io.wordOut := queue.io.output
+  io.startOut := Reg(init=Bool(false), next=signalNewPeekBlock)
+  io.wordIn.ready := isReady
 }
-
-
