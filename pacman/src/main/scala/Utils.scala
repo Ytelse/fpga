@@ -68,7 +68,7 @@ object Utils {
                       .map(s => Integer.parseInt(s, 10)).toArray
     i += 2
 
-    val NImages = 12
+    val NImages = 10
     val NResults = 5
     val results = List.range(0, NImages).map(_ => {
       List.range(0, NResults).map(_ => {
