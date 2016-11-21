@@ -10,9 +10,10 @@ class PacmanTests(
 ) extends Tester(c, isTrace=false) {
   def peeks() {
     peek(c.widthConverter.io)
-    peek(c.buffer.io)
+    peek(c.interleaver.io)
+    peek(c.interleaver.queues(0).io)
     peek(c.net.io)
-    //peek(c.deinterleaver.io)
+    peek(c.deinterleaver.io)
   }
   def vecToBigInt(vec: Seq[Int]): BigInt = {
     int(Bits(vec.reverse.map((n) => n.toString).fold("b")(_ + _)))
@@ -75,7 +76,7 @@ class PacmanTests(
 
 object PacmanTest {
   def main(args: Array[String]) {
-    val margs = Array("--backend", "c", "--genHarness", "--compile", "--test")
+    val margs = Array("--backend", "c", "--genHarness", "--compile", "--test", "--debug")
 
     val testData = Utils.readDumpFile()
     val testInputs = testData.vectors.map(_(0)).toArray
@@ -155,8 +156,10 @@ object PacmanTest {
 
     // println(inputStreamWordArrays.deep.mkString("\n"))
 
+    val input = testInputs.flatten.grouped(inputStreamWordWidth).toArray
+
     chiselMainTest(margs, () => Module(new Pacman(inputStreamWordWidth, layers))) {
-      c => new PacmanTests(c, inputStreamWordArrays, testOutputs)
+      c => new PacmanTests(c, input, testOutputs)
     }
   }
 }
