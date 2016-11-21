@@ -44,10 +44,13 @@ proc step_failed { step } {
 
 set_msg_config -id {HDL 9-1061} -limit 100000
 set_msg_config -id {HDL 9-1654} -limit 100000
+set_msg_config -id {Synth 8-256} -limit 10000
+set_msg_config -id {Synth 8-638} -limit 10000
 
 start_step init_design
 set rc [catch {
   create_msg_db init_design.pb
+  set_param xicom.use_bs_reader 1
   set_property design_mode GateLvl [current_fileset]
   set_param project.singleFileAddWarning.threshold 0
   set_property webtalk.parent_dir /home/ulrich/chisel/fpga/usbtest/vivado_proj/ulpi_test/ulpi_test.cache/wt [current_project]
@@ -56,6 +59,7 @@ set rc [catch {
   set_property ip_output_repo /home/ulrich/chisel/fpga/usbtest/vivado_proj/ulpi_test/ulpi_test.cache/ip [current_project]
   add_files -quiet /home/ulrich/chisel/fpga/usbtest/vivado_proj/ulpi_test/ulpi_test.runs/synth_1/top.dcp
   read_xdc /home/ulrich/chisel/fpga/usbtest/vivado_proj/ulpi_test/ulpi_test.srcs/constrs_1/new/constraints.xdc
+  read_xdc /home/ulrich/chisel/fpga/usbtest/vivado_proj/ulpi_test/ulpi_test.srcs/constrs_1/new/debug.xdc
   link_design -top top -part xc7a35tftg256-2
   write_hwdef -file top.hwdef
   close_msg_db -file init_design.pb
@@ -70,7 +74,7 @@ if {$rc} {
 start_step opt_design
 set rc [catch {
   create_msg_db opt_design.pb
-  opt_design 
+  opt_design -directive Explore
   write_checkpoint -force top_opt.dcp
   report_drc -file top_drc_opted.rpt
   close_msg_db -file opt_design.pb
@@ -86,7 +90,7 @@ start_step place_design
 set rc [catch {
   create_msg_db place_design.pb
   implement_debug_core 
-  place_design 
+  place_design -directive Explore
   write_checkpoint -force top_placed.dcp
   report_io -file top_io_placed.rpt
   report_utilization -file top_utilization_placed.rpt -pb top_utilization_placed.pb
@@ -100,13 +104,28 @@ if {$rc} {
   end_step place_design
 }
 
+start_step phys_opt_design
+set rc [catch {
+  create_msg_db phys_opt_design.pb
+  phys_opt_design -directive Explore
+  write_checkpoint -force top_physopt.dcp
+  close_msg_db -file phys_opt_design.pb
+} RESULT]
+if {$rc} {
+  step_failed phys_opt_design
+  return -code error $RESULT
+} else {
+  end_step phys_opt_design
+}
+
+  set_msg_config -source 4 -id {Route 35-39} -severity "critical warning" -new_severity warning
 start_step route_design
 set rc [catch {
   create_msg_db route_design.pb
-  route_design 
+  route_design -directive Explore -tns_cleanup
   write_checkpoint -force top_routed.dcp
   report_drc -file top_drc_routed.rpt -pb top_drc_routed.pb
-  report_timing_summary -warn_on_violation -max_paths 10 -file top_timing_summary_routed.rpt -rpx top_timing_summary_routed.rpx
+  report_timing_summary -max_paths 10 -file top_timing_summary_routed.rpt -rpx top_timing_summary_routed.rpx
   report_power -file top_power_routed.rpt -pb top_power_summary_routed.pb -rpx top_power_routed.rpx
   report_route_status -file top_route_status.rpt -pb top_route_status.pb
   report_clock_utilization -file top_clock_utilization_routed.rpt
@@ -117,6 +136,21 @@ if {$rc} {
   return -code error $RESULT
 } else {
   end_step route_design
+}
+
+start_step post_route_phys_opt_design
+set rc [catch {
+  create_msg_db post_route_phys_opt_design.pb
+  phys_opt_design -directive Explore
+  write_checkpoint -force top_postroute_physopt.dcp
+  report_timing_summary -warn_on_violation -max_paths 10 -file top_timing_summary_postroute_physopted.rpt -rpx top_timing_summary_postroute_physopted.rpx
+  close_msg_db -file post_route_phys_opt_design.pb
+} RESULT]
+if {$rc} {
+  step_failed post_route_phys_opt_design
+  return -code error $RESULT
+} else {
+  end_step post_route_phys_opt_design
 }
 
 start_step write_bitstream

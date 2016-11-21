@@ -9,26 +9,29 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="66475fs"></ZoomStartTime>
-      <ZoomEndTime time="93276fs"></ZoomEndTime>
-      <Cursor1Time time="61000fs"></Cursor1Time>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="107001fs"></ZoomEndTime>
+      <Cursor1Time time="27000fs"></Cursor1Time>
    </zoom_setting>
-   <WVObjectSize size="2" />
+   <WVObjectSize size="3" />
    <wave_markers>
    </wave_markers>
-   <wvobject type="array" fp_name="usb_rxdat">
+   <wvobject type="logic" fp_name="PacmanWrapper_inst/Pacman_inst/interleaver_io_wordIn_ready">
       <obj_property name="DisplayName">FullPathName</obj_property>
-      <obj_property name="Radix">HEXRADIX</obj_property>
-      <obj_property name="ElementShortName">usb_rxdat[7:0]</obj_property>
-      <obj_property name="ObjectShortName">usb_rxdat[7:0]</obj_property>
+      <obj_property name="ElementShortName">PacmanWrapper_inst/Pacman_inst/interleaver_io_wordIn_ready</obj_property>
+      <obj_property name="ObjectShortName">interleaver_io_wordIn_ready</obj_property>
       <obj_property name="LABELRADIX">true</obj_property>
-      <obj_property name="isExpanded"></obj_property>
    </wvobject>
-   <wvobject type="logic" fp_name="usb_rxval">
+   <wvobject type="logic" fp_name="PacmanWrapper_inst/Pacman_inst/net_io_ready">
       <obj_property name="DisplayName">FullPathName</obj_property>
-      <obj_property name="Radix">HEXRADIX</obj_property>
-      <obj_property name="ElementShortName">usb_rxval</obj_property>
-      <obj_property name="ObjectShortName">usb_rxval</obj_property>
+      <obj_property name="ElementShortName">PacmanWrapper_inst/Pacman_inst/net_io_ready</obj_property>
+      <obj_property name="ObjectShortName">net_io_ready</obj_property>
+      <obj_property name="LABELRADIX">true</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="PacmanWrapper_inst/Pacman_inst_io_inDataStream_ready">
+      <obj_property name="DisplayName">FullPathName</obj_property>
+      <obj_property name="ElementShortName">PacmanWrapper_inst/Pacman_inst_io_inDataStream_ready</obj_property>
+      <obj_property name="ObjectShortName">Pacman_inst_io_inDataStream_ready</obj_property>
       <obj_property name="LABELRADIX">true</obj_property>
    </wvobject>
 </wave_config>

@@ -1,11 +1,9 @@
 ## Clock signal
 
-set_property -dict { PACKAGE_PIN D4    IOSTANDARD LVCMOS33 } [get_ports { clk }]; #IO_L12P_T1_MRCC_35 Sch=gclk[100]
-create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports { clk }];
-
-# set_property -dict { PACKAGE_PIN E3    IOSTANDARD LVCMOS33 } [get_ports { clk }]; #IO_L12P_T1_MRCC_35 Sch=gclk[100]
-# create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports {clk}];
-
+set_property -dict {PACKAGE_PIN D4 IOSTANDARD LVCMOS33} [get_ports CLK100MHZ]
+create_clock -period 10.000 -name sys_clk_pin -waveform {0.000 5.000} -add [get_ports CLK100MHZ]
+create_clock -period 16.667 -name ulpi_clk_pin -waveform {0.000 8.333} -add [get_ports ulpi_clk60]
+set_clock_groups -asynchronous -group sys_clk_pin -group ulpi_clk_pin
 
 ##Quad SPI Flash
 
@@ -38,7 +36,7 @@ create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports { c
 
 ##Reset Button
 
-set_property -dict { PACKAGE_PIN T10 IOSTANDARD LVCMOS33 } [get_ports { reset }]; #IO_L22N_T3_A04_D20_14 Sch=reset
+#set_property -dict { PACKAGE_PIN T10 IOSTANDARD LVCMOS33 } [get_ports { reset }]; #IO_L22N_T3_A04_D20_14 Sch=reset
 
 ## MCU CTRL
 
@@ -109,20 +107,21 @@ set_property -dict { PACKAGE_PIN T10 IOSTANDARD LVCMOS33 } [get_ports { reset }]
 #set_property -dict { PACKAGE_PIN M5 IOSTANDARD LVCMOS33 } [get_ports { SDcd }]; #IO_L6P_T0_34 Sch=SDcd
 
 ## ULPI Bus
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets ulpi_clk60_IBUF]
 
-set_property -dict { PACKAGE_PIN A4 IOSTANDARD LVCMOS33 } [get_ports { ulpi_data[0] }]; #IO_L3N_T0_DQS_AD5N_35 Sch=ULPId[0]
-set_property -dict { PACKAGE_PIN A5 IOSTANDARD LVCMOS33 } [get_ports { ulpi_data[1] }]; #IO_L3P_T0_DQS_AD5P_35 Sch=ULPId[1]
-set_property -dict { PACKAGE_PIN A2 IOSTANDARD LVCMOS33 } [get_ports { ulpi_data[2] }]; #IO_L8N_T1_AD14N_35 Sch=ULPId[2]
-set_property -dict { PACKAGE_PIN A3 IOSTANDARD LVCMOS33 } [get_ports { ulpi_data[3] }]; #IO_L4N_T0_35 Sch=ULPId[3]
-set_property -dict { PACKAGE_PIN B4 IOSTANDARD LVCMOS33 } [get_ports { ulpi_data[4] }]; #IO_L4P_T0_35 Sch=ULPId[4]
-set_property -dict { PACKAGE_PIN B2 IOSTANDARD LVCMOS33 } [get_ports { ulpi_data[5] }]; #IO_L8P_T1_AD14P_35 Sch=ULPId[5]
-set_property -dict { PACKAGE_PIN C2 IOSTANDARD LVCMOS33 } [get_ports { ulpi_data[6] }]; #IO_L7N_T1_AD6N_35 Sch=ULPId[6]
-set_property -dict { PACKAGE_PIN C1 IOSTANDARD LVCMOS33 } [get_ports { ulpi_data[7] }]; #IO_L9P_T1_DQS_AD7P_35 Sch=ULPId[7]
-set_property -dict { PACKAGE_PIN B5 IOSTANDARD LVCMOS33 } [get_ports { ulpi_clk60 }]; #IO_L2N_T0_AD12N_35 Sch=ULPIclk
-set_property -dict { PACKAGE_PIN C7 IOSTANDARD LVCMOS33 } [get_ports { ulpi_dir }]; #IO_L5P_T0_AD13P_35 Sch=ULPIdir
-set_property -dict { PACKAGE_PIN C6 IOSTANDARD LVCMOS33 } [get_ports { ulpi_nxt }]; #IO_L5N_T0_AD13N_35 Sch=ULPInxt
-set_property -dict { PACKAGE_PIN D6 IOSTANDARD LVCMOS33 } [get_ports { ulpi_reset }]; #IO_L6P_T0_35 Sch=ULPIrst
-set_property -dict { PACKAGE_PIN C3 IOSTANDARD LVCMOS33 } [get_ports { ulpi_stp }]; #IO_L7P_T1_AD6P_35 Sch=ULPIstp
+set_property -dict {PACKAGE_PIN A4 IOSTANDARD LVCMOS33} [get_ports {ulpi_data[0]}]
+set_property -dict {PACKAGE_PIN A5 IOSTANDARD LVCMOS33} [get_ports {ulpi_data[1]}]
+set_property -dict {PACKAGE_PIN A2 IOSTANDARD LVCMOS33} [get_ports {ulpi_data[2]}]
+set_property -dict {PACKAGE_PIN A3 IOSTANDARD LVCMOS33} [get_ports {ulpi_data[3]}]
+set_property -dict {PACKAGE_PIN B4 IOSTANDARD LVCMOS33} [get_ports {ulpi_data[4]}]
+set_property -dict {PACKAGE_PIN B2 IOSTANDARD LVCMOS33} [get_ports {ulpi_data[5]}]
+set_property -dict {PACKAGE_PIN C2 IOSTANDARD LVCMOS33} [get_ports {ulpi_data[6]}]
+set_property -dict {PACKAGE_PIN C1 IOSTANDARD LVCMOS33} [get_ports {ulpi_data[7]}]
+set_property -dict {PACKAGE_PIN B5 IOSTANDARD LVCMOS33} [get_ports ulpi_clk60]
+set_property -dict {PACKAGE_PIN C7 IOSTANDARD LVCMOS33} [get_ports ulpi_dir]
+set_property -dict {PACKAGE_PIN C6 IOSTANDARD LVCMOS33} [get_ports ulpi_nxt]
+set_property -dict {PACKAGE_PIN D6 IOSTANDARD LVCMOS33} [get_ports ulpi_reset]
+set_property -dict {PACKAGE_PIN C3 IOSTANDARD LVCMOS33} [get_ports ulpi_stp]
 
 ## USB1
 #set_property -dict { PACKAGE_PIN E1 IOSTANDARD LVCMOS33 } [get_ports { USB1DnRes }]; #IO_L15N_T2_DQS_35 Sch=USB1DnRes
@@ -139,14 +138,14 @@ set_property -dict { PACKAGE_PIN C3 IOSTANDARD LVCMOS33 } [get_ports { ulpi_stp 
 
 ## FPGA LED
 
-set_property -dict { PACKAGE_PIN H1 IOSTANDARD LVCMOS33 } [get_ports { led[0] }];
-set_property -dict { PACKAGE_PIN J3 IOSTANDARD LVCMOS33 } [get_ports { led[1] }]; #IO_L21P_T3_DQS_35 Sch=led[1] 
-set_property -dict { PACKAGE_PIN J1 IOSTANDARD LVCMOS33 } [get_ports { led[2] }]; #IO_L22N_T3_35 Sch=led[2]
-set_property -dict { PACKAGE_PIN K1 IOSTANDARD LVCMOS33 } [get_ports { led[3] }]; #IO_L22P_T3_35 Sch=led[3]
-set_property -dict { PACKAGE_PIN K3 IOSTANDARD LVCMOS33 } [get_ports { led[4] }]; #IO_L24P_T3_35 Sch=led[4]
-set_property -dict { PACKAGE_PIN L2 IOSTANDARD LVCMOS33 } [get_ports { led[5] }]; #IO_L23N_T3_35 Sch=led[5]
-set_property -dict { PACKAGE_PIN L3 IOSTANDARD LVCMOS33 } [get_ports { led[6] }]; #IO_L23P_T3_35 Sch=led[6]
-set_property -dict { PACKAGE_PIN H3 IOSTANDARD LVCMOS33 } [get_ports { led[7] }]; #IO_L21N_T3_DQS_35 Sch=led[7]
+set_property -dict {PACKAGE_PIN H1 IOSTANDARD LVCMOS33} [get_ports {led[0]}]
+set_property -dict {PACKAGE_PIN J3 IOSTANDARD LVCMOS33} [get_ports {led[1]}]
+set_property -dict {PACKAGE_PIN J1 IOSTANDARD LVCMOS33} [get_ports {led[2]}]
+set_property -dict {PACKAGE_PIN K1 IOSTANDARD LVCMOS33} [get_ports {led[3]}]
+set_property -dict {PACKAGE_PIN K3 IOSTANDARD LVCMOS33} [get_ports {led[4]}]
+set_property -dict {PACKAGE_PIN L2 IOSTANDARD LVCMOS33} [get_ports {led[5]}]
+set_property -dict {PACKAGE_PIN L3 IOSTANDARD LVCMOS33} [get_ports {led[6]}]
+set_property -dict {PACKAGE_PIN H3 IOSTANDARD LVCMOS33} [get_ports {led[7]}]
 
 ## Config Mode
 set_property CONFIG_MODE SPIx4 [current_design]
@@ -156,4 +155,3 @@ set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]
 set_property BITSTREAM.CONFIG.SPI_FALL_EDGE YES [current_design]
 set_property BITSTREAM.CONFIG.CONFIGRATE 66 [current_design]
 
-#n25q128-3.3

@@ -570,15 +570,15 @@ endmodule
 module Counter_1(input clk, input reset,
     input  io_enable,
     input  io_rst,
-    output[1:0] io_value
+    output io_value
 );
 
-  reg [1:0] v;
-  wire[1:0] T6;
-  wire[1:0] T0;
-  wire[1:0] T1;
+  reg  v;
+  wire T6;
+  wire T0;
+  wire T1;
   wire T2;
-  wire[1:0] T3;
+  wire T3;
   wire T4;
   wire T5;
 
@@ -593,26 +593,26 @@ module Counter_1(input clk, input reset,
 `endif
 
   assign io_value = v;
-  assign T6 = reset ? 2'h0 : T0;
+  assign T6 = reset ? 1'h0 : T0;
   assign T0 = T4 ? T3 : T1;
-  assign T1 = T2 ? 2'h0 : v;
+  assign T1 = T2 ? 1'h0 : v;
   assign T2 = io_enable & io_rst;
-  assign T3 = v + 2'h1;
+  assign T3 = v + 1'h1;
   assign T4 = io_enable & T5;
   assign T5 = io_rst ^ 1'h1;
 
   always @(posedge clk) begin
     if(reset) begin
-      v <= 2'h0;
+      v <= 1'h0;
     end else if(T4) begin
       v <= T3;
     end else if(T2) begin
-      v <= 2'h0;
+      v <= 1'h0;
     end
   end
 endmodule
 
-module UpDownCounter_0(input clk, input reset,
+module UpDownCounter(input clk, input reset,
     input  io_up,
     input  io_down,
     output[1:0] io_value
@@ -669,9 +669,6 @@ module Interleaver(input clk, input reset,
     output io_wordIn_ready,
     input  io_wordIn_valid,
     input [15:0] io_wordIn_bits,
-    output[15:0] io_interleavedOut_3,
-    output[15:0] io_interleavedOut_2,
-    output[15:0] io_interleavedOut_1,
     output[15:0] io_interleavedOut_0,
     output io_startOut,
     input  io_pipeReady
@@ -687,28 +684,19 @@ module Interleaver(input clk, input reset,
   wire isReady;
   wire T1;
   wire T2;
-  wire T3;
+  reg  R3;
   wire T4;
-  wire T5;
-  wire T6;
-  wire T7;
-  wire T8;
-  reg  R9;
-  wire T10;
   wire[5:0] wordCounter_io_value;
-  wire[1:0] queueCounter_io_value;
+  wire queueCounter_io_value;
   wire[1:0] readyBlocks_io_value;
   wire[15:0] CircularPeekQueue_io_output;
-  wire[15:0] CircularPeekQueue_1_io_output;
-  wire[15:0] CircularPeekQueue_2_io_output;
-  wire[15:0] CircularPeekQueue_3_io_output;
 
 `ifndef SYNTHESIS
 // synthesis translate_off
   integer initvar;
   initial begin
     #0.002;
-    R9 = {1{$random}};
+    R3 = {1{$random}};
   end
 // synthesis translate_on
 `endif
@@ -716,49 +704,22 @@ module Interleaver(input clk, input reset,
   assign signalNewPeekBlock = io_pipeReady & T0;
   assign T0 = readyBlocks_io_value != 2'h0;
   assign signalWritingLastWordInLastQueue = signalWritingLastWord & isLastQueue;
-  assign isLastQueue = queueCounter_io_value == 2'h3;
+  assign isLastQueue = queueCounter_io_value == 1'h0;
   assign signalWritingLastWord = signalReadingInput & isLastInputWordInBlock;
   assign isLastInputWordInBlock = wordCounter_io_value == 6'h30;
   assign signalReadingInput = io_wordIn_valid & isReady;
   assign isReady = readyBlocks_io_value != 2'h2;
   assign T1 = T2 & signalReadingInput;
-  assign T2 = queueCounter_io_value == 2'h3;
-  assign T3 = T4 & signalReadingInput;
-  assign T4 = queueCounter_io_value == 2'h2;
-  assign T5 = T6 & signalReadingInput;
-  assign T6 = queueCounter_io_value == 2'h1;
-  assign T7 = T8 & signalReadingInput;
-  assign T8 = queueCounter_io_value == 2'h0;
-  assign io_startOut = R9;
-  assign T10 = reset ? 1'h0 : signalNewPeekBlock;
+  assign T2 = queueCounter_io_value == 1'h0;
+  assign io_startOut = R3;
+  assign T4 = reset ? 1'h0 : signalNewPeekBlock;
   assign io_interleavedOut_0 = CircularPeekQueue_io_output;
-  assign io_interleavedOut_1 = CircularPeekQueue_1_io_output;
-  assign io_interleavedOut_2 = CircularPeekQueue_2_io_output;
-  assign io_interleavedOut_3 = CircularPeekQueue_3_io_output;
   assign io_wordIn_ready = isReady;
   CircularPeekQueue_0 CircularPeekQueue(.clk(clk), .reset(reset),
-       .io_writeEnable( T7 ),
-       .io_nextBlock( signalNewPeekBlock ),
-       .io_input( io_wordIn_bits ),
-       .io_output( CircularPeekQueue_io_output )
-  );
-  CircularPeekQueue_0 CircularPeekQueue_1(.clk(clk), .reset(reset),
-       .io_writeEnable( T5 ),
-       .io_nextBlock( signalNewPeekBlock ),
-       .io_input( io_wordIn_bits ),
-       .io_output( CircularPeekQueue_1_io_output )
-  );
-  CircularPeekQueue_0 CircularPeekQueue_2(.clk(clk), .reset(reset),
-       .io_writeEnable( T3 ),
-       .io_nextBlock( signalNewPeekBlock ),
-       .io_input( io_wordIn_bits ),
-       .io_output( CircularPeekQueue_2_io_output )
-  );
-  CircularPeekQueue_0 CircularPeekQueue_3(.clk(clk), .reset(reset),
        .io_writeEnable( T1 ),
        .io_nextBlock( signalNewPeekBlock ),
        .io_input( io_wordIn_bits ),
-       .io_output( CircularPeekQueue_3_io_output )
+       .io_output( CircularPeekQueue_io_output )
   );
   Counter_0 wordCounter(.clk(clk), .reset(reset),
        .io_enable( signalReadingInput ),
@@ -770,7 +731,7 @@ module Interleaver(input clk, input reset,
        .io_rst( isLastQueue ),
        .io_value( queueCounter_io_value )
   );
-  UpDownCounter_0 readyBlocks(.clk(clk), .reset(reset),
+  UpDownCounter readyBlocks(.clk(clk), .reset(reset),
        .io_up( signalWritingLastWordInLastQueue ),
        .io_down( signalNewPeekBlock ),
        .io_value( readyBlocks_io_value )
@@ -778,9 +739,9 @@ module Interleaver(input clk, input reset,
 
   always @(posedge clk) begin
     if(reset) begin
-      R9 <= 1'h0;
+      R3 <= 1'h0;
     end else begin
-      R9 <= signalNewPeekBlock;
+      R3 <= signalNewPeekBlock;
     end
   end
 endmodule
@@ -10611,658 +10572,175 @@ module MemoryStreamer_0(input clk, input reset,
 endmodule
 
 module Warp_0(input clk, input reset,
-    input [15:0] io_xIn_3,
-    input [15:0] io_xIn_2,
-    input [15:0] io_xIn_1,
     input [15:0] io_xIn_0,
     input  io_start,
     output io_ready,
     output io_startOut,
-    output io_xOut_3,
-    output io_xOut_2,
-    output io_xOut_1,
     output io_xOut_0,
     output io_xOutValid,
     input  io_pipeReady,
     output io_done
 );
 
-  wire[9:0] T508;
+  wire[9:0] T127;
   wire[10:0] T0;
   wire[10:0] T1;
-  wire[9:0] T509;
+  wire[9:0] T128;
   wire[10:0] T2;
   wire[10:0] T3;
-  wire[9:0] T510;
+  wire[9:0] T129;
   wire[10:0] T4;
   wire[10:0] T5;
-  wire[9:0] T511;
+  wire[9:0] T130;
   wire[10:0] T6;
   wire[10:0] T7;
-  wire[9:0] T512;
+  wire[9:0] T131;
   wire[10:0] T8;
   wire[10:0] T9;
-  wire[9:0] T513;
+  wire[9:0] T132;
   wire[10:0] T10;
   wire[10:0] T11;
-  wire[9:0] T514;
+  wire[9:0] T133;
   wire[10:0] T12;
   wire[10:0] T13;
-  wire[9:0] T515;
+  wire[9:0] T134;
   wire[10:0] T14;
   wire[10:0] T15;
-  wire[9:0] T516;
+  wire[9:0] T135;
   wire[10:0] T16;
   wire[10:0] T17;
-  wire[9:0] T517;
+  wire[9:0] T136;
   wire[10:0] T18;
   wire[10:0] T19;
-  wire[9:0] T518;
+  wire[9:0] T137;
   wire[10:0] T20;
   wire[10:0] T21;
-  wire[9:0] T519;
+  wire[9:0] T138;
   wire[10:0] T22;
   wire[10:0] T23;
-  wire[9:0] T520;
+  wire[9:0] T139;
   wire[10:0] T24;
   wire[10:0] T25;
-  wire[9:0] T521;
+  wire[9:0] T140;
   wire[10:0] T26;
   wire[10:0] T27;
-  wire[9:0] T522;
+  wire[9:0] T141;
   wire[10:0] T28;
   wire[10:0] T29;
-  wire[9:0] T523;
+  wire[9:0] T142;
   wire[10:0] T30;
   wire[10:0] T31;
-  wire[9:0] T524;
+  wire[9:0] T143;
   wire[10:0] T32;
   wire[10:0] T33;
-  wire[9:0] T525;
+  wire[9:0] T144;
   wire[10:0] T34;
   wire[10:0] T35;
-  wire[9:0] T526;
+  wire[9:0] T145;
   wire[10:0] T36;
   wire[10:0] T37;
-  wire[9:0] T527;
+  wire[9:0] T146;
   wire[10:0] T38;
   wire[10:0] T39;
-  wire[9:0] T528;
+  wire[9:0] T147;
   wire[10:0] T40;
   wire[10:0] T41;
-  wire[9:0] T529;
+  wire[9:0] T148;
   wire[10:0] T42;
   wire[10:0] T43;
-  wire[9:0] T530;
+  wire[9:0] T149;
   wire[10:0] T44;
   wire[10:0] T45;
-  wire[9:0] T531;
+  wire[9:0] T150;
   wire[10:0] T46;
   wire[10:0] T47;
-  wire[9:0] T532;
+  wire[9:0] T151;
   wire[10:0] T48;
   wire[10:0] T49;
-  wire[9:0] T533;
+  wire[9:0] T152;
   wire[10:0] T50;
   wire[10:0] T51;
-  wire[9:0] T534;
+  wire[9:0] T153;
   wire[10:0] T52;
   wire[10:0] T53;
-  wire[9:0] T535;
+  wire[9:0] T154;
   wire[10:0] T54;
   wire[10:0] T55;
-  wire[9:0] T536;
+  wire[9:0] T155;
   wire[10:0] T56;
   wire[10:0] T57;
-  wire[9:0] T537;
+  wire[9:0] T156;
   wire[10:0] T58;
   wire[10:0] T59;
-  wire[9:0] T538;
+  wire[9:0] T157;
   wire[10:0] T60;
   wire[10:0] T61;
-  wire[9:0] T539;
+  wire[9:0] T158;
   wire[10:0] T62;
   wire[10:0] T63;
-  wire[9:0] T540;
-  wire[10:0] T64;
-  wire[10:0] T65;
-  wire[9:0] T541;
-  wire[10:0] T66;
-  wire[10:0] T67;
-  wire[9:0] T542;
-  wire[10:0] T68;
-  wire[10:0] T69;
-  wire[9:0] T543;
-  wire[10:0] T70;
-  wire[10:0] T71;
-  wire[9:0] T544;
-  wire[10:0] T72;
-  wire[10:0] T73;
-  wire[9:0] T545;
-  wire[10:0] T74;
-  wire[10:0] T75;
-  wire[9:0] T546;
-  wire[10:0] T76;
-  wire[10:0] T77;
-  wire[9:0] T547;
-  wire[10:0] T78;
-  wire[10:0] T79;
-  wire[9:0] T548;
-  wire[10:0] T80;
-  wire[10:0] T81;
-  wire[9:0] T549;
-  wire[10:0] T82;
-  wire[10:0] T83;
-  wire[9:0] T550;
-  wire[10:0] T84;
-  wire[10:0] T85;
-  wire[9:0] T551;
-  wire[10:0] T86;
-  wire[10:0] T87;
-  wire[9:0] T552;
-  wire[10:0] T88;
-  wire[10:0] T89;
-  wire[9:0] T553;
-  wire[10:0] T90;
-  wire[10:0] T91;
-  wire[9:0] T554;
-  wire[10:0] T92;
-  wire[10:0] T93;
-  wire[9:0] T555;
-  wire[10:0] T94;
-  wire[10:0] T95;
-  wire[9:0] T556;
-  wire[10:0] T96;
-  wire[10:0] T97;
-  wire[9:0] T557;
-  wire[10:0] T98;
-  wire[10:0] T99;
-  wire[9:0] T558;
-  wire[10:0] T100;
-  wire[10:0] T101;
-  wire[9:0] T559;
-  wire[10:0] T102;
-  wire[10:0] T103;
-  wire[9:0] T560;
-  wire[10:0] T104;
-  wire[10:0] T105;
-  wire[9:0] T561;
-  wire[10:0] T106;
-  wire[10:0] T107;
-  wire[9:0] T562;
-  wire[10:0] T108;
-  wire[10:0] T109;
-  wire[9:0] T563;
-  wire[10:0] T110;
-  wire[10:0] T111;
-  wire[9:0] T564;
-  wire[10:0] T112;
-  wire[10:0] T113;
-  wire[9:0] T565;
-  wire[10:0] T114;
-  wire[10:0] T115;
-  wire[9:0] T566;
-  wire[10:0] T116;
-  wire[10:0] T117;
-  wire[9:0] T567;
-  wire[10:0] T118;
-  wire[10:0] T119;
-  wire[9:0] T568;
-  wire[10:0] T120;
-  wire[10:0] T121;
-  wire[9:0] T569;
-  wire[10:0] T122;
-  wire[10:0] T123;
-  wire[9:0] T570;
-  wire[10:0] T124;
-  wire[10:0] T125;
-  wire[9:0] T571;
-  wire[10:0] T126;
-  wire[10:0] T127;
-  wire[9:0] T572;
-  wire[10:0] T128;
-  wire[10:0] T129;
-  wire[9:0] T573;
-  wire[10:0] T130;
-  wire[10:0] T131;
-  wire[9:0] T574;
-  wire[10:0] T132;
-  wire[10:0] T133;
-  wire[9:0] T575;
-  wire[10:0] T134;
-  wire[10:0] T135;
-  wire[9:0] T576;
-  wire[10:0] T136;
-  wire[10:0] T137;
-  wire[9:0] T577;
-  wire[10:0] T138;
-  wire[10:0] T139;
-  wire[9:0] T578;
-  wire[10:0] T140;
-  wire[10:0] T141;
-  wire[9:0] T579;
-  wire[10:0] T142;
-  wire[10:0] T143;
-  wire[9:0] T580;
-  wire[10:0] T144;
-  wire[10:0] T145;
-  wire[9:0] T581;
-  wire[10:0] T146;
-  wire[10:0] T147;
-  wire[9:0] T582;
-  wire[10:0] T148;
-  wire[10:0] T149;
-  wire[9:0] T583;
-  wire[10:0] T150;
-  wire[10:0] T151;
-  wire[9:0] T584;
-  wire[10:0] T152;
-  wire[10:0] T153;
-  wire[9:0] T585;
-  wire[10:0] T154;
-  wire[10:0] T155;
-  wire[9:0] T586;
-  wire[10:0] T156;
-  wire[10:0] T157;
-  wire[9:0] T587;
-  wire[10:0] T158;
-  wire[10:0] T159;
-  wire[9:0] T588;
-  wire[10:0] T160;
-  wire[10:0] T161;
-  wire[9:0] T589;
-  wire[10:0] T162;
-  wire[10:0] T163;
-  wire[9:0] T590;
-  wire[10:0] T164;
-  wire[10:0] T165;
-  wire[9:0] T591;
-  wire[10:0] T166;
-  wire[10:0] T167;
-  wire[9:0] T592;
-  wire[10:0] T168;
-  wire[10:0] T169;
-  wire[9:0] T593;
-  wire[10:0] T170;
-  wire[10:0] T171;
-  wire[9:0] T594;
-  wire[10:0] T172;
-  wire[10:0] T173;
-  wire[9:0] T595;
-  wire[10:0] T174;
-  wire[10:0] T175;
-  wire[9:0] T596;
-  wire[10:0] T176;
-  wire[10:0] T177;
-  wire[9:0] T597;
-  wire[10:0] T178;
-  wire[10:0] T179;
-  wire[9:0] T598;
-  wire[10:0] T180;
-  wire[10:0] T181;
-  wire[9:0] T599;
-  wire[10:0] T182;
-  wire[10:0] T183;
-  wire[9:0] T600;
-  wire[10:0] T184;
-  wire[10:0] T185;
-  wire[9:0] T601;
-  wire[10:0] T186;
-  wire[10:0] T187;
-  wire[9:0] T602;
-  wire[10:0] T188;
-  wire[10:0] T189;
-  wire[9:0] T603;
-  wire[10:0] T190;
-  wire[10:0] T191;
-  wire[9:0] T604;
-  wire[10:0] T192;
-  wire[10:0] T193;
-  wire[9:0] T605;
-  wire[10:0] T194;
-  wire[10:0] T195;
-  wire[9:0] T606;
-  wire[10:0] T196;
-  wire[10:0] T197;
-  wire[9:0] T607;
-  wire[10:0] T198;
-  wire[10:0] T199;
-  wire[9:0] T608;
-  wire[10:0] T200;
-  wire[10:0] T201;
-  wire[9:0] T609;
-  wire[10:0] T202;
-  wire[10:0] T203;
-  wire[9:0] T610;
-  wire[10:0] T204;
-  wire[10:0] T205;
-  wire[9:0] T611;
-  wire[10:0] T206;
-  wire[10:0] T207;
-  wire[9:0] T612;
-  wire[10:0] T208;
-  wire[10:0] T209;
-  wire[9:0] T613;
-  wire[10:0] T210;
-  wire[10:0] T211;
-  wire[9:0] T614;
-  wire[10:0] T212;
-  wire[10:0] T213;
-  wire[9:0] T615;
-  wire[10:0] T214;
-  wire[10:0] T215;
-  wire[9:0] T616;
-  wire[10:0] T216;
-  wire[10:0] T217;
-  wire[9:0] T617;
-  wire[10:0] T218;
-  wire[10:0] T219;
-  wire[9:0] T618;
-  wire[10:0] T220;
-  wire[10:0] T221;
-  wire[9:0] T619;
-  wire[10:0] T222;
-  wire[10:0] T223;
-  wire[9:0] T620;
-  wire[10:0] T224;
-  wire[10:0] T225;
-  wire[9:0] T621;
-  wire[10:0] T226;
-  wire[10:0] T227;
-  wire[9:0] T622;
-  wire[10:0] T228;
-  wire[10:0] T229;
-  wire[9:0] T623;
-  wire[10:0] T230;
-  wire[10:0] T231;
-  wire[9:0] T624;
-  wire[10:0] T232;
-  wire[10:0] T233;
-  wire[9:0] T625;
-  wire[10:0] T234;
-  wire[10:0] T235;
-  wire[9:0] T626;
-  wire[10:0] T236;
-  wire[10:0] T237;
-  wire[9:0] T627;
-  wire[10:0] T238;
-  wire[10:0] T239;
-  wire[9:0] T628;
-  wire[10:0] T240;
-  wire[10:0] T241;
-  wire[9:0] T629;
-  wire[10:0] T242;
-  wire[10:0] T243;
-  wire[9:0] T630;
-  wire[10:0] T244;
-  wire[10:0] T245;
-  wire[9:0] T631;
-  wire[10:0] T246;
-  wire[10:0] T247;
-  wire[9:0] T632;
-  wire[10:0] T248;
-  wire[10:0] T249;
-  wire[9:0] T633;
-  wire[10:0] T250;
-  wire[10:0] T251;
-  wire[9:0] T634;
-  wire[10:0] T252;
-  wire[10:0] T253;
-  wire[9:0] T635;
-  wire[10:0] T254;
-  wire[10:0] T255;
-  wire T256;
-  wire T257;
-  wire T258;
-  wire T259;
-  wire T260;
-  wire T261;
-  wire[4:0] T262;
-  wire T263;
-  wire T264;
-  wire T265;
-  wire T266;
-  wire T267;
-  wire T268;
-  wire T269;
-  wire T270;
-  wire T271;
-  wire T272;
-  wire T273;
-  wire T274;
-  wire T275;
-  wire T276;
-  wire T277;
-  wire T278;
-  wire T279;
-  wire T280;
-  wire T281;
-  wire T282;
-  wire T283;
-  wire T284;
-  wire T285;
-  wire T286;
-  wire T287;
-  wire T288;
-  wire T289;
-  wire T290;
-  wire T291;
-  wire T292;
-  wire T293;
-  wire T294;
-  wire T295;
-  wire T296;
-  wire T297;
-  wire T298;
-  wire T299;
-  wire T300;
-  wire T301;
-  wire T302;
-  wire T303;
-  wire T304;
-  wire T305;
-  wire T306;
-  wire T307;
-  wire T308;
-  wire T309;
-  wire T310;
-  wire T311;
-  wire T312;
-  wire T313;
-  wire T314;
-  wire T315;
-  wire T316;
-  wire T317;
-  wire T318;
-  wire T319;
-  wire T320;
-  wire T321;
-  wire T322;
-  wire T323;
-  wire T324;
-  wire[4:0] T325;
-  wire T326;
-  wire T327;
-  wire T328;
-  wire T329;
-  wire T330;
-  wire T331;
-  wire T332;
-  wire T333;
-  wire T334;
-  wire T335;
-  wire T336;
-  wire T337;
-  wire T338;
-  wire T339;
-  wire T340;
-  wire T341;
-  wire T342;
-  wire T343;
-  wire T344;
-  wire T345;
-  wire T346;
-  wire T347;
-  wire T348;
-  wire T349;
-  wire T350;
-  wire T351;
-  wire T352;
-  wire T353;
-  wire T354;
-  wire T355;
-  wire T356;
-  wire T357;
-  wire T358;
-  wire T359;
-  wire T360;
-  wire T361;
-  wire T362;
-  wire T363;
-  wire T364;
-  wire T365;
-  wire T366;
-  wire T367;
-  wire T368;
-  wire T369;
-  wire T370;
-  wire T371;
-  wire T372;
-  wire T373;
-  wire T374;
-  wire T375;
-  wire T376;
-  wire T377;
-  wire T378;
-  wire T379;
-  wire T380;
-  wire T381;
-  wire T382;
-  wire T383;
-  wire T384;
-  wire T385;
-  wire T386;
-  wire T387;
-  wire[4:0] T388;
-  wire T389;
-  wire T390;
-  wire T391;
-  wire T392;
-  wire T393;
-  wire T394;
-  wire T395;
-  wire T396;
-  wire T397;
-  wire T398;
-  wire T399;
-  wire T400;
-  wire T401;
-  wire T402;
-  wire T403;
-  wire T404;
-  wire T405;
-  wire T406;
-  wire T407;
-  wire T408;
-  wire T409;
-  wire T410;
-  wire T411;
-  wire T412;
-  wire T413;
-  wire T414;
-  wire T415;
-  wire T416;
-  wire T417;
-  wire T418;
-  wire T419;
-  wire T420;
-  wire T421;
-  wire T422;
-  wire T423;
-  wire T424;
-  wire T425;
-  wire T426;
-  wire T427;
-  wire T428;
-  wire T429;
-  wire T430;
-  wire T431;
-  wire T432;
-  wire T433;
-  wire T434;
-  wire T435;
-  wire T436;
-  wire T437;
-  wire T438;
-  wire T439;
-  wire T440;
-  wire T441;
-  wire T442;
-  wire T443;
-  wire T444;
-  wire T445;
-  wire T446;
-  wire T447;
-  wire T448;
-  wire T449;
-  wire T450;
-  wire[4:0] T451;
-  wire T452;
-  wire T453;
-  wire T454;
-  wire T455;
-  wire T456;
-  wire T457;
-  wire T458;
-  wire T459;
-  wire T460;
-  wire T461;
-  wire T462;
-  wire T463;
-  wire T464;
-  wire T465;
-  wire T466;
-  wire T467;
-  wire T468;
-  wire T469;
-  wire T470;
-  wire T471;
-  wire T472;
-  wire T473;
-  wire T474;
-  wire T475;
-  wire T476;
-  wire T477;
-  wire T478;
-  wire T479;
-  wire T480;
-  wire T481;
-  wire T482;
-  wire T483;
-  wire T484;
-  wire T485;
-  wire T486;
-  wire T487;
-  wire T488;
-  wire T489;
-  wire T490;
-  wire T491;
-  wire T492;
-  wire T493;
-  wire T494;
-  wire T495;
-  wire T496;
-  wire T497;
-  wire T498;
-  wire T499;
-  wire T500;
-  wire T501;
-  wire T502;
-  wire T503;
-  wire T504;
-  wire T505;
-  wire T506;
-  wire T507;
+  wire T64;
+  wire T65;
+  wire T66;
+  wire T67;
+  wire T68;
+  wire T69;
+  wire[4:0] T70;
+  wire T71;
+  wire T72;
+  wire T73;
+  wire T74;
+  wire T75;
+  wire T76;
+  wire T77;
+  wire T78;
+  wire T79;
+  wire T80;
+  wire T81;
+  wire T82;
+  wire T83;
+  wire T84;
+  wire T85;
+  wire T86;
+  wire T87;
+  wire T88;
+  wire T89;
+  wire T90;
+  wire T91;
+  wire T92;
+  wire T93;
+  wire T94;
+  wire T95;
+  wire T96;
+  wire T97;
+  wire T98;
+  wire T99;
+  wire T100;
+  wire T101;
+  wire T102;
+  wire T103;
+  wire T104;
+  wire T105;
+  wire T106;
+  wire T107;
+  wire T108;
+  wire T109;
+  wire T110;
+  wire T111;
+  wire T112;
+  wire T113;
+  wire T114;
+  wire T115;
+  wire T116;
+  wire T117;
+  wire T118;
+  wire T119;
+  wire T120;
+  wire T121;
+  wire T122;
+  wire T123;
+  wire T124;
+  wire T125;
+  wire T126;
   wire Activation_io_out_31;
   wire Activation_io_out_30;
   wire Activation_io_out_29;
@@ -11295,102 +10773,6 @@ module Warp_0(input clk, input reset,
   wire Activation_io_out_2;
   wire Activation_io_out_1;
   wire Activation_io_out_0;
-  wire Activation_1_io_out_31;
-  wire Activation_1_io_out_30;
-  wire Activation_1_io_out_29;
-  wire Activation_1_io_out_28;
-  wire Activation_1_io_out_27;
-  wire Activation_1_io_out_26;
-  wire Activation_1_io_out_25;
-  wire Activation_1_io_out_24;
-  wire Activation_1_io_out_23;
-  wire Activation_1_io_out_22;
-  wire Activation_1_io_out_21;
-  wire Activation_1_io_out_20;
-  wire Activation_1_io_out_19;
-  wire Activation_1_io_out_18;
-  wire Activation_1_io_out_17;
-  wire Activation_1_io_out_16;
-  wire Activation_1_io_out_15;
-  wire Activation_1_io_out_14;
-  wire Activation_1_io_out_13;
-  wire Activation_1_io_out_12;
-  wire Activation_1_io_out_11;
-  wire Activation_1_io_out_10;
-  wire Activation_1_io_out_9;
-  wire Activation_1_io_out_8;
-  wire Activation_1_io_out_7;
-  wire Activation_1_io_out_6;
-  wire Activation_1_io_out_5;
-  wire Activation_1_io_out_4;
-  wire Activation_1_io_out_3;
-  wire Activation_1_io_out_2;
-  wire Activation_1_io_out_1;
-  wire Activation_1_io_out_0;
-  wire Activation_2_io_out_31;
-  wire Activation_2_io_out_30;
-  wire Activation_2_io_out_29;
-  wire Activation_2_io_out_28;
-  wire Activation_2_io_out_27;
-  wire Activation_2_io_out_26;
-  wire Activation_2_io_out_25;
-  wire Activation_2_io_out_24;
-  wire Activation_2_io_out_23;
-  wire Activation_2_io_out_22;
-  wire Activation_2_io_out_21;
-  wire Activation_2_io_out_20;
-  wire Activation_2_io_out_19;
-  wire Activation_2_io_out_18;
-  wire Activation_2_io_out_17;
-  wire Activation_2_io_out_16;
-  wire Activation_2_io_out_15;
-  wire Activation_2_io_out_14;
-  wire Activation_2_io_out_13;
-  wire Activation_2_io_out_12;
-  wire Activation_2_io_out_11;
-  wire Activation_2_io_out_10;
-  wire Activation_2_io_out_9;
-  wire Activation_2_io_out_8;
-  wire Activation_2_io_out_7;
-  wire Activation_2_io_out_6;
-  wire Activation_2_io_out_5;
-  wire Activation_2_io_out_4;
-  wire Activation_2_io_out_3;
-  wire Activation_2_io_out_2;
-  wire Activation_2_io_out_1;
-  wire Activation_2_io_out_0;
-  wire Activation_3_io_out_31;
-  wire Activation_3_io_out_30;
-  wire Activation_3_io_out_29;
-  wire Activation_3_io_out_28;
-  wire Activation_3_io_out_27;
-  wire Activation_3_io_out_26;
-  wire Activation_3_io_out_25;
-  wire Activation_3_io_out_24;
-  wire Activation_3_io_out_23;
-  wire Activation_3_io_out_22;
-  wire Activation_3_io_out_21;
-  wire Activation_3_io_out_20;
-  wire Activation_3_io_out_19;
-  wire Activation_3_io_out_18;
-  wire Activation_3_io_out_17;
-  wire Activation_3_io_out_16;
-  wire Activation_3_io_out_15;
-  wire Activation_3_io_out_14;
-  wire Activation_3_io_out_13;
-  wire Activation_3_io_out_12;
-  wire Activation_3_io_out_11;
-  wire Activation_3_io_out_10;
-  wire Activation_3_io_out_9;
-  wire Activation_3_io_out_8;
-  wire Activation_3_io_out_7;
-  wire Activation_3_io_out_6;
-  wire Activation_3_io_out_5;
-  wire Activation_3_io_out_4;
-  wire Activation_3_io_out_3;
-  wire Activation_3_io_out_2;
-  wire Activation_3_io_out_1;
-  wire Activation_3_io_out_0;
   wire control_io_ready;
   wire control_io_valid;
   wire control_io_done;
@@ -11429,102 +10811,6 @@ module Warp_0(input clk, input reset,
   wire[9:0] Chain_io_ys_2;
   wire[9:0] Chain_io_ys_1;
   wire[9:0] Chain_io_ys_0;
-  wire[9:0] Chain_1_io_ys_31;
-  wire[9:0] Chain_1_io_ys_30;
-  wire[9:0] Chain_1_io_ys_29;
-  wire[9:0] Chain_1_io_ys_28;
-  wire[9:0] Chain_1_io_ys_27;
-  wire[9:0] Chain_1_io_ys_26;
-  wire[9:0] Chain_1_io_ys_25;
-  wire[9:0] Chain_1_io_ys_24;
-  wire[9:0] Chain_1_io_ys_23;
-  wire[9:0] Chain_1_io_ys_22;
-  wire[9:0] Chain_1_io_ys_21;
-  wire[9:0] Chain_1_io_ys_20;
-  wire[9:0] Chain_1_io_ys_19;
-  wire[9:0] Chain_1_io_ys_18;
-  wire[9:0] Chain_1_io_ys_17;
-  wire[9:0] Chain_1_io_ys_16;
-  wire[9:0] Chain_1_io_ys_15;
-  wire[9:0] Chain_1_io_ys_14;
-  wire[9:0] Chain_1_io_ys_13;
-  wire[9:0] Chain_1_io_ys_12;
-  wire[9:0] Chain_1_io_ys_11;
-  wire[9:0] Chain_1_io_ys_10;
-  wire[9:0] Chain_1_io_ys_9;
-  wire[9:0] Chain_1_io_ys_8;
-  wire[9:0] Chain_1_io_ys_7;
-  wire[9:0] Chain_1_io_ys_6;
-  wire[9:0] Chain_1_io_ys_5;
-  wire[9:0] Chain_1_io_ys_4;
-  wire[9:0] Chain_1_io_ys_3;
-  wire[9:0] Chain_1_io_ys_2;
-  wire[9:0] Chain_1_io_ys_1;
-  wire[9:0] Chain_1_io_ys_0;
-  wire[9:0] Chain_2_io_ys_31;
-  wire[9:0] Chain_2_io_ys_30;
-  wire[9:0] Chain_2_io_ys_29;
-  wire[9:0] Chain_2_io_ys_28;
-  wire[9:0] Chain_2_io_ys_27;
-  wire[9:0] Chain_2_io_ys_26;
-  wire[9:0] Chain_2_io_ys_25;
-  wire[9:0] Chain_2_io_ys_24;
-  wire[9:0] Chain_2_io_ys_23;
-  wire[9:0] Chain_2_io_ys_22;
-  wire[9:0] Chain_2_io_ys_21;
-  wire[9:0] Chain_2_io_ys_20;
-  wire[9:0] Chain_2_io_ys_19;
-  wire[9:0] Chain_2_io_ys_18;
-  wire[9:0] Chain_2_io_ys_17;
-  wire[9:0] Chain_2_io_ys_16;
-  wire[9:0] Chain_2_io_ys_15;
-  wire[9:0] Chain_2_io_ys_14;
-  wire[9:0] Chain_2_io_ys_13;
-  wire[9:0] Chain_2_io_ys_12;
-  wire[9:0] Chain_2_io_ys_11;
-  wire[9:0] Chain_2_io_ys_10;
-  wire[9:0] Chain_2_io_ys_9;
-  wire[9:0] Chain_2_io_ys_8;
-  wire[9:0] Chain_2_io_ys_7;
-  wire[9:0] Chain_2_io_ys_6;
-  wire[9:0] Chain_2_io_ys_5;
-  wire[9:0] Chain_2_io_ys_4;
-  wire[9:0] Chain_2_io_ys_3;
-  wire[9:0] Chain_2_io_ys_2;
-  wire[9:0] Chain_2_io_ys_1;
-  wire[9:0] Chain_2_io_ys_0;
-  wire[9:0] Chain_3_io_ys_31;
-  wire[9:0] Chain_3_io_ys_30;
-  wire[9:0] Chain_3_io_ys_29;
-  wire[9:0] Chain_3_io_ys_28;
-  wire[9:0] Chain_3_io_ys_27;
-  wire[9:0] Chain_3_io_ys_26;
-  wire[9:0] Chain_3_io_ys_25;
-  wire[9:0] Chain_3_io_ys_24;
-  wire[9:0] Chain_3_io_ys_23;
-  wire[9:0] Chain_3_io_ys_22;
-  wire[9:0] Chain_3_io_ys_21;
-  wire[9:0] Chain_3_io_ys_20;
-  wire[9:0] Chain_3_io_ys_19;
-  wire[9:0] Chain_3_io_ys_18;
-  wire[9:0] Chain_3_io_ys_17;
-  wire[9:0] Chain_3_io_ys_16;
-  wire[9:0] Chain_3_io_ys_15;
-  wire[9:0] Chain_3_io_ys_14;
-  wire[9:0] Chain_3_io_ys_13;
-  wire[9:0] Chain_3_io_ys_12;
-  wire[9:0] Chain_3_io_ys_11;
-  wire[9:0] Chain_3_io_ys_10;
-  wire[9:0] Chain_3_io_ys_9;
-  wire[9:0] Chain_3_io_ys_8;
-  wire[9:0] Chain_3_io_ys_7;
-  wire[9:0] Chain_3_io_ys_6;
-  wire[9:0] Chain_3_io_ys_5;
-  wire[9:0] Chain_3_io_ys_4;
-  wire[9:0] Chain_3_io_ys_3;
-  wire[9:0] Chain_3_io_ys_2;
-  wire[9:0] Chain_3_io_ys_1;
-  wire[9:0] Chain_3_io_ys_0;
   wire[15:0] memoryStreamer_io_weights_31;
   wire[15:0] memoryStreamer_io_weights_30;
   wire[15:0] memoryStreamer_io_weights_29;
@@ -11560,648 +10846,168 @@ module Warp_0(input clk, input reset,
   wire[7:0] memoryStreamer_io_bias;
 
 
-  assign T508 = T0[9:0];
+  assign T127 = T0[9:0];
   assign T0 = T1;
-  assign T1 = {1'h0, Chain_3_io_ys_0};
-  assign T509 = T2[9:0];
+  assign T1 = {1'h0, Chain_io_ys_0};
+  assign T128 = T2[9:0];
   assign T2 = T3;
-  assign T3 = {1'h0, Chain_3_io_ys_1};
-  assign T510 = T4[9:0];
+  assign T3 = {1'h0, Chain_io_ys_1};
+  assign T129 = T4[9:0];
   assign T4 = T5;
-  assign T5 = {1'h0, Chain_3_io_ys_2};
-  assign T511 = T6[9:0];
+  assign T5 = {1'h0, Chain_io_ys_2};
+  assign T130 = T6[9:0];
   assign T6 = T7;
-  assign T7 = {1'h0, Chain_3_io_ys_3};
-  assign T512 = T8[9:0];
+  assign T7 = {1'h0, Chain_io_ys_3};
+  assign T131 = T8[9:0];
   assign T8 = T9;
-  assign T9 = {1'h0, Chain_3_io_ys_4};
-  assign T513 = T10[9:0];
+  assign T9 = {1'h0, Chain_io_ys_4};
+  assign T132 = T10[9:0];
   assign T10 = T11;
-  assign T11 = {1'h0, Chain_3_io_ys_5};
-  assign T514 = T12[9:0];
+  assign T11 = {1'h0, Chain_io_ys_5};
+  assign T133 = T12[9:0];
   assign T12 = T13;
-  assign T13 = {1'h0, Chain_3_io_ys_6};
-  assign T515 = T14[9:0];
+  assign T13 = {1'h0, Chain_io_ys_6};
+  assign T134 = T14[9:0];
   assign T14 = T15;
-  assign T15 = {1'h0, Chain_3_io_ys_7};
-  assign T516 = T16[9:0];
+  assign T15 = {1'h0, Chain_io_ys_7};
+  assign T135 = T16[9:0];
   assign T16 = T17;
-  assign T17 = {1'h0, Chain_3_io_ys_8};
-  assign T517 = T18[9:0];
+  assign T17 = {1'h0, Chain_io_ys_8};
+  assign T136 = T18[9:0];
   assign T18 = T19;
-  assign T19 = {1'h0, Chain_3_io_ys_9};
-  assign T518 = T20[9:0];
+  assign T19 = {1'h0, Chain_io_ys_9};
+  assign T137 = T20[9:0];
   assign T20 = T21;
-  assign T21 = {1'h0, Chain_3_io_ys_10};
-  assign T519 = T22[9:0];
+  assign T21 = {1'h0, Chain_io_ys_10};
+  assign T138 = T22[9:0];
   assign T22 = T23;
-  assign T23 = {1'h0, Chain_3_io_ys_11};
-  assign T520 = T24[9:0];
+  assign T23 = {1'h0, Chain_io_ys_11};
+  assign T139 = T24[9:0];
   assign T24 = T25;
-  assign T25 = {1'h0, Chain_3_io_ys_12};
-  assign T521 = T26[9:0];
+  assign T25 = {1'h0, Chain_io_ys_12};
+  assign T140 = T26[9:0];
   assign T26 = T27;
-  assign T27 = {1'h0, Chain_3_io_ys_13};
-  assign T522 = T28[9:0];
+  assign T27 = {1'h0, Chain_io_ys_13};
+  assign T141 = T28[9:0];
   assign T28 = T29;
-  assign T29 = {1'h0, Chain_3_io_ys_14};
-  assign T523 = T30[9:0];
+  assign T29 = {1'h0, Chain_io_ys_14};
+  assign T142 = T30[9:0];
   assign T30 = T31;
-  assign T31 = {1'h0, Chain_3_io_ys_15};
-  assign T524 = T32[9:0];
+  assign T31 = {1'h0, Chain_io_ys_15};
+  assign T143 = T32[9:0];
   assign T32 = T33;
-  assign T33 = {1'h0, Chain_3_io_ys_16};
-  assign T525 = T34[9:0];
+  assign T33 = {1'h0, Chain_io_ys_16};
+  assign T144 = T34[9:0];
   assign T34 = T35;
-  assign T35 = {1'h0, Chain_3_io_ys_17};
-  assign T526 = T36[9:0];
+  assign T35 = {1'h0, Chain_io_ys_17};
+  assign T145 = T36[9:0];
   assign T36 = T37;
-  assign T37 = {1'h0, Chain_3_io_ys_18};
-  assign T527 = T38[9:0];
+  assign T37 = {1'h0, Chain_io_ys_18};
+  assign T146 = T38[9:0];
   assign T38 = T39;
-  assign T39 = {1'h0, Chain_3_io_ys_19};
-  assign T528 = T40[9:0];
+  assign T39 = {1'h0, Chain_io_ys_19};
+  assign T147 = T40[9:0];
   assign T40 = T41;
-  assign T41 = {1'h0, Chain_3_io_ys_20};
-  assign T529 = T42[9:0];
+  assign T41 = {1'h0, Chain_io_ys_20};
+  assign T148 = T42[9:0];
   assign T42 = T43;
-  assign T43 = {1'h0, Chain_3_io_ys_21};
-  assign T530 = T44[9:0];
+  assign T43 = {1'h0, Chain_io_ys_21};
+  assign T149 = T44[9:0];
   assign T44 = T45;
-  assign T45 = {1'h0, Chain_3_io_ys_22};
-  assign T531 = T46[9:0];
+  assign T45 = {1'h0, Chain_io_ys_22};
+  assign T150 = T46[9:0];
   assign T46 = T47;
-  assign T47 = {1'h0, Chain_3_io_ys_23};
-  assign T532 = T48[9:0];
+  assign T47 = {1'h0, Chain_io_ys_23};
+  assign T151 = T48[9:0];
   assign T48 = T49;
-  assign T49 = {1'h0, Chain_3_io_ys_24};
-  assign T533 = T50[9:0];
+  assign T49 = {1'h0, Chain_io_ys_24};
+  assign T152 = T50[9:0];
   assign T50 = T51;
-  assign T51 = {1'h0, Chain_3_io_ys_25};
-  assign T534 = T52[9:0];
+  assign T51 = {1'h0, Chain_io_ys_25};
+  assign T153 = T52[9:0];
   assign T52 = T53;
-  assign T53 = {1'h0, Chain_3_io_ys_26};
-  assign T535 = T54[9:0];
+  assign T53 = {1'h0, Chain_io_ys_26};
+  assign T154 = T54[9:0];
   assign T54 = T55;
-  assign T55 = {1'h0, Chain_3_io_ys_27};
-  assign T536 = T56[9:0];
+  assign T55 = {1'h0, Chain_io_ys_27};
+  assign T155 = T56[9:0];
   assign T56 = T57;
-  assign T57 = {1'h0, Chain_3_io_ys_28};
-  assign T537 = T58[9:0];
+  assign T57 = {1'h0, Chain_io_ys_28};
+  assign T156 = T58[9:0];
   assign T58 = T59;
-  assign T59 = {1'h0, Chain_3_io_ys_29};
-  assign T538 = T60[9:0];
+  assign T59 = {1'h0, Chain_io_ys_29};
+  assign T157 = T60[9:0];
   assign T60 = T61;
-  assign T61 = {1'h0, Chain_3_io_ys_30};
-  assign T539 = T62[9:0];
+  assign T61 = {1'h0, Chain_io_ys_30};
+  assign T158 = T62[9:0];
   assign T62 = T63;
-  assign T63 = {1'h0, Chain_3_io_ys_31};
-  assign T540 = T64[9:0];
-  assign T64 = T65;
-  assign T65 = {1'h0, Chain_2_io_ys_0};
-  assign T541 = T66[9:0];
-  assign T66 = T67;
-  assign T67 = {1'h0, Chain_2_io_ys_1};
-  assign T542 = T68[9:0];
-  assign T68 = T69;
-  assign T69 = {1'h0, Chain_2_io_ys_2};
-  assign T543 = T70[9:0];
-  assign T70 = T71;
-  assign T71 = {1'h0, Chain_2_io_ys_3};
-  assign T544 = T72[9:0];
-  assign T72 = T73;
-  assign T73 = {1'h0, Chain_2_io_ys_4};
-  assign T545 = T74[9:0];
-  assign T74 = T75;
-  assign T75 = {1'h0, Chain_2_io_ys_5};
-  assign T546 = T76[9:0];
-  assign T76 = T77;
-  assign T77 = {1'h0, Chain_2_io_ys_6};
-  assign T547 = T78[9:0];
-  assign T78 = T79;
-  assign T79 = {1'h0, Chain_2_io_ys_7};
-  assign T548 = T80[9:0];
-  assign T80 = T81;
-  assign T81 = {1'h0, Chain_2_io_ys_8};
-  assign T549 = T82[9:0];
-  assign T82 = T83;
-  assign T83 = {1'h0, Chain_2_io_ys_9};
-  assign T550 = T84[9:0];
-  assign T84 = T85;
-  assign T85 = {1'h0, Chain_2_io_ys_10};
-  assign T551 = T86[9:0];
-  assign T86 = T87;
-  assign T87 = {1'h0, Chain_2_io_ys_11};
-  assign T552 = T88[9:0];
-  assign T88 = T89;
-  assign T89 = {1'h0, Chain_2_io_ys_12};
-  assign T553 = T90[9:0];
-  assign T90 = T91;
-  assign T91 = {1'h0, Chain_2_io_ys_13};
-  assign T554 = T92[9:0];
-  assign T92 = T93;
-  assign T93 = {1'h0, Chain_2_io_ys_14};
-  assign T555 = T94[9:0];
-  assign T94 = T95;
-  assign T95 = {1'h0, Chain_2_io_ys_15};
-  assign T556 = T96[9:0];
-  assign T96 = T97;
-  assign T97 = {1'h0, Chain_2_io_ys_16};
-  assign T557 = T98[9:0];
-  assign T98 = T99;
-  assign T99 = {1'h0, Chain_2_io_ys_17};
-  assign T558 = T100[9:0];
-  assign T100 = T101;
-  assign T101 = {1'h0, Chain_2_io_ys_18};
-  assign T559 = T102[9:0];
-  assign T102 = T103;
-  assign T103 = {1'h0, Chain_2_io_ys_19};
-  assign T560 = T104[9:0];
-  assign T104 = T105;
-  assign T105 = {1'h0, Chain_2_io_ys_20};
-  assign T561 = T106[9:0];
-  assign T106 = T107;
-  assign T107 = {1'h0, Chain_2_io_ys_21};
-  assign T562 = T108[9:0];
-  assign T108 = T109;
-  assign T109 = {1'h0, Chain_2_io_ys_22};
-  assign T563 = T110[9:0];
-  assign T110 = T111;
-  assign T111 = {1'h0, Chain_2_io_ys_23};
-  assign T564 = T112[9:0];
-  assign T112 = T113;
-  assign T113 = {1'h0, Chain_2_io_ys_24};
-  assign T565 = T114[9:0];
-  assign T114 = T115;
-  assign T115 = {1'h0, Chain_2_io_ys_25};
-  assign T566 = T116[9:0];
-  assign T116 = T117;
-  assign T117 = {1'h0, Chain_2_io_ys_26};
-  assign T567 = T118[9:0];
-  assign T118 = T119;
-  assign T119 = {1'h0, Chain_2_io_ys_27};
-  assign T568 = T120[9:0];
-  assign T120 = T121;
-  assign T121 = {1'h0, Chain_2_io_ys_28};
-  assign T569 = T122[9:0];
-  assign T122 = T123;
-  assign T123 = {1'h0, Chain_2_io_ys_29};
-  assign T570 = T124[9:0];
-  assign T124 = T125;
-  assign T125 = {1'h0, Chain_2_io_ys_30};
-  assign T571 = T126[9:0];
-  assign T126 = T127;
-  assign T127 = {1'h0, Chain_2_io_ys_31};
-  assign T572 = T128[9:0];
-  assign T128 = T129;
-  assign T129 = {1'h0, Chain_1_io_ys_0};
-  assign T573 = T130[9:0];
-  assign T130 = T131;
-  assign T131 = {1'h0, Chain_1_io_ys_1};
-  assign T574 = T132[9:0];
-  assign T132 = T133;
-  assign T133 = {1'h0, Chain_1_io_ys_2};
-  assign T575 = T134[9:0];
-  assign T134 = T135;
-  assign T135 = {1'h0, Chain_1_io_ys_3};
-  assign T576 = T136[9:0];
-  assign T136 = T137;
-  assign T137 = {1'h0, Chain_1_io_ys_4};
-  assign T577 = T138[9:0];
-  assign T138 = T139;
-  assign T139 = {1'h0, Chain_1_io_ys_5};
-  assign T578 = T140[9:0];
-  assign T140 = T141;
-  assign T141 = {1'h0, Chain_1_io_ys_6};
-  assign T579 = T142[9:0];
-  assign T142 = T143;
-  assign T143 = {1'h0, Chain_1_io_ys_7};
-  assign T580 = T144[9:0];
-  assign T144 = T145;
-  assign T145 = {1'h0, Chain_1_io_ys_8};
-  assign T581 = T146[9:0];
-  assign T146 = T147;
-  assign T147 = {1'h0, Chain_1_io_ys_9};
-  assign T582 = T148[9:0];
-  assign T148 = T149;
-  assign T149 = {1'h0, Chain_1_io_ys_10};
-  assign T583 = T150[9:0];
-  assign T150 = T151;
-  assign T151 = {1'h0, Chain_1_io_ys_11};
-  assign T584 = T152[9:0];
-  assign T152 = T153;
-  assign T153 = {1'h0, Chain_1_io_ys_12};
-  assign T585 = T154[9:0];
-  assign T154 = T155;
-  assign T155 = {1'h0, Chain_1_io_ys_13};
-  assign T586 = T156[9:0];
-  assign T156 = T157;
-  assign T157 = {1'h0, Chain_1_io_ys_14};
-  assign T587 = T158[9:0];
-  assign T158 = T159;
-  assign T159 = {1'h0, Chain_1_io_ys_15};
-  assign T588 = T160[9:0];
-  assign T160 = T161;
-  assign T161 = {1'h0, Chain_1_io_ys_16};
-  assign T589 = T162[9:0];
-  assign T162 = T163;
-  assign T163 = {1'h0, Chain_1_io_ys_17};
-  assign T590 = T164[9:0];
-  assign T164 = T165;
-  assign T165 = {1'h0, Chain_1_io_ys_18};
-  assign T591 = T166[9:0];
-  assign T166 = T167;
-  assign T167 = {1'h0, Chain_1_io_ys_19};
-  assign T592 = T168[9:0];
-  assign T168 = T169;
-  assign T169 = {1'h0, Chain_1_io_ys_20};
-  assign T593 = T170[9:0];
-  assign T170 = T171;
-  assign T171 = {1'h0, Chain_1_io_ys_21};
-  assign T594 = T172[9:0];
-  assign T172 = T173;
-  assign T173 = {1'h0, Chain_1_io_ys_22};
-  assign T595 = T174[9:0];
-  assign T174 = T175;
-  assign T175 = {1'h0, Chain_1_io_ys_23};
-  assign T596 = T176[9:0];
-  assign T176 = T177;
-  assign T177 = {1'h0, Chain_1_io_ys_24};
-  assign T597 = T178[9:0];
-  assign T178 = T179;
-  assign T179 = {1'h0, Chain_1_io_ys_25};
-  assign T598 = T180[9:0];
-  assign T180 = T181;
-  assign T181 = {1'h0, Chain_1_io_ys_26};
-  assign T599 = T182[9:0];
-  assign T182 = T183;
-  assign T183 = {1'h0, Chain_1_io_ys_27};
-  assign T600 = T184[9:0];
-  assign T184 = T185;
-  assign T185 = {1'h0, Chain_1_io_ys_28};
-  assign T601 = T186[9:0];
-  assign T186 = T187;
-  assign T187 = {1'h0, Chain_1_io_ys_29};
-  assign T602 = T188[9:0];
-  assign T188 = T189;
-  assign T189 = {1'h0, Chain_1_io_ys_30};
-  assign T603 = T190[9:0];
-  assign T190 = T191;
-  assign T191 = {1'h0, Chain_1_io_ys_31};
-  assign T604 = T192[9:0];
-  assign T192 = T193;
-  assign T193 = {1'h0, Chain_io_ys_0};
-  assign T605 = T194[9:0];
-  assign T194 = T195;
-  assign T195 = {1'h0, Chain_io_ys_1};
-  assign T606 = T196[9:0];
-  assign T196 = T197;
-  assign T197 = {1'h0, Chain_io_ys_2};
-  assign T607 = T198[9:0];
-  assign T198 = T199;
-  assign T199 = {1'h0, Chain_io_ys_3};
-  assign T608 = T200[9:0];
-  assign T200 = T201;
-  assign T201 = {1'h0, Chain_io_ys_4};
-  assign T609 = T202[9:0];
-  assign T202 = T203;
-  assign T203 = {1'h0, Chain_io_ys_5};
-  assign T610 = T204[9:0];
-  assign T204 = T205;
-  assign T205 = {1'h0, Chain_io_ys_6};
-  assign T611 = T206[9:0];
-  assign T206 = T207;
-  assign T207 = {1'h0, Chain_io_ys_7};
-  assign T612 = T208[9:0];
-  assign T208 = T209;
-  assign T209 = {1'h0, Chain_io_ys_8};
-  assign T613 = T210[9:0];
-  assign T210 = T211;
-  assign T211 = {1'h0, Chain_io_ys_9};
-  assign T614 = T212[9:0];
-  assign T212 = T213;
-  assign T213 = {1'h0, Chain_io_ys_10};
-  assign T615 = T214[9:0];
-  assign T214 = T215;
-  assign T215 = {1'h0, Chain_io_ys_11};
-  assign T616 = T216[9:0];
-  assign T216 = T217;
-  assign T217 = {1'h0, Chain_io_ys_12};
-  assign T617 = T218[9:0];
-  assign T218 = T219;
-  assign T219 = {1'h0, Chain_io_ys_13};
-  assign T618 = T220[9:0];
-  assign T220 = T221;
-  assign T221 = {1'h0, Chain_io_ys_14};
-  assign T619 = T222[9:0];
-  assign T222 = T223;
-  assign T223 = {1'h0, Chain_io_ys_15};
-  assign T620 = T224[9:0];
-  assign T224 = T225;
-  assign T225 = {1'h0, Chain_io_ys_16};
-  assign T621 = T226[9:0];
-  assign T226 = T227;
-  assign T227 = {1'h0, Chain_io_ys_17};
-  assign T622 = T228[9:0];
-  assign T228 = T229;
-  assign T229 = {1'h0, Chain_io_ys_18};
-  assign T623 = T230[9:0];
-  assign T230 = T231;
-  assign T231 = {1'h0, Chain_io_ys_19};
-  assign T624 = T232[9:0];
-  assign T232 = T233;
-  assign T233 = {1'h0, Chain_io_ys_20};
-  assign T625 = T234[9:0];
-  assign T234 = T235;
-  assign T235 = {1'h0, Chain_io_ys_21};
-  assign T626 = T236[9:0];
-  assign T236 = T237;
-  assign T237 = {1'h0, Chain_io_ys_22};
-  assign T627 = T238[9:0];
-  assign T238 = T239;
-  assign T239 = {1'h0, Chain_io_ys_23};
-  assign T628 = T240[9:0];
-  assign T240 = T241;
-  assign T241 = {1'h0, Chain_io_ys_24};
-  assign T629 = T242[9:0];
-  assign T242 = T243;
-  assign T243 = {1'h0, Chain_io_ys_25};
-  assign T630 = T244[9:0];
-  assign T244 = T245;
-  assign T245 = {1'h0, Chain_io_ys_26};
-  assign T631 = T246[9:0];
-  assign T246 = T247;
-  assign T247 = {1'h0, Chain_io_ys_27};
-  assign T632 = T248[9:0];
-  assign T248 = T249;
-  assign T249 = {1'h0, Chain_io_ys_28};
-  assign T633 = T250[9:0];
-  assign T250 = T251;
-  assign T251 = {1'h0, Chain_io_ys_29};
-  assign T634 = T252[9:0];
-  assign T252 = T253;
-  assign T253 = {1'h0, Chain_io_ys_30};
-  assign T635 = T254[9:0];
-  assign T254 = T255;
-  assign T255 = {1'h0, Chain_io_ys_31};
+  assign T63 = {1'h0, Chain_io_ys_31};
   assign io_done = control_io_done;
   assign io_xOutValid = control_io_valid;
-  assign io_xOut_0 = T256;
-  assign T256 = T318 ? T288 : T257;
-  assign T257 = T287 ? T273 : T258;
-  assign T258 = T272 ? T266 : T259;
-  assign T259 = T265 ? T263 : T260;
-  assign T260 = T261 ? Activation_io_out_1 : Activation_io_out_0;
-  assign T261 = T262[0];
-  assign T262 = control_io_selectX;
-  assign T263 = T264 ? Activation_io_out_3 : Activation_io_out_2;
-  assign T264 = T262[0];
-  assign T265 = T262[1];
-  assign T266 = T271 ? T269 : T267;
-  assign T267 = T268 ? Activation_io_out_5 : Activation_io_out_4;
-  assign T268 = T262[0];
-  assign T269 = T270 ? Activation_io_out_7 : Activation_io_out_6;
-  assign T270 = T262[0];
-  assign T271 = T262[1];
-  assign T272 = T262[2];
-  assign T273 = T286 ? T280 : T274;
-  assign T274 = T279 ? T277 : T275;
-  assign T275 = T276 ? Activation_io_out_9 : Activation_io_out_8;
-  assign T276 = T262[0];
-  assign T277 = T278 ? Activation_io_out_11 : Activation_io_out_10;
-  assign T278 = T262[0];
-  assign T279 = T262[1];
-  assign T280 = T285 ? T283 : T281;
-  assign T281 = T282 ? Activation_io_out_13 : Activation_io_out_12;
-  assign T282 = T262[0];
-  assign T283 = T284 ? Activation_io_out_15 : Activation_io_out_14;
-  assign T284 = T262[0];
-  assign T285 = T262[1];
-  assign T286 = T262[2];
-  assign T287 = T262[3];
-  assign T288 = T317 ? T303 : T289;
-  assign T289 = T302 ? T296 : T290;
-  assign T290 = T295 ? T293 : T291;
-  assign T291 = T292 ? Activation_io_out_17 : Activation_io_out_16;
-  assign T292 = T262[0];
-  assign T293 = T294 ? Activation_io_out_19 : Activation_io_out_18;
-  assign T294 = T262[0];
-  assign T295 = T262[1];
-  assign T296 = T301 ? T299 : T297;
-  assign T297 = T298 ? Activation_io_out_21 : Activation_io_out_20;
-  assign T298 = T262[0];
-  assign T299 = T300 ? Activation_io_out_23 : Activation_io_out_22;
-  assign T300 = T262[0];
-  assign T301 = T262[1];
-  assign T302 = T262[2];
-  assign T303 = T316 ? T310 : T304;
-  assign T304 = T309 ? T307 : T305;
-  assign T305 = T306 ? Activation_io_out_25 : Activation_io_out_24;
-  assign T306 = T262[0];
-  assign T307 = T308 ? Activation_io_out_27 : Activation_io_out_26;
-  assign T308 = T262[0];
-  assign T309 = T262[1];
-  assign T310 = T315 ? T313 : T311;
-  assign T311 = T312 ? Activation_io_out_29 : Activation_io_out_28;
-  assign T312 = T262[0];
-  assign T313 = T314 ? Activation_io_out_31 : Activation_io_out_30;
-  assign T314 = T262[0];
-  assign T315 = T262[1];
-  assign T316 = T262[2];
-  assign T317 = T262[3];
-  assign T318 = T262[4];
-  assign io_xOut_1 = T319;
-  assign T319 = T381 ? T351 : T320;
-  assign T320 = T350 ? T336 : T321;
-  assign T321 = T335 ? T329 : T322;
-  assign T322 = T328 ? T326 : T323;
-  assign T323 = T324 ? Activation_1_io_out_1 : Activation_1_io_out_0;
-  assign T324 = T325[0];
-  assign T325 = control_io_selectX;
-  assign T326 = T327 ? Activation_1_io_out_3 : Activation_1_io_out_2;
-  assign T327 = T325[0];
-  assign T328 = T325[1];
-  assign T329 = T334 ? T332 : T330;
-  assign T330 = T331 ? Activation_1_io_out_5 : Activation_1_io_out_4;
-  assign T331 = T325[0];
-  assign T332 = T333 ? Activation_1_io_out_7 : Activation_1_io_out_6;
-  assign T333 = T325[0];
-  assign T334 = T325[1];
-  assign T335 = T325[2];
-  assign T336 = T349 ? T343 : T337;
-  assign T337 = T342 ? T340 : T338;
-  assign T338 = T339 ? Activation_1_io_out_9 : Activation_1_io_out_8;
-  assign T339 = T325[0];
-  assign T340 = T341 ? Activation_1_io_out_11 : Activation_1_io_out_10;
-  assign T341 = T325[0];
-  assign T342 = T325[1];
-  assign T343 = T348 ? T346 : T344;
-  assign T344 = T345 ? Activation_1_io_out_13 : Activation_1_io_out_12;
-  assign T345 = T325[0];
-  assign T346 = T347 ? Activation_1_io_out_15 : Activation_1_io_out_14;
-  assign T347 = T325[0];
-  assign T348 = T325[1];
-  assign T349 = T325[2];
-  assign T350 = T325[3];
-  assign T351 = T380 ? T366 : T352;
-  assign T352 = T365 ? T359 : T353;
-  assign T353 = T358 ? T356 : T354;
-  assign T354 = T355 ? Activation_1_io_out_17 : Activation_1_io_out_16;
-  assign T355 = T325[0];
-  assign T356 = T357 ? Activation_1_io_out_19 : Activation_1_io_out_18;
-  assign T357 = T325[0];
-  assign T358 = T325[1];
-  assign T359 = T364 ? T362 : T360;
-  assign T360 = T361 ? Activation_1_io_out_21 : Activation_1_io_out_20;
-  assign T361 = T325[0];
-  assign T362 = T363 ? Activation_1_io_out_23 : Activation_1_io_out_22;
-  assign T363 = T325[0];
-  assign T364 = T325[1];
-  assign T365 = T325[2];
-  assign T366 = T379 ? T373 : T367;
-  assign T367 = T372 ? T370 : T368;
-  assign T368 = T369 ? Activation_1_io_out_25 : Activation_1_io_out_24;
-  assign T369 = T325[0];
-  assign T370 = T371 ? Activation_1_io_out_27 : Activation_1_io_out_26;
-  assign T371 = T325[0];
-  assign T372 = T325[1];
-  assign T373 = T378 ? T376 : T374;
-  assign T374 = T375 ? Activation_1_io_out_29 : Activation_1_io_out_28;
-  assign T375 = T325[0];
-  assign T376 = T377 ? Activation_1_io_out_31 : Activation_1_io_out_30;
-  assign T377 = T325[0];
-  assign T378 = T325[1];
-  assign T379 = T325[2];
-  assign T380 = T325[3];
-  assign T381 = T325[4];
-  assign io_xOut_2 = T382;
-  assign T382 = T444 ? T414 : T383;
-  assign T383 = T413 ? T399 : T384;
-  assign T384 = T398 ? T392 : T385;
-  assign T385 = T391 ? T389 : T386;
-  assign T386 = T387 ? Activation_2_io_out_1 : Activation_2_io_out_0;
-  assign T387 = T388[0];
-  assign T388 = control_io_selectX;
-  assign T389 = T390 ? Activation_2_io_out_3 : Activation_2_io_out_2;
-  assign T390 = T388[0];
-  assign T391 = T388[1];
-  assign T392 = T397 ? T395 : T393;
-  assign T393 = T394 ? Activation_2_io_out_5 : Activation_2_io_out_4;
-  assign T394 = T388[0];
-  assign T395 = T396 ? Activation_2_io_out_7 : Activation_2_io_out_6;
-  assign T396 = T388[0];
-  assign T397 = T388[1];
-  assign T398 = T388[2];
-  assign T399 = T412 ? T406 : T400;
-  assign T400 = T405 ? T403 : T401;
-  assign T401 = T402 ? Activation_2_io_out_9 : Activation_2_io_out_8;
-  assign T402 = T388[0];
-  assign T403 = T404 ? Activation_2_io_out_11 : Activation_2_io_out_10;
-  assign T404 = T388[0];
-  assign T405 = T388[1];
-  assign T406 = T411 ? T409 : T407;
-  assign T407 = T408 ? Activation_2_io_out_13 : Activation_2_io_out_12;
-  assign T408 = T388[0];
-  assign T409 = T410 ? Activation_2_io_out_15 : Activation_2_io_out_14;
-  assign T410 = T388[0];
-  assign T411 = T388[1];
-  assign T412 = T388[2];
-  assign T413 = T388[3];
-  assign T414 = T443 ? T429 : T415;
-  assign T415 = T428 ? T422 : T416;
-  assign T416 = T421 ? T419 : T417;
-  assign T417 = T418 ? Activation_2_io_out_17 : Activation_2_io_out_16;
-  assign T418 = T388[0];
-  assign T419 = T420 ? Activation_2_io_out_19 : Activation_2_io_out_18;
-  assign T420 = T388[0];
-  assign T421 = T388[1];
-  assign T422 = T427 ? T425 : T423;
-  assign T423 = T424 ? Activation_2_io_out_21 : Activation_2_io_out_20;
-  assign T424 = T388[0];
-  assign T425 = T426 ? Activation_2_io_out_23 : Activation_2_io_out_22;
-  assign T426 = T388[0];
-  assign T427 = T388[1];
-  assign T428 = T388[2];
-  assign T429 = T442 ? T436 : T430;
-  assign T430 = T435 ? T433 : T431;
-  assign T431 = T432 ? Activation_2_io_out_25 : Activation_2_io_out_24;
-  assign T432 = T388[0];
-  assign T433 = T434 ? Activation_2_io_out_27 : Activation_2_io_out_26;
-  assign T434 = T388[0];
-  assign T435 = T388[1];
-  assign T436 = T441 ? T439 : T437;
-  assign T437 = T438 ? Activation_2_io_out_29 : Activation_2_io_out_28;
-  assign T438 = T388[0];
-  assign T439 = T440 ? Activation_2_io_out_31 : Activation_2_io_out_30;
-  assign T440 = T388[0];
-  assign T441 = T388[1];
-  assign T442 = T388[2];
-  assign T443 = T388[3];
-  assign T444 = T388[4];
-  assign io_xOut_3 = T445;
-  assign T445 = T507 ? T477 : T446;
-  assign T446 = T476 ? T462 : T447;
-  assign T447 = T461 ? T455 : T448;
-  assign T448 = T454 ? T452 : T449;
-  assign T449 = T450 ? Activation_3_io_out_1 : Activation_3_io_out_0;
-  assign T450 = T451[0];
-  assign T451 = control_io_selectX;
-  assign T452 = T453 ? Activation_3_io_out_3 : Activation_3_io_out_2;
-  assign T453 = T451[0];
-  assign T454 = T451[1];
-  assign T455 = T460 ? T458 : T456;
-  assign T456 = T457 ? Activation_3_io_out_5 : Activation_3_io_out_4;
-  assign T457 = T451[0];
-  assign T458 = T459 ? Activation_3_io_out_7 : Activation_3_io_out_6;
-  assign T459 = T451[0];
-  assign T460 = T451[1];
-  assign T461 = T451[2];
-  assign T462 = T475 ? T469 : T463;
-  assign T463 = T468 ? T466 : T464;
-  assign T464 = T465 ? Activation_3_io_out_9 : Activation_3_io_out_8;
-  assign T465 = T451[0];
-  assign T466 = T467 ? Activation_3_io_out_11 : Activation_3_io_out_10;
-  assign T467 = T451[0];
-  assign T468 = T451[1];
-  assign T469 = T474 ? T472 : T470;
-  assign T470 = T471 ? Activation_3_io_out_13 : Activation_3_io_out_12;
-  assign T471 = T451[0];
-  assign T472 = T473 ? Activation_3_io_out_15 : Activation_3_io_out_14;
-  assign T473 = T451[0];
-  assign T474 = T451[1];
-  assign T475 = T451[2];
-  assign T476 = T451[3];
-  assign T477 = T506 ? T492 : T478;
-  assign T478 = T491 ? T485 : T479;
-  assign T479 = T484 ? T482 : T480;
-  assign T480 = T481 ? Activation_3_io_out_17 : Activation_3_io_out_16;
-  assign T481 = T451[0];
-  assign T482 = T483 ? Activation_3_io_out_19 : Activation_3_io_out_18;
-  assign T483 = T451[0];
-  assign T484 = T451[1];
-  assign T485 = T490 ? T488 : T486;
-  assign T486 = T487 ? Activation_3_io_out_21 : Activation_3_io_out_20;
-  assign T487 = T451[0];
-  assign T488 = T489 ? Activation_3_io_out_23 : Activation_3_io_out_22;
-  assign T489 = T451[0];
-  assign T490 = T451[1];
-  assign T491 = T451[2];
-  assign T492 = T505 ? T499 : T493;
-  assign T493 = T498 ? T496 : T494;
-  assign T494 = T495 ? Activation_3_io_out_25 : Activation_3_io_out_24;
-  assign T495 = T451[0];
-  assign T496 = T497 ? Activation_3_io_out_27 : Activation_3_io_out_26;
-  assign T497 = T451[0];
-  assign T498 = T451[1];
-  assign T499 = T504 ? T502 : T500;
-  assign T500 = T501 ? Activation_3_io_out_29 : Activation_3_io_out_28;
-  assign T501 = T451[0];
-  assign T502 = T503 ? Activation_3_io_out_31 : Activation_3_io_out_30;
-  assign T503 = T451[0];
-  assign T504 = T451[1];
-  assign T505 = T451[2];
-  assign T506 = T451[3];
-  assign T507 = T451[4];
+  assign io_xOut_0 = T64;
+  assign T64 = T126 ? T96 : T65;
+  assign T65 = T95 ? T81 : T66;
+  assign T66 = T80 ? T74 : T67;
+  assign T67 = T73 ? T71 : T68;
+  assign T68 = T69 ? Activation_io_out_1 : Activation_io_out_0;
+  assign T69 = T70[0];
+  assign T70 = control_io_selectX;
+  assign T71 = T72 ? Activation_io_out_3 : Activation_io_out_2;
+  assign T72 = T70[0];
+  assign T73 = T70[1];
+  assign T74 = T79 ? T77 : T75;
+  assign T75 = T76 ? Activation_io_out_5 : Activation_io_out_4;
+  assign T76 = T70[0];
+  assign T77 = T78 ? Activation_io_out_7 : Activation_io_out_6;
+  assign T78 = T70[0];
+  assign T79 = T70[1];
+  assign T80 = T70[2];
+  assign T81 = T94 ? T88 : T82;
+  assign T82 = T87 ? T85 : T83;
+  assign T83 = T84 ? Activation_io_out_9 : Activation_io_out_8;
+  assign T84 = T70[0];
+  assign T85 = T86 ? Activation_io_out_11 : Activation_io_out_10;
+  assign T86 = T70[0];
+  assign T87 = T70[1];
+  assign T88 = T93 ? T91 : T89;
+  assign T89 = T90 ? Activation_io_out_13 : Activation_io_out_12;
+  assign T90 = T70[0];
+  assign T91 = T92 ? Activation_io_out_15 : Activation_io_out_14;
+  assign T92 = T70[0];
+  assign T93 = T70[1];
+  assign T94 = T70[2];
+  assign T95 = T70[3];
+  assign T96 = T125 ? T111 : T97;
+  assign T97 = T110 ? T104 : T98;
+  assign T98 = T103 ? T101 : T99;
+  assign T99 = T100 ? Activation_io_out_17 : Activation_io_out_16;
+  assign T100 = T70[0];
+  assign T101 = T102 ? Activation_io_out_19 : Activation_io_out_18;
+  assign T102 = T70[0];
+  assign T103 = T70[1];
+  assign T104 = T109 ? T107 : T105;
+  assign T105 = T106 ? Activation_io_out_21 : Activation_io_out_20;
+  assign T106 = T70[0];
+  assign T107 = T108 ? Activation_io_out_23 : Activation_io_out_22;
+  assign T108 = T70[0];
+  assign T109 = T70[1];
+  assign T110 = T70[2];
+  assign T111 = T124 ? T118 : T112;
+  assign T112 = T117 ? T115 : T113;
+  assign T113 = T114 ? Activation_io_out_25 : Activation_io_out_24;
+  assign T114 = T70[0];
+  assign T115 = T116 ? Activation_io_out_27 : Activation_io_out_26;
+  assign T116 = T70[0];
+  assign T117 = T70[1];
+  assign T118 = T123 ? T121 : T119;
+  assign T119 = T120 ? Activation_io_out_29 : Activation_io_out_28;
+  assign T120 = T70[0];
+  assign T121 = T122 ? Activation_io_out_31 : Activation_io_out_30;
+  assign T122 = T70[0];
+  assign T123 = T70[1];
+  assign T124 = T70[2];
+  assign T125 = T70[3];
+  assign T126 = T70[4];
   assign io_startOut = io_start;
   assign io_ready = control_io_ready;
   WarpControl_0 control(.clk(clk), .reset(reset),
@@ -12283,246 +11089,39 @@ module Warp_0(input clk, input reset,
        .io_ys_1( Chain_io_ys_1 ),
        .io_ys_0( Chain_io_ys_0 )
   );
-  Chain_0 Chain_1(.clk(clk), .reset(reset),
-       .io_weights_31( memoryStreamer_io_weights_31 ),
-       .io_weights_30( memoryStreamer_io_weights_30 ),
-       .io_weights_29( memoryStreamer_io_weights_29 ),
-       .io_weights_28( memoryStreamer_io_weights_28 ),
-       .io_weights_27( memoryStreamer_io_weights_27 ),
-       .io_weights_26( memoryStreamer_io_weights_26 ),
-       .io_weights_25( memoryStreamer_io_weights_25 ),
-       .io_weights_24( memoryStreamer_io_weights_24 ),
-       .io_weights_23( memoryStreamer_io_weights_23 ),
-       .io_weights_22( memoryStreamer_io_weights_22 ),
-       .io_weights_21( memoryStreamer_io_weights_21 ),
-       .io_weights_20( memoryStreamer_io_weights_20 ),
-       .io_weights_19( memoryStreamer_io_weights_19 ),
-       .io_weights_18( memoryStreamer_io_weights_18 ),
-       .io_weights_17( memoryStreamer_io_weights_17 ),
-       .io_weights_16( memoryStreamer_io_weights_16 ),
-       .io_weights_15( memoryStreamer_io_weights_15 ),
-       .io_weights_14( memoryStreamer_io_weights_14 ),
-       .io_weights_13( memoryStreamer_io_weights_13 ),
-       .io_weights_12( memoryStreamer_io_weights_12 ),
-       .io_weights_11( memoryStreamer_io_weights_11 ),
-       .io_weights_10( memoryStreamer_io_weights_10 ),
-       .io_weights_9( memoryStreamer_io_weights_9 ),
-       .io_weights_8( memoryStreamer_io_weights_8 ),
-       .io_weights_7( memoryStreamer_io_weights_7 ),
-       .io_weights_6( memoryStreamer_io_weights_6 ),
-       .io_weights_5( memoryStreamer_io_weights_5 ),
-       .io_weights_4( memoryStreamer_io_weights_4 ),
-       .io_weights_3( memoryStreamer_io_weights_3 ),
-       .io_weights_2( memoryStreamer_io_weights_2 ),
-       .io_weights_1( memoryStreamer_io_weights_1 ),
-       .io_weights_0( memoryStreamer_io_weights_0 ),
-       .io_bias( memoryStreamer_io_bias ),
-       .io_restartIn( control_io_chainRestart ),
-       .io_xs( io_xIn_1 ),
-       .io_ys_31( Chain_1_io_ys_31 ),
-       .io_ys_30( Chain_1_io_ys_30 ),
-       .io_ys_29( Chain_1_io_ys_29 ),
-       .io_ys_28( Chain_1_io_ys_28 ),
-       .io_ys_27( Chain_1_io_ys_27 ),
-       .io_ys_26( Chain_1_io_ys_26 ),
-       .io_ys_25( Chain_1_io_ys_25 ),
-       .io_ys_24( Chain_1_io_ys_24 ),
-       .io_ys_23( Chain_1_io_ys_23 ),
-       .io_ys_22( Chain_1_io_ys_22 ),
-       .io_ys_21( Chain_1_io_ys_21 ),
-       .io_ys_20( Chain_1_io_ys_20 ),
-       .io_ys_19( Chain_1_io_ys_19 ),
-       .io_ys_18( Chain_1_io_ys_18 ),
-       .io_ys_17( Chain_1_io_ys_17 ),
-       .io_ys_16( Chain_1_io_ys_16 ),
-       .io_ys_15( Chain_1_io_ys_15 ),
-       .io_ys_14( Chain_1_io_ys_14 ),
-       .io_ys_13( Chain_1_io_ys_13 ),
-       .io_ys_12( Chain_1_io_ys_12 ),
-       .io_ys_11( Chain_1_io_ys_11 ),
-       .io_ys_10( Chain_1_io_ys_10 ),
-       .io_ys_9( Chain_1_io_ys_9 ),
-       .io_ys_8( Chain_1_io_ys_8 ),
-       .io_ys_7( Chain_1_io_ys_7 ),
-       .io_ys_6( Chain_1_io_ys_6 ),
-       .io_ys_5( Chain_1_io_ys_5 ),
-       .io_ys_4( Chain_1_io_ys_4 ),
-       .io_ys_3( Chain_1_io_ys_3 ),
-       .io_ys_2( Chain_1_io_ys_2 ),
-       .io_ys_1( Chain_1_io_ys_1 ),
-       .io_ys_0( Chain_1_io_ys_0 )
-  );
-  Chain_0 Chain_2(.clk(clk), .reset(reset),
-       .io_weights_31( memoryStreamer_io_weights_31 ),
-       .io_weights_30( memoryStreamer_io_weights_30 ),
-       .io_weights_29( memoryStreamer_io_weights_29 ),
-       .io_weights_28( memoryStreamer_io_weights_28 ),
-       .io_weights_27( memoryStreamer_io_weights_27 ),
-       .io_weights_26( memoryStreamer_io_weights_26 ),
-       .io_weights_25( memoryStreamer_io_weights_25 ),
-       .io_weights_24( memoryStreamer_io_weights_24 ),
-       .io_weights_23( memoryStreamer_io_weights_23 ),
-       .io_weights_22( memoryStreamer_io_weights_22 ),
-       .io_weights_21( memoryStreamer_io_weights_21 ),
-       .io_weights_20( memoryStreamer_io_weights_20 ),
-       .io_weights_19( memoryStreamer_io_weights_19 ),
-       .io_weights_18( memoryStreamer_io_weights_18 ),
-       .io_weights_17( memoryStreamer_io_weights_17 ),
-       .io_weights_16( memoryStreamer_io_weights_16 ),
-       .io_weights_15( memoryStreamer_io_weights_15 ),
-       .io_weights_14( memoryStreamer_io_weights_14 ),
-       .io_weights_13( memoryStreamer_io_weights_13 ),
-       .io_weights_12( memoryStreamer_io_weights_12 ),
-       .io_weights_11( memoryStreamer_io_weights_11 ),
-       .io_weights_10( memoryStreamer_io_weights_10 ),
-       .io_weights_9( memoryStreamer_io_weights_9 ),
-       .io_weights_8( memoryStreamer_io_weights_8 ),
-       .io_weights_7( memoryStreamer_io_weights_7 ),
-       .io_weights_6( memoryStreamer_io_weights_6 ),
-       .io_weights_5( memoryStreamer_io_weights_5 ),
-       .io_weights_4( memoryStreamer_io_weights_4 ),
-       .io_weights_3( memoryStreamer_io_weights_3 ),
-       .io_weights_2( memoryStreamer_io_weights_2 ),
-       .io_weights_1( memoryStreamer_io_weights_1 ),
-       .io_weights_0( memoryStreamer_io_weights_0 ),
-       .io_bias( memoryStreamer_io_bias ),
-       .io_restartIn( control_io_chainRestart ),
-       .io_xs( io_xIn_2 ),
-       .io_ys_31( Chain_2_io_ys_31 ),
-       .io_ys_30( Chain_2_io_ys_30 ),
-       .io_ys_29( Chain_2_io_ys_29 ),
-       .io_ys_28( Chain_2_io_ys_28 ),
-       .io_ys_27( Chain_2_io_ys_27 ),
-       .io_ys_26( Chain_2_io_ys_26 ),
-       .io_ys_25( Chain_2_io_ys_25 ),
-       .io_ys_24( Chain_2_io_ys_24 ),
-       .io_ys_23( Chain_2_io_ys_23 ),
-       .io_ys_22( Chain_2_io_ys_22 ),
-       .io_ys_21( Chain_2_io_ys_21 ),
-       .io_ys_20( Chain_2_io_ys_20 ),
-       .io_ys_19( Chain_2_io_ys_19 ),
-       .io_ys_18( Chain_2_io_ys_18 ),
-       .io_ys_17( Chain_2_io_ys_17 ),
-       .io_ys_16( Chain_2_io_ys_16 ),
-       .io_ys_15( Chain_2_io_ys_15 ),
-       .io_ys_14( Chain_2_io_ys_14 ),
-       .io_ys_13( Chain_2_io_ys_13 ),
-       .io_ys_12( Chain_2_io_ys_12 ),
-       .io_ys_11( Chain_2_io_ys_11 ),
-       .io_ys_10( Chain_2_io_ys_10 ),
-       .io_ys_9( Chain_2_io_ys_9 ),
-       .io_ys_8( Chain_2_io_ys_8 ),
-       .io_ys_7( Chain_2_io_ys_7 ),
-       .io_ys_6( Chain_2_io_ys_6 ),
-       .io_ys_5( Chain_2_io_ys_5 ),
-       .io_ys_4( Chain_2_io_ys_4 ),
-       .io_ys_3( Chain_2_io_ys_3 ),
-       .io_ys_2( Chain_2_io_ys_2 ),
-       .io_ys_1( Chain_2_io_ys_1 ),
-       .io_ys_0( Chain_2_io_ys_0 )
-  );
-  Chain_0 Chain_3(.clk(clk), .reset(reset),
-       .io_weights_31( memoryStreamer_io_weights_31 ),
-       .io_weights_30( memoryStreamer_io_weights_30 ),
-       .io_weights_29( memoryStreamer_io_weights_29 ),
-       .io_weights_28( memoryStreamer_io_weights_28 ),
-       .io_weights_27( memoryStreamer_io_weights_27 ),
-       .io_weights_26( memoryStreamer_io_weights_26 ),
-       .io_weights_25( memoryStreamer_io_weights_25 ),
-       .io_weights_24( memoryStreamer_io_weights_24 ),
-       .io_weights_23( memoryStreamer_io_weights_23 ),
-       .io_weights_22( memoryStreamer_io_weights_22 ),
-       .io_weights_21( memoryStreamer_io_weights_21 ),
-       .io_weights_20( memoryStreamer_io_weights_20 ),
-       .io_weights_19( memoryStreamer_io_weights_19 ),
-       .io_weights_18( memoryStreamer_io_weights_18 ),
-       .io_weights_17( memoryStreamer_io_weights_17 ),
-       .io_weights_16( memoryStreamer_io_weights_16 ),
-       .io_weights_15( memoryStreamer_io_weights_15 ),
-       .io_weights_14( memoryStreamer_io_weights_14 ),
-       .io_weights_13( memoryStreamer_io_weights_13 ),
-       .io_weights_12( memoryStreamer_io_weights_12 ),
-       .io_weights_11( memoryStreamer_io_weights_11 ),
-       .io_weights_10( memoryStreamer_io_weights_10 ),
-       .io_weights_9( memoryStreamer_io_weights_9 ),
-       .io_weights_8( memoryStreamer_io_weights_8 ),
-       .io_weights_7( memoryStreamer_io_weights_7 ),
-       .io_weights_6( memoryStreamer_io_weights_6 ),
-       .io_weights_5( memoryStreamer_io_weights_5 ),
-       .io_weights_4( memoryStreamer_io_weights_4 ),
-       .io_weights_3( memoryStreamer_io_weights_3 ),
-       .io_weights_2( memoryStreamer_io_weights_2 ),
-       .io_weights_1( memoryStreamer_io_weights_1 ),
-       .io_weights_0( memoryStreamer_io_weights_0 ),
-       .io_bias( memoryStreamer_io_bias ),
-       .io_restartIn( control_io_chainRestart ),
-       .io_xs( io_xIn_3 ),
-       .io_ys_31( Chain_3_io_ys_31 ),
-       .io_ys_30( Chain_3_io_ys_30 ),
-       .io_ys_29( Chain_3_io_ys_29 ),
-       .io_ys_28( Chain_3_io_ys_28 ),
-       .io_ys_27( Chain_3_io_ys_27 ),
-       .io_ys_26( Chain_3_io_ys_26 ),
-       .io_ys_25( Chain_3_io_ys_25 ),
-       .io_ys_24( Chain_3_io_ys_24 ),
-       .io_ys_23( Chain_3_io_ys_23 ),
-       .io_ys_22( Chain_3_io_ys_22 ),
-       .io_ys_21( Chain_3_io_ys_21 ),
-       .io_ys_20( Chain_3_io_ys_20 ),
-       .io_ys_19( Chain_3_io_ys_19 ),
-       .io_ys_18( Chain_3_io_ys_18 ),
-       .io_ys_17( Chain_3_io_ys_17 ),
-       .io_ys_16( Chain_3_io_ys_16 ),
-       .io_ys_15( Chain_3_io_ys_15 ),
-       .io_ys_14( Chain_3_io_ys_14 ),
-       .io_ys_13( Chain_3_io_ys_13 ),
-       .io_ys_12( Chain_3_io_ys_12 ),
-       .io_ys_11( Chain_3_io_ys_11 ),
-       .io_ys_10( Chain_3_io_ys_10 ),
-       .io_ys_9( Chain_3_io_ys_9 ),
-       .io_ys_8( Chain_3_io_ys_8 ),
-       .io_ys_7( Chain_3_io_ys_7 ),
-       .io_ys_6( Chain_3_io_ys_6 ),
-       .io_ys_5( Chain_3_io_ys_5 ),
-       .io_ys_4( Chain_3_io_ys_4 ),
-       .io_ys_3( Chain_3_io_ys_3 ),
-       .io_ys_2( Chain_3_io_ys_2 ),
-       .io_ys_1( Chain_3_io_ys_1 ),
-       .io_ys_0( Chain_3_io_ys_0 )
-  );
   Activation_0 Activation(
-       .io_in_31( T635 ),
-       .io_in_30( T634 ),
-       .io_in_29( T633 ),
-       .io_in_28( T632 ),
-       .io_in_27( T631 ),
-       .io_in_26( T630 ),
-       .io_in_25( T629 ),
-       .io_in_24( T628 ),
-       .io_in_23( T627 ),
-       .io_in_22( T626 ),
-       .io_in_21( T625 ),
-       .io_in_20( T624 ),
-       .io_in_19( T623 ),
-       .io_in_18( T622 ),
-       .io_in_17( T621 ),
-       .io_in_16( T620 ),
-       .io_in_15( T619 ),
-       .io_in_14( T618 ),
-       .io_in_13( T617 ),
-       .io_in_12( T616 ),
-       .io_in_11( T615 ),
-       .io_in_10( T614 ),
-       .io_in_9( T613 ),
-       .io_in_8( T612 ),
-       .io_in_7( T611 ),
-       .io_in_6( T610 ),
-       .io_in_5( T609 ),
-       .io_in_4( T608 ),
-       .io_in_3( T607 ),
-       .io_in_2( T606 ),
-       .io_in_1( T605 ),
-       .io_in_0( T604 ),
+       .io_in_31( T158 ),
+       .io_in_30( T157 ),
+       .io_in_29( T156 ),
+       .io_in_28( T155 ),
+       .io_in_27( T154 ),
+       .io_in_26( T153 ),
+       .io_in_25( T152 ),
+       .io_in_24( T151 ),
+       .io_in_23( T150 ),
+       .io_in_22( T149 ),
+       .io_in_21( T148 ),
+       .io_in_20( T147 ),
+       .io_in_19( T146 ),
+       .io_in_18( T145 ),
+       .io_in_17( T144 ),
+       .io_in_16( T143 ),
+       .io_in_15( T142 ),
+       .io_in_14( T141 ),
+       .io_in_13( T140 ),
+       .io_in_12( T139 ),
+       .io_in_11( T138 ),
+       .io_in_10( T137 ),
+       .io_in_9( T136 ),
+       .io_in_8( T135 ),
+       .io_in_7( T134 ),
+       .io_in_6( T133 ),
+       .io_in_5( T132 ),
+       .io_in_4( T131 ),
+       .io_in_3( T130 ),
+       .io_in_2( T129 ),
+       .io_in_1( T128 ),
+       .io_in_0( T127 ),
        .io_out_31( Activation_io_out_31 ),
        .io_out_30( Activation_io_out_30 ),
        .io_out_29( Activation_io_out_29 ),
@@ -12555,204 +11154,6 @@ module Warp_0(input clk, input reset,
        .io_out_2( Activation_io_out_2 ),
        .io_out_1( Activation_io_out_1 ),
        .io_out_0( Activation_io_out_0 )
-  );
-  Activation_0 Activation_1(
-       .io_in_31( T603 ),
-       .io_in_30( T602 ),
-       .io_in_29( T601 ),
-       .io_in_28( T600 ),
-       .io_in_27( T599 ),
-       .io_in_26( T598 ),
-       .io_in_25( T597 ),
-       .io_in_24( T596 ),
-       .io_in_23( T595 ),
-       .io_in_22( T594 ),
-       .io_in_21( T593 ),
-       .io_in_20( T592 ),
-       .io_in_19( T591 ),
-       .io_in_18( T590 ),
-       .io_in_17( T589 ),
-       .io_in_16( T588 ),
-       .io_in_15( T587 ),
-       .io_in_14( T586 ),
-       .io_in_13( T585 ),
-       .io_in_12( T584 ),
-       .io_in_11( T583 ),
-       .io_in_10( T582 ),
-       .io_in_9( T581 ),
-       .io_in_8( T580 ),
-       .io_in_7( T579 ),
-       .io_in_6( T578 ),
-       .io_in_5( T577 ),
-       .io_in_4( T576 ),
-       .io_in_3( T575 ),
-       .io_in_2( T574 ),
-       .io_in_1( T573 ),
-       .io_in_0( T572 ),
-       .io_out_31( Activation_1_io_out_31 ),
-       .io_out_30( Activation_1_io_out_30 ),
-       .io_out_29( Activation_1_io_out_29 ),
-       .io_out_28( Activation_1_io_out_28 ),
-       .io_out_27( Activation_1_io_out_27 ),
-       .io_out_26( Activation_1_io_out_26 ),
-       .io_out_25( Activation_1_io_out_25 ),
-       .io_out_24( Activation_1_io_out_24 ),
-       .io_out_23( Activation_1_io_out_23 ),
-       .io_out_22( Activation_1_io_out_22 ),
-       .io_out_21( Activation_1_io_out_21 ),
-       .io_out_20( Activation_1_io_out_20 ),
-       .io_out_19( Activation_1_io_out_19 ),
-       .io_out_18( Activation_1_io_out_18 ),
-       .io_out_17( Activation_1_io_out_17 ),
-       .io_out_16( Activation_1_io_out_16 ),
-       .io_out_15( Activation_1_io_out_15 ),
-       .io_out_14( Activation_1_io_out_14 ),
-       .io_out_13( Activation_1_io_out_13 ),
-       .io_out_12( Activation_1_io_out_12 ),
-       .io_out_11( Activation_1_io_out_11 ),
-       .io_out_10( Activation_1_io_out_10 ),
-       .io_out_9( Activation_1_io_out_9 ),
-       .io_out_8( Activation_1_io_out_8 ),
-       .io_out_7( Activation_1_io_out_7 ),
-       .io_out_6( Activation_1_io_out_6 ),
-       .io_out_5( Activation_1_io_out_5 ),
-       .io_out_4( Activation_1_io_out_4 ),
-       .io_out_3( Activation_1_io_out_3 ),
-       .io_out_2( Activation_1_io_out_2 ),
-       .io_out_1( Activation_1_io_out_1 ),
-       .io_out_0( Activation_1_io_out_0 )
-  );
-  Activation_0 Activation_2(
-       .io_in_31( T571 ),
-       .io_in_30( T570 ),
-       .io_in_29( T569 ),
-       .io_in_28( T568 ),
-       .io_in_27( T567 ),
-       .io_in_26( T566 ),
-       .io_in_25( T565 ),
-       .io_in_24( T564 ),
-       .io_in_23( T563 ),
-       .io_in_22( T562 ),
-       .io_in_21( T561 ),
-       .io_in_20( T560 ),
-       .io_in_19( T559 ),
-       .io_in_18( T558 ),
-       .io_in_17( T557 ),
-       .io_in_16( T556 ),
-       .io_in_15( T555 ),
-       .io_in_14( T554 ),
-       .io_in_13( T553 ),
-       .io_in_12( T552 ),
-       .io_in_11( T551 ),
-       .io_in_10( T550 ),
-       .io_in_9( T549 ),
-       .io_in_8( T548 ),
-       .io_in_7( T547 ),
-       .io_in_6( T546 ),
-       .io_in_5( T545 ),
-       .io_in_4( T544 ),
-       .io_in_3( T543 ),
-       .io_in_2( T542 ),
-       .io_in_1( T541 ),
-       .io_in_0( T540 ),
-       .io_out_31( Activation_2_io_out_31 ),
-       .io_out_30( Activation_2_io_out_30 ),
-       .io_out_29( Activation_2_io_out_29 ),
-       .io_out_28( Activation_2_io_out_28 ),
-       .io_out_27( Activation_2_io_out_27 ),
-       .io_out_26( Activation_2_io_out_26 ),
-       .io_out_25( Activation_2_io_out_25 ),
-       .io_out_24( Activation_2_io_out_24 ),
-       .io_out_23( Activation_2_io_out_23 ),
-       .io_out_22( Activation_2_io_out_22 ),
-       .io_out_21( Activation_2_io_out_21 ),
-       .io_out_20( Activation_2_io_out_20 ),
-       .io_out_19( Activation_2_io_out_19 ),
-       .io_out_18( Activation_2_io_out_18 ),
-       .io_out_17( Activation_2_io_out_17 ),
-       .io_out_16( Activation_2_io_out_16 ),
-       .io_out_15( Activation_2_io_out_15 ),
-       .io_out_14( Activation_2_io_out_14 ),
-       .io_out_13( Activation_2_io_out_13 ),
-       .io_out_12( Activation_2_io_out_12 ),
-       .io_out_11( Activation_2_io_out_11 ),
-       .io_out_10( Activation_2_io_out_10 ),
-       .io_out_9( Activation_2_io_out_9 ),
-       .io_out_8( Activation_2_io_out_8 ),
-       .io_out_7( Activation_2_io_out_7 ),
-       .io_out_6( Activation_2_io_out_6 ),
-       .io_out_5( Activation_2_io_out_5 ),
-       .io_out_4( Activation_2_io_out_4 ),
-       .io_out_3( Activation_2_io_out_3 ),
-       .io_out_2( Activation_2_io_out_2 ),
-       .io_out_1( Activation_2_io_out_1 ),
-       .io_out_0( Activation_2_io_out_0 )
-  );
-  Activation_0 Activation_3(
-       .io_in_31( T539 ),
-       .io_in_30( T538 ),
-       .io_in_29( T537 ),
-       .io_in_28( T536 ),
-       .io_in_27( T535 ),
-       .io_in_26( T534 ),
-       .io_in_25( T533 ),
-       .io_in_24( T532 ),
-       .io_in_23( T531 ),
-       .io_in_22( T530 ),
-       .io_in_21( T529 ),
-       .io_in_20( T528 ),
-       .io_in_19( T527 ),
-       .io_in_18( T526 ),
-       .io_in_17( T525 ),
-       .io_in_16( T524 ),
-       .io_in_15( T523 ),
-       .io_in_14( T522 ),
-       .io_in_13( T521 ),
-       .io_in_12( T520 ),
-       .io_in_11( T519 ),
-       .io_in_10( T518 ),
-       .io_in_9( T517 ),
-       .io_in_8( T516 ),
-       .io_in_7( T515 ),
-       .io_in_6( T514 ),
-       .io_in_5( T513 ),
-       .io_in_4( T512 ),
-       .io_in_3( T511 ),
-       .io_in_2( T510 ),
-       .io_in_1( T509 ),
-       .io_in_0( T508 ),
-       .io_out_31( Activation_3_io_out_31 ),
-       .io_out_30( Activation_3_io_out_30 ),
-       .io_out_29( Activation_3_io_out_29 ),
-       .io_out_28( Activation_3_io_out_28 ),
-       .io_out_27( Activation_3_io_out_27 ),
-       .io_out_26( Activation_3_io_out_26 ),
-       .io_out_25( Activation_3_io_out_25 ),
-       .io_out_24( Activation_3_io_out_24 ),
-       .io_out_23( Activation_3_io_out_23 ),
-       .io_out_22( Activation_3_io_out_22 ),
-       .io_out_21( Activation_3_io_out_21 ),
-       .io_out_20( Activation_3_io_out_20 ),
-       .io_out_19( Activation_3_io_out_19 ),
-       .io_out_18( Activation_3_io_out_18 ),
-       .io_out_17( Activation_3_io_out_17 ),
-       .io_out_16( Activation_3_io_out_16 ),
-       .io_out_15( Activation_3_io_out_15 ),
-       .io_out_14( Activation_3_io_out_14 ),
-       .io_out_13( Activation_3_io_out_13 ),
-       .io_out_12( Activation_3_io_out_12 ),
-       .io_out_11( Activation_3_io_out_11 ),
-       .io_out_10( Activation_3_io_out_10 ),
-       .io_out_9( Activation_3_io_out_9 ),
-       .io_out_8( Activation_3_io_out_8 ),
-       .io_out_7( Activation_3_io_out_7 ),
-       .io_out_6( Activation_3_io_out_6 ),
-       .io_out_5( Activation_3_io_out_5 ),
-       .io_out_4( Activation_3_io_out_4 ),
-       .io_out_3( Activation_3_io_out_3 ),
-       .io_out_2( Activation_3_io_out_2 ),
-       .io_out_1( Activation_3_io_out_1 ),
-       .io_out_0( Activation_3_io_out_0 )
   );
   MemoryStreamer_0 memoryStreamer(.clk(clk), .reset(reset),
        .io_restart( control_io_memoryRestart ),
@@ -16703,257 +15104,95 @@ module MemoryStreamer_1(input clk, input reset,
 endmodule
 
 module Warp_1(input clk, input reset,
-    input [15:0] io_xIn_2,
-    input [15:0] io_xIn_1,
     input [15:0] io_xIn_0,
     input  io_start,
     output io_ready,
     output io_startOut,
-    output io_xOut_2,
-    output io_xOut_1,
     output io_xOut_0,
     output io_xOutValid,
     input  io_pipeReady,
     output io_done
 );
 
-  wire[9:0] T189;
+  wire[9:0] T63;
   wire[10:0] T0;
   wire[10:0] T1;
-  wire[9:0] T190;
+  wire[9:0] T64;
   wire[10:0] T2;
   wire[10:0] T3;
-  wire[9:0] T191;
+  wire[9:0] T65;
   wire[10:0] T4;
   wire[10:0] T5;
-  wire[9:0] T192;
+  wire[9:0] T66;
   wire[10:0] T6;
   wire[10:0] T7;
-  wire[9:0] T193;
+  wire[9:0] T67;
   wire[10:0] T8;
   wire[10:0] T9;
-  wire[9:0] T194;
+  wire[9:0] T68;
   wire[10:0] T10;
   wire[10:0] T11;
-  wire[9:0] T195;
+  wire[9:0] T69;
   wire[10:0] T12;
   wire[10:0] T13;
-  wire[9:0] T196;
+  wire[9:0] T70;
   wire[10:0] T14;
   wire[10:0] T15;
-  wire[9:0] T197;
+  wire[9:0] T71;
   wire[10:0] T16;
   wire[10:0] T17;
-  wire[9:0] T198;
+  wire[9:0] T72;
   wire[10:0] T18;
   wire[10:0] T19;
-  wire[9:0] T199;
+  wire[9:0] T73;
   wire[10:0] T20;
   wire[10:0] T21;
-  wire[9:0] T200;
+  wire[9:0] T74;
   wire[10:0] T22;
   wire[10:0] T23;
-  wire[9:0] T201;
+  wire[9:0] T75;
   wire[10:0] T24;
   wire[10:0] T25;
-  wire[9:0] T202;
+  wire[9:0] T76;
   wire[10:0] T26;
   wire[10:0] T27;
-  wire[9:0] T203;
+  wire[9:0] T77;
   wire[10:0] T28;
   wire[10:0] T29;
-  wire[9:0] T204;
+  wire[9:0] T78;
   wire[10:0] T30;
   wire[10:0] T31;
-  wire[9:0] T205;
-  wire[10:0] T32;
-  wire[10:0] T33;
-  wire[9:0] T206;
-  wire[10:0] T34;
-  wire[10:0] T35;
-  wire[9:0] T207;
-  wire[10:0] T36;
-  wire[10:0] T37;
-  wire[9:0] T208;
-  wire[10:0] T38;
-  wire[10:0] T39;
-  wire[9:0] T209;
-  wire[10:0] T40;
-  wire[10:0] T41;
-  wire[9:0] T210;
-  wire[10:0] T42;
-  wire[10:0] T43;
-  wire[9:0] T211;
-  wire[10:0] T44;
-  wire[10:0] T45;
-  wire[9:0] T212;
-  wire[10:0] T46;
-  wire[10:0] T47;
-  wire[9:0] T213;
-  wire[10:0] T48;
-  wire[10:0] T49;
-  wire[9:0] T214;
-  wire[10:0] T50;
-  wire[10:0] T51;
-  wire[9:0] T215;
-  wire[10:0] T52;
-  wire[10:0] T53;
-  wire[9:0] T216;
-  wire[10:0] T54;
-  wire[10:0] T55;
-  wire[9:0] T217;
-  wire[10:0] T56;
-  wire[10:0] T57;
-  wire[9:0] T218;
-  wire[10:0] T58;
-  wire[10:0] T59;
-  wire[9:0] T219;
-  wire[10:0] T60;
-  wire[10:0] T61;
-  wire[9:0] T220;
-  wire[10:0] T62;
-  wire[10:0] T63;
-  wire[9:0] T221;
-  wire[10:0] T64;
-  wire[10:0] T65;
-  wire[9:0] T222;
-  wire[10:0] T66;
-  wire[10:0] T67;
-  wire[9:0] T223;
-  wire[10:0] T68;
-  wire[10:0] T69;
-  wire[9:0] T224;
-  wire[10:0] T70;
-  wire[10:0] T71;
-  wire[9:0] T225;
-  wire[10:0] T72;
-  wire[10:0] T73;
-  wire[9:0] T226;
-  wire[10:0] T74;
-  wire[10:0] T75;
-  wire[9:0] T227;
-  wire[10:0] T76;
-  wire[10:0] T77;
-  wire[9:0] T228;
-  wire[10:0] T78;
-  wire[10:0] T79;
-  wire[9:0] T229;
-  wire[10:0] T80;
-  wire[10:0] T81;
-  wire[9:0] T230;
-  wire[10:0] T82;
-  wire[10:0] T83;
-  wire[9:0] T231;
-  wire[10:0] T84;
-  wire[10:0] T85;
-  wire[9:0] T232;
-  wire[10:0] T86;
-  wire[10:0] T87;
-  wire[9:0] T233;
-  wire[10:0] T88;
-  wire[10:0] T89;
-  wire[9:0] T234;
-  wire[10:0] T90;
-  wire[10:0] T91;
-  wire[9:0] T235;
-  wire[10:0] T92;
-  wire[10:0] T93;
-  wire[9:0] T236;
-  wire[10:0] T94;
-  wire[10:0] T95;
-  wire T96;
-  wire T97;
-  wire T98;
-  wire T99;
-  wire T100;
-  wire[3:0] T101;
-  wire T102;
-  wire T103;
-  wire T104;
-  wire T105;
-  wire T106;
-  wire T107;
-  wire T108;
-  wire T109;
-  wire T110;
-  wire T111;
-  wire T112;
-  wire T113;
-  wire T114;
-  wire T115;
-  wire T116;
-  wire T117;
-  wire T118;
-  wire T119;
-  wire T120;
-  wire T121;
-  wire T122;
-  wire T123;
-  wire T124;
-  wire T125;
-  wire T126;
-  wire T127;
-  wire T128;
-  wire T129;
-  wire T130;
-  wire T131;
-  wire[3:0] T132;
-  wire T133;
-  wire T134;
-  wire T135;
-  wire T136;
-  wire T137;
-  wire T138;
-  wire T139;
-  wire T140;
-  wire T141;
-  wire T142;
-  wire T143;
-  wire T144;
-  wire T145;
-  wire T146;
-  wire T147;
-  wire T148;
-  wire T149;
-  wire T150;
-  wire T151;
-  wire T152;
-  wire T153;
-  wire T154;
-  wire T155;
-  wire T156;
-  wire T157;
-  wire T158;
-  wire T159;
-  wire T160;
-  wire T161;
-  wire T162;
-  wire[3:0] T163;
-  wire T164;
-  wire T165;
-  wire T166;
-  wire T167;
-  wire T168;
-  wire T169;
-  wire T170;
-  wire T171;
-  wire T172;
-  wire T173;
-  wire T174;
-  wire T175;
-  wire T176;
-  wire T177;
-  wire T178;
-  wire T179;
-  wire T180;
-  wire T181;
-  wire T182;
-  wire T183;
-  wire T184;
-  wire T185;
-  wire T186;
-  wire T187;
-  wire T188;
+  wire T32;
+  wire T33;
+  wire T34;
+  wire T35;
+  wire T36;
+  wire[3:0] T37;
+  wire T38;
+  wire T39;
+  wire T40;
+  wire T41;
+  wire T42;
+  wire T43;
+  wire T44;
+  wire T45;
+  wire T46;
+  wire T47;
+  wire T48;
+  wire T49;
+  wire T50;
+  wire T51;
+  wire T52;
+  wire T53;
+  wire T54;
+  wire T55;
+  wire T56;
+  wire T57;
+  wire T58;
+  wire T59;
+  wire T60;
+  wire T61;
+  wire T62;
   wire Activation_io_out_15;
   wire Activation_io_out_14;
   wire Activation_io_out_13;
@@ -16970,38 +15209,6 @@ module Warp_1(input clk, input reset,
   wire Activation_io_out_2;
   wire Activation_io_out_1;
   wire Activation_io_out_0;
-  wire Activation_1_io_out_15;
-  wire Activation_1_io_out_14;
-  wire Activation_1_io_out_13;
-  wire Activation_1_io_out_12;
-  wire Activation_1_io_out_11;
-  wire Activation_1_io_out_10;
-  wire Activation_1_io_out_9;
-  wire Activation_1_io_out_8;
-  wire Activation_1_io_out_7;
-  wire Activation_1_io_out_6;
-  wire Activation_1_io_out_5;
-  wire Activation_1_io_out_4;
-  wire Activation_1_io_out_3;
-  wire Activation_1_io_out_2;
-  wire Activation_1_io_out_1;
-  wire Activation_1_io_out_0;
-  wire Activation_2_io_out_15;
-  wire Activation_2_io_out_14;
-  wire Activation_2_io_out_13;
-  wire Activation_2_io_out_12;
-  wire Activation_2_io_out_11;
-  wire Activation_2_io_out_10;
-  wire Activation_2_io_out_9;
-  wire Activation_2_io_out_8;
-  wire Activation_2_io_out_7;
-  wire Activation_2_io_out_6;
-  wire Activation_2_io_out_5;
-  wire Activation_2_io_out_4;
-  wire Activation_2_io_out_3;
-  wire Activation_2_io_out_2;
-  wire Activation_2_io_out_1;
-  wire Activation_2_io_out_0;
   wire control_io_ready;
   wire control_io_valid;
   wire control_io_done;
@@ -17024,38 +15231,6 @@ module Warp_1(input clk, input reset,
   wire[9:0] Chain_io_ys_2;
   wire[9:0] Chain_io_ys_1;
   wire[9:0] Chain_io_ys_0;
-  wire[9:0] Chain_1_io_ys_15;
-  wire[9:0] Chain_1_io_ys_14;
-  wire[9:0] Chain_1_io_ys_13;
-  wire[9:0] Chain_1_io_ys_12;
-  wire[9:0] Chain_1_io_ys_11;
-  wire[9:0] Chain_1_io_ys_10;
-  wire[9:0] Chain_1_io_ys_9;
-  wire[9:0] Chain_1_io_ys_8;
-  wire[9:0] Chain_1_io_ys_7;
-  wire[9:0] Chain_1_io_ys_6;
-  wire[9:0] Chain_1_io_ys_5;
-  wire[9:0] Chain_1_io_ys_4;
-  wire[9:0] Chain_1_io_ys_3;
-  wire[9:0] Chain_1_io_ys_2;
-  wire[9:0] Chain_1_io_ys_1;
-  wire[9:0] Chain_1_io_ys_0;
-  wire[9:0] Chain_2_io_ys_15;
-  wire[9:0] Chain_2_io_ys_14;
-  wire[9:0] Chain_2_io_ys_13;
-  wire[9:0] Chain_2_io_ys_12;
-  wire[9:0] Chain_2_io_ys_11;
-  wire[9:0] Chain_2_io_ys_10;
-  wire[9:0] Chain_2_io_ys_9;
-  wire[9:0] Chain_2_io_ys_8;
-  wire[9:0] Chain_2_io_ys_7;
-  wire[9:0] Chain_2_io_ys_6;
-  wire[9:0] Chain_2_io_ys_5;
-  wire[9:0] Chain_2_io_ys_4;
-  wire[9:0] Chain_2_io_ys_3;
-  wire[9:0] Chain_2_io_ys_2;
-  wire[9:0] Chain_2_io_ys_1;
-  wire[9:0] Chain_2_io_ys_0;
   wire[15:0] memoryStreamer_io_weights_15;
   wire[15:0] memoryStreamer_io_weights_14;
   wire[15:0] memoryStreamer_io_weights_13;
@@ -17075,248 +15250,88 @@ module Warp_1(input clk, input reset,
   wire[7:0] memoryStreamer_io_bias;
 
 
-  assign T189 = T0[9:0];
+  assign T63 = T0[9:0];
   assign T0 = T1;
-  assign T1 = {1'h0, Chain_2_io_ys_0};
-  assign T190 = T2[9:0];
+  assign T1 = {1'h0, Chain_io_ys_0};
+  assign T64 = T2[9:0];
   assign T2 = T3;
-  assign T3 = {1'h0, Chain_2_io_ys_1};
-  assign T191 = T4[9:0];
+  assign T3 = {1'h0, Chain_io_ys_1};
+  assign T65 = T4[9:0];
   assign T4 = T5;
-  assign T5 = {1'h0, Chain_2_io_ys_2};
-  assign T192 = T6[9:0];
+  assign T5 = {1'h0, Chain_io_ys_2};
+  assign T66 = T6[9:0];
   assign T6 = T7;
-  assign T7 = {1'h0, Chain_2_io_ys_3};
-  assign T193 = T8[9:0];
+  assign T7 = {1'h0, Chain_io_ys_3};
+  assign T67 = T8[9:0];
   assign T8 = T9;
-  assign T9 = {1'h0, Chain_2_io_ys_4};
-  assign T194 = T10[9:0];
+  assign T9 = {1'h0, Chain_io_ys_4};
+  assign T68 = T10[9:0];
   assign T10 = T11;
-  assign T11 = {1'h0, Chain_2_io_ys_5};
-  assign T195 = T12[9:0];
+  assign T11 = {1'h0, Chain_io_ys_5};
+  assign T69 = T12[9:0];
   assign T12 = T13;
-  assign T13 = {1'h0, Chain_2_io_ys_6};
-  assign T196 = T14[9:0];
+  assign T13 = {1'h0, Chain_io_ys_6};
+  assign T70 = T14[9:0];
   assign T14 = T15;
-  assign T15 = {1'h0, Chain_2_io_ys_7};
-  assign T197 = T16[9:0];
+  assign T15 = {1'h0, Chain_io_ys_7};
+  assign T71 = T16[9:0];
   assign T16 = T17;
-  assign T17 = {1'h0, Chain_2_io_ys_8};
-  assign T198 = T18[9:0];
+  assign T17 = {1'h0, Chain_io_ys_8};
+  assign T72 = T18[9:0];
   assign T18 = T19;
-  assign T19 = {1'h0, Chain_2_io_ys_9};
-  assign T199 = T20[9:0];
+  assign T19 = {1'h0, Chain_io_ys_9};
+  assign T73 = T20[9:0];
   assign T20 = T21;
-  assign T21 = {1'h0, Chain_2_io_ys_10};
-  assign T200 = T22[9:0];
+  assign T21 = {1'h0, Chain_io_ys_10};
+  assign T74 = T22[9:0];
   assign T22 = T23;
-  assign T23 = {1'h0, Chain_2_io_ys_11};
-  assign T201 = T24[9:0];
+  assign T23 = {1'h0, Chain_io_ys_11};
+  assign T75 = T24[9:0];
   assign T24 = T25;
-  assign T25 = {1'h0, Chain_2_io_ys_12};
-  assign T202 = T26[9:0];
+  assign T25 = {1'h0, Chain_io_ys_12};
+  assign T76 = T26[9:0];
   assign T26 = T27;
-  assign T27 = {1'h0, Chain_2_io_ys_13};
-  assign T203 = T28[9:0];
+  assign T27 = {1'h0, Chain_io_ys_13};
+  assign T77 = T28[9:0];
   assign T28 = T29;
-  assign T29 = {1'h0, Chain_2_io_ys_14};
-  assign T204 = T30[9:0];
+  assign T29 = {1'h0, Chain_io_ys_14};
+  assign T78 = T30[9:0];
   assign T30 = T31;
-  assign T31 = {1'h0, Chain_2_io_ys_15};
-  assign T205 = T32[9:0];
-  assign T32 = T33;
-  assign T33 = {1'h0, Chain_1_io_ys_0};
-  assign T206 = T34[9:0];
-  assign T34 = T35;
-  assign T35 = {1'h0, Chain_1_io_ys_1};
-  assign T207 = T36[9:0];
-  assign T36 = T37;
-  assign T37 = {1'h0, Chain_1_io_ys_2};
-  assign T208 = T38[9:0];
-  assign T38 = T39;
-  assign T39 = {1'h0, Chain_1_io_ys_3};
-  assign T209 = T40[9:0];
-  assign T40 = T41;
-  assign T41 = {1'h0, Chain_1_io_ys_4};
-  assign T210 = T42[9:0];
-  assign T42 = T43;
-  assign T43 = {1'h0, Chain_1_io_ys_5};
-  assign T211 = T44[9:0];
-  assign T44 = T45;
-  assign T45 = {1'h0, Chain_1_io_ys_6};
-  assign T212 = T46[9:0];
-  assign T46 = T47;
-  assign T47 = {1'h0, Chain_1_io_ys_7};
-  assign T213 = T48[9:0];
-  assign T48 = T49;
-  assign T49 = {1'h0, Chain_1_io_ys_8};
-  assign T214 = T50[9:0];
-  assign T50 = T51;
-  assign T51 = {1'h0, Chain_1_io_ys_9};
-  assign T215 = T52[9:0];
-  assign T52 = T53;
-  assign T53 = {1'h0, Chain_1_io_ys_10};
-  assign T216 = T54[9:0];
-  assign T54 = T55;
-  assign T55 = {1'h0, Chain_1_io_ys_11};
-  assign T217 = T56[9:0];
-  assign T56 = T57;
-  assign T57 = {1'h0, Chain_1_io_ys_12};
-  assign T218 = T58[9:0];
-  assign T58 = T59;
-  assign T59 = {1'h0, Chain_1_io_ys_13};
-  assign T219 = T60[9:0];
-  assign T60 = T61;
-  assign T61 = {1'h0, Chain_1_io_ys_14};
-  assign T220 = T62[9:0];
-  assign T62 = T63;
-  assign T63 = {1'h0, Chain_1_io_ys_15};
-  assign T221 = T64[9:0];
-  assign T64 = T65;
-  assign T65 = {1'h0, Chain_io_ys_0};
-  assign T222 = T66[9:0];
-  assign T66 = T67;
-  assign T67 = {1'h0, Chain_io_ys_1};
-  assign T223 = T68[9:0];
-  assign T68 = T69;
-  assign T69 = {1'h0, Chain_io_ys_2};
-  assign T224 = T70[9:0];
-  assign T70 = T71;
-  assign T71 = {1'h0, Chain_io_ys_3};
-  assign T225 = T72[9:0];
-  assign T72 = T73;
-  assign T73 = {1'h0, Chain_io_ys_4};
-  assign T226 = T74[9:0];
-  assign T74 = T75;
-  assign T75 = {1'h0, Chain_io_ys_5};
-  assign T227 = T76[9:0];
-  assign T76 = T77;
-  assign T77 = {1'h0, Chain_io_ys_6};
-  assign T228 = T78[9:0];
-  assign T78 = T79;
-  assign T79 = {1'h0, Chain_io_ys_7};
-  assign T229 = T80[9:0];
-  assign T80 = T81;
-  assign T81 = {1'h0, Chain_io_ys_8};
-  assign T230 = T82[9:0];
-  assign T82 = T83;
-  assign T83 = {1'h0, Chain_io_ys_9};
-  assign T231 = T84[9:0];
-  assign T84 = T85;
-  assign T85 = {1'h0, Chain_io_ys_10};
-  assign T232 = T86[9:0];
-  assign T86 = T87;
-  assign T87 = {1'h0, Chain_io_ys_11};
-  assign T233 = T88[9:0];
-  assign T88 = T89;
-  assign T89 = {1'h0, Chain_io_ys_12};
-  assign T234 = T90[9:0];
-  assign T90 = T91;
-  assign T91 = {1'h0, Chain_io_ys_13};
-  assign T235 = T92[9:0];
-  assign T92 = T93;
-  assign T93 = {1'h0, Chain_io_ys_14};
-  assign T236 = T94[9:0];
-  assign T94 = T95;
-  assign T95 = {1'h0, Chain_io_ys_15};
+  assign T31 = {1'h0, Chain_io_ys_15};
   assign io_done = control_io_done;
   assign io_xOutValid = control_io_valid;
-  assign io_xOut_0 = T96;
-  assign T96 = T126 ? T112 : T97;
-  assign T97 = T111 ? T105 : T98;
-  assign T98 = T104 ? T102 : T99;
-  assign T99 = T100 ? Activation_io_out_1 : Activation_io_out_0;
-  assign T100 = T101[0];
-  assign T101 = control_io_selectX;
-  assign T102 = T103 ? Activation_io_out_3 : Activation_io_out_2;
-  assign T103 = T101[0];
-  assign T104 = T101[1];
-  assign T105 = T110 ? T108 : T106;
-  assign T106 = T107 ? Activation_io_out_5 : Activation_io_out_4;
-  assign T107 = T101[0];
-  assign T108 = T109 ? Activation_io_out_7 : Activation_io_out_6;
-  assign T109 = T101[0];
-  assign T110 = T101[1];
-  assign T111 = T101[2];
-  assign T112 = T125 ? T119 : T113;
-  assign T113 = T118 ? T116 : T114;
-  assign T114 = T115 ? Activation_io_out_9 : Activation_io_out_8;
-  assign T115 = T101[0];
-  assign T116 = T117 ? Activation_io_out_11 : Activation_io_out_10;
-  assign T117 = T101[0];
-  assign T118 = T101[1];
-  assign T119 = T124 ? T122 : T120;
-  assign T120 = T121 ? Activation_io_out_13 : Activation_io_out_12;
-  assign T121 = T101[0];
-  assign T122 = T123 ? Activation_io_out_15 : Activation_io_out_14;
-  assign T123 = T101[0];
-  assign T124 = T101[1];
-  assign T125 = T101[2];
-  assign T126 = T101[3];
-  assign io_xOut_1 = T127;
-  assign T127 = T157 ? T143 : T128;
-  assign T128 = T142 ? T136 : T129;
-  assign T129 = T135 ? T133 : T130;
-  assign T130 = T131 ? Activation_1_io_out_1 : Activation_1_io_out_0;
-  assign T131 = T132[0];
-  assign T132 = control_io_selectX;
-  assign T133 = T134 ? Activation_1_io_out_3 : Activation_1_io_out_2;
-  assign T134 = T132[0];
-  assign T135 = T132[1];
-  assign T136 = T141 ? T139 : T137;
-  assign T137 = T138 ? Activation_1_io_out_5 : Activation_1_io_out_4;
-  assign T138 = T132[0];
-  assign T139 = T140 ? Activation_1_io_out_7 : Activation_1_io_out_6;
-  assign T140 = T132[0];
-  assign T141 = T132[1];
-  assign T142 = T132[2];
-  assign T143 = T156 ? T150 : T144;
-  assign T144 = T149 ? T147 : T145;
-  assign T145 = T146 ? Activation_1_io_out_9 : Activation_1_io_out_8;
-  assign T146 = T132[0];
-  assign T147 = T148 ? Activation_1_io_out_11 : Activation_1_io_out_10;
-  assign T148 = T132[0];
-  assign T149 = T132[1];
-  assign T150 = T155 ? T153 : T151;
-  assign T151 = T152 ? Activation_1_io_out_13 : Activation_1_io_out_12;
-  assign T152 = T132[0];
-  assign T153 = T154 ? Activation_1_io_out_15 : Activation_1_io_out_14;
-  assign T154 = T132[0];
-  assign T155 = T132[1];
-  assign T156 = T132[2];
-  assign T157 = T132[3];
-  assign io_xOut_2 = T158;
-  assign T158 = T188 ? T174 : T159;
-  assign T159 = T173 ? T167 : T160;
-  assign T160 = T166 ? T164 : T161;
-  assign T161 = T162 ? Activation_2_io_out_1 : Activation_2_io_out_0;
-  assign T162 = T163[0];
-  assign T163 = control_io_selectX;
-  assign T164 = T165 ? Activation_2_io_out_3 : Activation_2_io_out_2;
-  assign T165 = T163[0];
-  assign T166 = T163[1];
-  assign T167 = T172 ? T170 : T168;
-  assign T168 = T169 ? Activation_2_io_out_5 : Activation_2_io_out_4;
-  assign T169 = T163[0];
-  assign T170 = T171 ? Activation_2_io_out_7 : Activation_2_io_out_6;
-  assign T171 = T163[0];
-  assign T172 = T163[1];
-  assign T173 = T163[2];
-  assign T174 = T187 ? T181 : T175;
-  assign T175 = T180 ? T178 : T176;
-  assign T176 = T177 ? Activation_2_io_out_9 : Activation_2_io_out_8;
-  assign T177 = T163[0];
-  assign T178 = T179 ? Activation_2_io_out_11 : Activation_2_io_out_10;
-  assign T179 = T163[0];
-  assign T180 = T163[1];
-  assign T181 = T186 ? T184 : T182;
-  assign T182 = T183 ? Activation_2_io_out_13 : Activation_2_io_out_12;
-  assign T183 = T163[0];
-  assign T184 = T185 ? Activation_2_io_out_15 : Activation_2_io_out_14;
-  assign T185 = T163[0];
-  assign T186 = T163[1];
-  assign T187 = T163[2];
-  assign T188 = T163[3];
+  assign io_xOut_0 = T32;
+  assign T32 = T62 ? T48 : T33;
+  assign T33 = T47 ? T41 : T34;
+  assign T34 = T40 ? T38 : T35;
+  assign T35 = T36 ? Activation_io_out_1 : Activation_io_out_0;
+  assign T36 = T37[0];
+  assign T37 = control_io_selectX;
+  assign T38 = T39 ? Activation_io_out_3 : Activation_io_out_2;
+  assign T39 = T37[0];
+  assign T40 = T37[1];
+  assign T41 = T46 ? T44 : T42;
+  assign T42 = T43 ? Activation_io_out_5 : Activation_io_out_4;
+  assign T43 = T37[0];
+  assign T44 = T45 ? Activation_io_out_7 : Activation_io_out_6;
+  assign T45 = T37[0];
+  assign T46 = T37[1];
+  assign T47 = T37[2];
+  assign T48 = T61 ? T55 : T49;
+  assign T49 = T54 ? T52 : T50;
+  assign T50 = T51 ? Activation_io_out_9 : Activation_io_out_8;
+  assign T51 = T37[0];
+  assign T52 = T53 ? Activation_io_out_11 : Activation_io_out_10;
+  assign T53 = T37[0];
+  assign T54 = T37[1];
+  assign T55 = T60 ? T58 : T56;
+  assign T56 = T57 ? Activation_io_out_13 : Activation_io_out_12;
+  assign T57 = T37[0];
+  assign T58 = T59 ? Activation_io_out_15 : Activation_io_out_14;
+  assign T59 = T37[0];
+  assign T60 = T37[1];
+  assign T61 = T37[2];
+  assign T62 = T37[3];
   assign io_startOut = io_start;
   assign io_ready = control_io_ready;
   WarpControl_1 control(.clk(clk), .reset(reset),
@@ -17366,97 +15381,23 @@ module Warp_1(input clk, input reset,
        .io_ys_1( Chain_io_ys_1 ),
        .io_ys_0( Chain_io_ys_0 )
   );
-  Chain_1 Chain_1(.clk(clk), .reset(reset),
-       .io_weights_15( memoryStreamer_io_weights_15 ),
-       .io_weights_14( memoryStreamer_io_weights_14 ),
-       .io_weights_13( memoryStreamer_io_weights_13 ),
-       .io_weights_12( memoryStreamer_io_weights_12 ),
-       .io_weights_11( memoryStreamer_io_weights_11 ),
-       .io_weights_10( memoryStreamer_io_weights_10 ),
-       .io_weights_9( memoryStreamer_io_weights_9 ),
-       .io_weights_8( memoryStreamer_io_weights_8 ),
-       .io_weights_7( memoryStreamer_io_weights_7 ),
-       .io_weights_6( memoryStreamer_io_weights_6 ),
-       .io_weights_5( memoryStreamer_io_weights_5 ),
-       .io_weights_4( memoryStreamer_io_weights_4 ),
-       .io_weights_3( memoryStreamer_io_weights_3 ),
-       .io_weights_2( memoryStreamer_io_weights_2 ),
-       .io_weights_1( memoryStreamer_io_weights_1 ),
-       .io_weights_0( memoryStreamer_io_weights_0 ),
-       .io_bias( memoryStreamer_io_bias ),
-       .io_restartIn( control_io_chainRestart ),
-       .io_xs( io_xIn_1 ),
-       .io_ys_15( Chain_1_io_ys_15 ),
-       .io_ys_14( Chain_1_io_ys_14 ),
-       .io_ys_13( Chain_1_io_ys_13 ),
-       .io_ys_12( Chain_1_io_ys_12 ),
-       .io_ys_11( Chain_1_io_ys_11 ),
-       .io_ys_10( Chain_1_io_ys_10 ),
-       .io_ys_9( Chain_1_io_ys_9 ),
-       .io_ys_8( Chain_1_io_ys_8 ),
-       .io_ys_7( Chain_1_io_ys_7 ),
-       .io_ys_6( Chain_1_io_ys_6 ),
-       .io_ys_5( Chain_1_io_ys_5 ),
-       .io_ys_4( Chain_1_io_ys_4 ),
-       .io_ys_3( Chain_1_io_ys_3 ),
-       .io_ys_2( Chain_1_io_ys_2 ),
-       .io_ys_1( Chain_1_io_ys_1 ),
-       .io_ys_0( Chain_1_io_ys_0 )
-  );
-  Chain_1 Chain_2(.clk(clk), .reset(reset),
-       .io_weights_15( memoryStreamer_io_weights_15 ),
-       .io_weights_14( memoryStreamer_io_weights_14 ),
-       .io_weights_13( memoryStreamer_io_weights_13 ),
-       .io_weights_12( memoryStreamer_io_weights_12 ),
-       .io_weights_11( memoryStreamer_io_weights_11 ),
-       .io_weights_10( memoryStreamer_io_weights_10 ),
-       .io_weights_9( memoryStreamer_io_weights_9 ),
-       .io_weights_8( memoryStreamer_io_weights_8 ),
-       .io_weights_7( memoryStreamer_io_weights_7 ),
-       .io_weights_6( memoryStreamer_io_weights_6 ),
-       .io_weights_5( memoryStreamer_io_weights_5 ),
-       .io_weights_4( memoryStreamer_io_weights_4 ),
-       .io_weights_3( memoryStreamer_io_weights_3 ),
-       .io_weights_2( memoryStreamer_io_weights_2 ),
-       .io_weights_1( memoryStreamer_io_weights_1 ),
-       .io_weights_0( memoryStreamer_io_weights_0 ),
-       .io_bias( memoryStreamer_io_bias ),
-       .io_restartIn( control_io_chainRestart ),
-       .io_xs( io_xIn_2 ),
-       .io_ys_15( Chain_2_io_ys_15 ),
-       .io_ys_14( Chain_2_io_ys_14 ),
-       .io_ys_13( Chain_2_io_ys_13 ),
-       .io_ys_12( Chain_2_io_ys_12 ),
-       .io_ys_11( Chain_2_io_ys_11 ),
-       .io_ys_10( Chain_2_io_ys_10 ),
-       .io_ys_9( Chain_2_io_ys_9 ),
-       .io_ys_8( Chain_2_io_ys_8 ),
-       .io_ys_7( Chain_2_io_ys_7 ),
-       .io_ys_6( Chain_2_io_ys_6 ),
-       .io_ys_5( Chain_2_io_ys_5 ),
-       .io_ys_4( Chain_2_io_ys_4 ),
-       .io_ys_3( Chain_2_io_ys_3 ),
-       .io_ys_2( Chain_2_io_ys_2 ),
-       .io_ys_1( Chain_2_io_ys_1 ),
-       .io_ys_0( Chain_2_io_ys_0 )
-  );
   Activation_1 Activation(
-       .io_in_15( T236 ),
-       .io_in_14( T235 ),
-       .io_in_13( T234 ),
-       .io_in_12( T233 ),
-       .io_in_11( T232 ),
-       .io_in_10( T231 ),
-       .io_in_9( T230 ),
-       .io_in_8( T229 ),
-       .io_in_7( T228 ),
-       .io_in_6( T227 ),
-       .io_in_5( T226 ),
-       .io_in_4( T225 ),
-       .io_in_3( T224 ),
-       .io_in_2( T223 ),
-       .io_in_1( T222 ),
-       .io_in_0( T221 ),
+       .io_in_15( T78 ),
+       .io_in_14( T77 ),
+       .io_in_13( T76 ),
+       .io_in_12( T75 ),
+       .io_in_11( T74 ),
+       .io_in_10( T73 ),
+       .io_in_9( T72 ),
+       .io_in_8( T71 ),
+       .io_in_7( T70 ),
+       .io_in_6( T69 ),
+       .io_in_5( T68 ),
+       .io_in_4( T67 ),
+       .io_in_3( T66 ),
+       .io_in_2( T65 ),
+       .io_in_1( T64 ),
+       .io_in_0( T63 ),
        .io_out_15( Activation_io_out_15 ),
        .io_out_14( Activation_io_out_14 ),
        .io_out_13( Activation_io_out_13 ),
@@ -17473,74 +15414,6 @@ module Warp_1(input clk, input reset,
        .io_out_2( Activation_io_out_2 ),
        .io_out_1( Activation_io_out_1 ),
        .io_out_0( Activation_io_out_0 )
-  );
-  Activation_1 Activation_1(
-       .io_in_15( T220 ),
-       .io_in_14( T219 ),
-       .io_in_13( T218 ),
-       .io_in_12( T217 ),
-       .io_in_11( T216 ),
-       .io_in_10( T215 ),
-       .io_in_9( T214 ),
-       .io_in_8( T213 ),
-       .io_in_7( T212 ),
-       .io_in_6( T211 ),
-       .io_in_5( T210 ),
-       .io_in_4( T209 ),
-       .io_in_3( T208 ),
-       .io_in_2( T207 ),
-       .io_in_1( T206 ),
-       .io_in_0( T205 ),
-       .io_out_15( Activation_1_io_out_15 ),
-       .io_out_14( Activation_1_io_out_14 ),
-       .io_out_13( Activation_1_io_out_13 ),
-       .io_out_12( Activation_1_io_out_12 ),
-       .io_out_11( Activation_1_io_out_11 ),
-       .io_out_10( Activation_1_io_out_10 ),
-       .io_out_9( Activation_1_io_out_9 ),
-       .io_out_8( Activation_1_io_out_8 ),
-       .io_out_7( Activation_1_io_out_7 ),
-       .io_out_6( Activation_1_io_out_6 ),
-       .io_out_5( Activation_1_io_out_5 ),
-       .io_out_4( Activation_1_io_out_4 ),
-       .io_out_3( Activation_1_io_out_3 ),
-       .io_out_2( Activation_1_io_out_2 ),
-       .io_out_1( Activation_1_io_out_1 ),
-       .io_out_0( Activation_1_io_out_0 )
-  );
-  Activation_1 Activation_2(
-       .io_in_15( T204 ),
-       .io_in_14( T203 ),
-       .io_in_13( T202 ),
-       .io_in_12( T201 ),
-       .io_in_11( T200 ),
-       .io_in_10( T199 ),
-       .io_in_9( T198 ),
-       .io_in_8( T197 ),
-       .io_in_7( T196 ),
-       .io_in_6( T195 ),
-       .io_in_5( T194 ),
-       .io_in_4( T193 ),
-       .io_in_3( T192 ),
-       .io_in_2( T191 ),
-       .io_in_1( T190 ),
-       .io_in_0( T189 ),
-       .io_out_15( Activation_2_io_out_15 ),
-       .io_out_14( Activation_2_io_out_14 ),
-       .io_out_13( Activation_2_io_out_13 ),
-       .io_out_12( Activation_2_io_out_12 ),
-       .io_out_11( Activation_2_io_out_11 ),
-       .io_out_10( Activation_2_io_out_10 ),
-       .io_out_9( Activation_2_io_out_9 ),
-       .io_out_8( Activation_2_io_out_8 ),
-       .io_out_7( Activation_2_io_out_7 ),
-       .io_out_6( Activation_2_io_out_6 ),
-       .io_out_5( Activation_2_io_out_5 ),
-       .io_out_4( Activation_2_io_out_4 ),
-       .io_out_3( Activation_2_io_out_3 ),
-       .io_out_2( Activation_2_io_out_2 ),
-       .io_out_1( Activation_2_io_out_1 ),
-       .io_out_0( Activation_2_io_out_0 )
   );
   MemoryStreamer_1 memoryStreamer(.clk(clk), .reset(reset),
        .io_restart( control_io_memoryRestart ),
@@ -20730,257 +18603,95 @@ module MemoryStreamer_2(input clk, input reset,
 endmodule
 
 module Warp_2(input clk, input reset,
-    input [15:0] io_xIn_2,
-    input [15:0] io_xIn_1,
     input [15:0] io_xIn_0,
     input  io_start,
     output io_ready,
     output io_startOut,
-    output io_xOut_2,
-    output io_xOut_1,
     output io_xOut_0,
     output io_xOutValid,
     input  io_pipeReady,
     output io_done
 );
 
-  wire[9:0] T189;
+  wire[9:0] T63;
   wire[10:0] T0;
   wire[10:0] T1;
-  wire[9:0] T190;
+  wire[9:0] T64;
   wire[10:0] T2;
   wire[10:0] T3;
-  wire[9:0] T191;
+  wire[9:0] T65;
   wire[10:0] T4;
   wire[10:0] T5;
-  wire[9:0] T192;
+  wire[9:0] T66;
   wire[10:0] T6;
   wire[10:0] T7;
-  wire[9:0] T193;
+  wire[9:0] T67;
   wire[10:0] T8;
   wire[10:0] T9;
-  wire[9:0] T194;
+  wire[9:0] T68;
   wire[10:0] T10;
   wire[10:0] T11;
-  wire[9:0] T195;
+  wire[9:0] T69;
   wire[10:0] T12;
   wire[10:0] T13;
-  wire[9:0] T196;
+  wire[9:0] T70;
   wire[10:0] T14;
   wire[10:0] T15;
-  wire[9:0] T197;
+  wire[9:0] T71;
   wire[10:0] T16;
   wire[10:0] T17;
-  wire[9:0] T198;
+  wire[9:0] T72;
   wire[10:0] T18;
   wire[10:0] T19;
-  wire[9:0] T199;
+  wire[9:0] T73;
   wire[10:0] T20;
   wire[10:0] T21;
-  wire[9:0] T200;
+  wire[9:0] T74;
   wire[10:0] T22;
   wire[10:0] T23;
-  wire[9:0] T201;
+  wire[9:0] T75;
   wire[10:0] T24;
   wire[10:0] T25;
-  wire[9:0] T202;
+  wire[9:0] T76;
   wire[10:0] T26;
   wire[10:0] T27;
-  wire[9:0] T203;
+  wire[9:0] T77;
   wire[10:0] T28;
   wire[10:0] T29;
-  wire[9:0] T204;
+  wire[9:0] T78;
   wire[10:0] T30;
   wire[10:0] T31;
-  wire[9:0] T205;
-  wire[10:0] T32;
-  wire[10:0] T33;
-  wire[9:0] T206;
-  wire[10:0] T34;
-  wire[10:0] T35;
-  wire[9:0] T207;
-  wire[10:0] T36;
-  wire[10:0] T37;
-  wire[9:0] T208;
-  wire[10:0] T38;
-  wire[10:0] T39;
-  wire[9:0] T209;
-  wire[10:0] T40;
-  wire[10:0] T41;
-  wire[9:0] T210;
-  wire[10:0] T42;
-  wire[10:0] T43;
-  wire[9:0] T211;
-  wire[10:0] T44;
-  wire[10:0] T45;
-  wire[9:0] T212;
-  wire[10:0] T46;
-  wire[10:0] T47;
-  wire[9:0] T213;
-  wire[10:0] T48;
-  wire[10:0] T49;
-  wire[9:0] T214;
-  wire[10:0] T50;
-  wire[10:0] T51;
-  wire[9:0] T215;
-  wire[10:0] T52;
-  wire[10:0] T53;
-  wire[9:0] T216;
-  wire[10:0] T54;
-  wire[10:0] T55;
-  wire[9:0] T217;
-  wire[10:0] T56;
-  wire[10:0] T57;
-  wire[9:0] T218;
-  wire[10:0] T58;
-  wire[10:0] T59;
-  wire[9:0] T219;
-  wire[10:0] T60;
-  wire[10:0] T61;
-  wire[9:0] T220;
-  wire[10:0] T62;
-  wire[10:0] T63;
-  wire[9:0] T221;
-  wire[10:0] T64;
-  wire[10:0] T65;
-  wire[9:0] T222;
-  wire[10:0] T66;
-  wire[10:0] T67;
-  wire[9:0] T223;
-  wire[10:0] T68;
-  wire[10:0] T69;
-  wire[9:0] T224;
-  wire[10:0] T70;
-  wire[10:0] T71;
-  wire[9:0] T225;
-  wire[10:0] T72;
-  wire[10:0] T73;
-  wire[9:0] T226;
-  wire[10:0] T74;
-  wire[10:0] T75;
-  wire[9:0] T227;
-  wire[10:0] T76;
-  wire[10:0] T77;
-  wire[9:0] T228;
-  wire[10:0] T78;
-  wire[10:0] T79;
-  wire[9:0] T229;
-  wire[10:0] T80;
-  wire[10:0] T81;
-  wire[9:0] T230;
-  wire[10:0] T82;
-  wire[10:0] T83;
-  wire[9:0] T231;
-  wire[10:0] T84;
-  wire[10:0] T85;
-  wire[9:0] T232;
-  wire[10:0] T86;
-  wire[10:0] T87;
-  wire[9:0] T233;
-  wire[10:0] T88;
-  wire[10:0] T89;
-  wire[9:0] T234;
-  wire[10:0] T90;
-  wire[10:0] T91;
-  wire[9:0] T235;
-  wire[10:0] T92;
-  wire[10:0] T93;
-  wire[9:0] T236;
-  wire[10:0] T94;
-  wire[10:0] T95;
-  wire T96;
-  wire T97;
-  wire T98;
-  wire T99;
-  wire T100;
-  wire[3:0] T101;
-  wire T102;
-  wire T103;
-  wire T104;
-  wire T105;
-  wire T106;
-  wire T107;
-  wire T108;
-  wire T109;
-  wire T110;
-  wire T111;
-  wire T112;
-  wire T113;
-  wire T114;
-  wire T115;
-  wire T116;
-  wire T117;
-  wire T118;
-  wire T119;
-  wire T120;
-  wire T121;
-  wire T122;
-  wire T123;
-  wire T124;
-  wire T125;
-  wire T126;
-  wire T127;
-  wire T128;
-  wire T129;
-  wire T130;
-  wire T131;
-  wire[3:0] T132;
-  wire T133;
-  wire T134;
-  wire T135;
-  wire T136;
-  wire T137;
-  wire T138;
-  wire T139;
-  wire T140;
-  wire T141;
-  wire T142;
-  wire T143;
-  wire T144;
-  wire T145;
-  wire T146;
-  wire T147;
-  wire T148;
-  wire T149;
-  wire T150;
-  wire T151;
-  wire T152;
-  wire T153;
-  wire T154;
-  wire T155;
-  wire T156;
-  wire T157;
-  wire T158;
-  wire T159;
-  wire T160;
-  wire T161;
-  wire T162;
-  wire[3:0] T163;
-  wire T164;
-  wire T165;
-  wire T166;
-  wire T167;
-  wire T168;
-  wire T169;
-  wire T170;
-  wire T171;
-  wire T172;
-  wire T173;
-  wire T174;
-  wire T175;
-  wire T176;
-  wire T177;
-  wire T178;
-  wire T179;
-  wire T180;
-  wire T181;
-  wire T182;
-  wire T183;
-  wire T184;
-  wire T185;
-  wire T186;
-  wire T187;
-  wire T188;
+  wire T32;
+  wire T33;
+  wire T34;
+  wire T35;
+  wire T36;
+  wire[3:0] T37;
+  wire T38;
+  wire T39;
+  wire T40;
+  wire T41;
+  wire T42;
+  wire T43;
+  wire T44;
+  wire T45;
+  wire T46;
+  wire T47;
+  wire T48;
+  wire T49;
+  wire T50;
+  wire T51;
+  wire T52;
+  wire T53;
+  wire T54;
+  wire T55;
+  wire T56;
+  wire T57;
+  wire T58;
+  wire T59;
+  wire T60;
+  wire T61;
+  wire T62;
   wire Activation_io_out_15;
   wire Activation_io_out_14;
   wire Activation_io_out_13;
@@ -20997,38 +18708,6 @@ module Warp_2(input clk, input reset,
   wire Activation_io_out_2;
   wire Activation_io_out_1;
   wire Activation_io_out_0;
-  wire Activation_1_io_out_15;
-  wire Activation_1_io_out_14;
-  wire Activation_1_io_out_13;
-  wire Activation_1_io_out_12;
-  wire Activation_1_io_out_11;
-  wire Activation_1_io_out_10;
-  wire Activation_1_io_out_9;
-  wire Activation_1_io_out_8;
-  wire Activation_1_io_out_7;
-  wire Activation_1_io_out_6;
-  wire Activation_1_io_out_5;
-  wire Activation_1_io_out_4;
-  wire Activation_1_io_out_3;
-  wire Activation_1_io_out_2;
-  wire Activation_1_io_out_1;
-  wire Activation_1_io_out_0;
-  wire Activation_2_io_out_15;
-  wire Activation_2_io_out_14;
-  wire Activation_2_io_out_13;
-  wire Activation_2_io_out_12;
-  wire Activation_2_io_out_11;
-  wire Activation_2_io_out_10;
-  wire Activation_2_io_out_9;
-  wire Activation_2_io_out_8;
-  wire Activation_2_io_out_7;
-  wire Activation_2_io_out_6;
-  wire Activation_2_io_out_5;
-  wire Activation_2_io_out_4;
-  wire Activation_2_io_out_3;
-  wire Activation_2_io_out_2;
-  wire Activation_2_io_out_1;
-  wire Activation_2_io_out_0;
   wire control_io_ready;
   wire control_io_valid;
   wire control_io_done;
@@ -21051,38 +18730,6 @@ module Warp_2(input clk, input reset,
   wire[9:0] Chain_io_ys_2;
   wire[9:0] Chain_io_ys_1;
   wire[9:0] Chain_io_ys_0;
-  wire[9:0] Chain_1_io_ys_15;
-  wire[9:0] Chain_1_io_ys_14;
-  wire[9:0] Chain_1_io_ys_13;
-  wire[9:0] Chain_1_io_ys_12;
-  wire[9:0] Chain_1_io_ys_11;
-  wire[9:0] Chain_1_io_ys_10;
-  wire[9:0] Chain_1_io_ys_9;
-  wire[9:0] Chain_1_io_ys_8;
-  wire[9:0] Chain_1_io_ys_7;
-  wire[9:0] Chain_1_io_ys_6;
-  wire[9:0] Chain_1_io_ys_5;
-  wire[9:0] Chain_1_io_ys_4;
-  wire[9:0] Chain_1_io_ys_3;
-  wire[9:0] Chain_1_io_ys_2;
-  wire[9:0] Chain_1_io_ys_1;
-  wire[9:0] Chain_1_io_ys_0;
-  wire[9:0] Chain_2_io_ys_15;
-  wire[9:0] Chain_2_io_ys_14;
-  wire[9:0] Chain_2_io_ys_13;
-  wire[9:0] Chain_2_io_ys_12;
-  wire[9:0] Chain_2_io_ys_11;
-  wire[9:0] Chain_2_io_ys_10;
-  wire[9:0] Chain_2_io_ys_9;
-  wire[9:0] Chain_2_io_ys_8;
-  wire[9:0] Chain_2_io_ys_7;
-  wire[9:0] Chain_2_io_ys_6;
-  wire[9:0] Chain_2_io_ys_5;
-  wire[9:0] Chain_2_io_ys_4;
-  wire[9:0] Chain_2_io_ys_3;
-  wire[9:0] Chain_2_io_ys_2;
-  wire[9:0] Chain_2_io_ys_1;
-  wire[9:0] Chain_2_io_ys_0;
   wire[15:0] memoryStreamer_io_weights_15;
   wire[15:0] memoryStreamer_io_weights_14;
   wire[15:0] memoryStreamer_io_weights_13;
@@ -21102,248 +18749,88 @@ module Warp_2(input clk, input reset,
   wire[7:0] memoryStreamer_io_bias;
 
 
-  assign T189 = T0[9:0];
+  assign T63 = T0[9:0];
   assign T0 = T1;
-  assign T1 = {1'h0, Chain_2_io_ys_0};
-  assign T190 = T2[9:0];
+  assign T1 = {1'h0, Chain_io_ys_0};
+  assign T64 = T2[9:0];
   assign T2 = T3;
-  assign T3 = {1'h0, Chain_2_io_ys_1};
-  assign T191 = T4[9:0];
+  assign T3 = {1'h0, Chain_io_ys_1};
+  assign T65 = T4[9:0];
   assign T4 = T5;
-  assign T5 = {1'h0, Chain_2_io_ys_2};
-  assign T192 = T6[9:0];
+  assign T5 = {1'h0, Chain_io_ys_2};
+  assign T66 = T6[9:0];
   assign T6 = T7;
-  assign T7 = {1'h0, Chain_2_io_ys_3};
-  assign T193 = T8[9:0];
+  assign T7 = {1'h0, Chain_io_ys_3};
+  assign T67 = T8[9:0];
   assign T8 = T9;
-  assign T9 = {1'h0, Chain_2_io_ys_4};
-  assign T194 = T10[9:0];
+  assign T9 = {1'h0, Chain_io_ys_4};
+  assign T68 = T10[9:0];
   assign T10 = T11;
-  assign T11 = {1'h0, Chain_2_io_ys_5};
-  assign T195 = T12[9:0];
+  assign T11 = {1'h0, Chain_io_ys_5};
+  assign T69 = T12[9:0];
   assign T12 = T13;
-  assign T13 = {1'h0, Chain_2_io_ys_6};
-  assign T196 = T14[9:0];
+  assign T13 = {1'h0, Chain_io_ys_6};
+  assign T70 = T14[9:0];
   assign T14 = T15;
-  assign T15 = {1'h0, Chain_2_io_ys_7};
-  assign T197 = T16[9:0];
+  assign T15 = {1'h0, Chain_io_ys_7};
+  assign T71 = T16[9:0];
   assign T16 = T17;
-  assign T17 = {1'h0, Chain_2_io_ys_8};
-  assign T198 = T18[9:0];
+  assign T17 = {1'h0, Chain_io_ys_8};
+  assign T72 = T18[9:0];
   assign T18 = T19;
-  assign T19 = {1'h0, Chain_2_io_ys_9};
-  assign T199 = T20[9:0];
+  assign T19 = {1'h0, Chain_io_ys_9};
+  assign T73 = T20[9:0];
   assign T20 = T21;
-  assign T21 = {1'h0, Chain_2_io_ys_10};
-  assign T200 = T22[9:0];
+  assign T21 = {1'h0, Chain_io_ys_10};
+  assign T74 = T22[9:0];
   assign T22 = T23;
-  assign T23 = {1'h0, Chain_2_io_ys_11};
-  assign T201 = T24[9:0];
+  assign T23 = {1'h0, Chain_io_ys_11};
+  assign T75 = T24[9:0];
   assign T24 = T25;
-  assign T25 = {1'h0, Chain_2_io_ys_12};
-  assign T202 = T26[9:0];
+  assign T25 = {1'h0, Chain_io_ys_12};
+  assign T76 = T26[9:0];
   assign T26 = T27;
-  assign T27 = {1'h0, Chain_2_io_ys_13};
-  assign T203 = T28[9:0];
+  assign T27 = {1'h0, Chain_io_ys_13};
+  assign T77 = T28[9:0];
   assign T28 = T29;
-  assign T29 = {1'h0, Chain_2_io_ys_14};
-  assign T204 = T30[9:0];
+  assign T29 = {1'h0, Chain_io_ys_14};
+  assign T78 = T30[9:0];
   assign T30 = T31;
-  assign T31 = {1'h0, Chain_2_io_ys_15};
-  assign T205 = T32[9:0];
-  assign T32 = T33;
-  assign T33 = {1'h0, Chain_1_io_ys_0};
-  assign T206 = T34[9:0];
-  assign T34 = T35;
-  assign T35 = {1'h0, Chain_1_io_ys_1};
-  assign T207 = T36[9:0];
-  assign T36 = T37;
-  assign T37 = {1'h0, Chain_1_io_ys_2};
-  assign T208 = T38[9:0];
-  assign T38 = T39;
-  assign T39 = {1'h0, Chain_1_io_ys_3};
-  assign T209 = T40[9:0];
-  assign T40 = T41;
-  assign T41 = {1'h0, Chain_1_io_ys_4};
-  assign T210 = T42[9:0];
-  assign T42 = T43;
-  assign T43 = {1'h0, Chain_1_io_ys_5};
-  assign T211 = T44[9:0];
-  assign T44 = T45;
-  assign T45 = {1'h0, Chain_1_io_ys_6};
-  assign T212 = T46[9:0];
-  assign T46 = T47;
-  assign T47 = {1'h0, Chain_1_io_ys_7};
-  assign T213 = T48[9:0];
-  assign T48 = T49;
-  assign T49 = {1'h0, Chain_1_io_ys_8};
-  assign T214 = T50[9:0];
-  assign T50 = T51;
-  assign T51 = {1'h0, Chain_1_io_ys_9};
-  assign T215 = T52[9:0];
-  assign T52 = T53;
-  assign T53 = {1'h0, Chain_1_io_ys_10};
-  assign T216 = T54[9:0];
-  assign T54 = T55;
-  assign T55 = {1'h0, Chain_1_io_ys_11};
-  assign T217 = T56[9:0];
-  assign T56 = T57;
-  assign T57 = {1'h0, Chain_1_io_ys_12};
-  assign T218 = T58[9:0];
-  assign T58 = T59;
-  assign T59 = {1'h0, Chain_1_io_ys_13};
-  assign T219 = T60[9:0];
-  assign T60 = T61;
-  assign T61 = {1'h0, Chain_1_io_ys_14};
-  assign T220 = T62[9:0];
-  assign T62 = T63;
-  assign T63 = {1'h0, Chain_1_io_ys_15};
-  assign T221 = T64[9:0];
-  assign T64 = T65;
-  assign T65 = {1'h0, Chain_io_ys_0};
-  assign T222 = T66[9:0];
-  assign T66 = T67;
-  assign T67 = {1'h0, Chain_io_ys_1};
-  assign T223 = T68[9:0];
-  assign T68 = T69;
-  assign T69 = {1'h0, Chain_io_ys_2};
-  assign T224 = T70[9:0];
-  assign T70 = T71;
-  assign T71 = {1'h0, Chain_io_ys_3};
-  assign T225 = T72[9:0];
-  assign T72 = T73;
-  assign T73 = {1'h0, Chain_io_ys_4};
-  assign T226 = T74[9:0];
-  assign T74 = T75;
-  assign T75 = {1'h0, Chain_io_ys_5};
-  assign T227 = T76[9:0];
-  assign T76 = T77;
-  assign T77 = {1'h0, Chain_io_ys_6};
-  assign T228 = T78[9:0];
-  assign T78 = T79;
-  assign T79 = {1'h0, Chain_io_ys_7};
-  assign T229 = T80[9:0];
-  assign T80 = T81;
-  assign T81 = {1'h0, Chain_io_ys_8};
-  assign T230 = T82[9:0];
-  assign T82 = T83;
-  assign T83 = {1'h0, Chain_io_ys_9};
-  assign T231 = T84[9:0];
-  assign T84 = T85;
-  assign T85 = {1'h0, Chain_io_ys_10};
-  assign T232 = T86[9:0];
-  assign T86 = T87;
-  assign T87 = {1'h0, Chain_io_ys_11};
-  assign T233 = T88[9:0];
-  assign T88 = T89;
-  assign T89 = {1'h0, Chain_io_ys_12};
-  assign T234 = T90[9:0];
-  assign T90 = T91;
-  assign T91 = {1'h0, Chain_io_ys_13};
-  assign T235 = T92[9:0];
-  assign T92 = T93;
-  assign T93 = {1'h0, Chain_io_ys_14};
-  assign T236 = T94[9:0];
-  assign T94 = T95;
-  assign T95 = {1'h0, Chain_io_ys_15};
+  assign T31 = {1'h0, Chain_io_ys_15};
   assign io_done = control_io_done;
   assign io_xOutValid = control_io_valid;
-  assign io_xOut_0 = T96;
-  assign T96 = T126 ? T112 : T97;
-  assign T97 = T111 ? T105 : T98;
-  assign T98 = T104 ? T102 : T99;
-  assign T99 = T100 ? Activation_io_out_1 : Activation_io_out_0;
-  assign T100 = T101[0];
-  assign T101 = control_io_selectX;
-  assign T102 = T103 ? Activation_io_out_3 : Activation_io_out_2;
-  assign T103 = T101[0];
-  assign T104 = T101[1];
-  assign T105 = T110 ? T108 : T106;
-  assign T106 = T107 ? Activation_io_out_5 : Activation_io_out_4;
-  assign T107 = T101[0];
-  assign T108 = T109 ? Activation_io_out_7 : Activation_io_out_6;
-  assign T109 = T101[0];
-  assign T110 = T101[1];
-  assign T111 = T101[2];
-  assign T112 = T125 ? T119 : T113;
-  assign T113 = T118 ? T116 : T114;
-  assign T114 = T115 ? Activation_io_out_9 : Activation_io_out_8;
-  assign T115 = T101[0];
-  assign T116 = T117 ? Activation_io_out_11 : Activation_io_out_10;
-  assign T117 = T101[0];
-  assign T118 = T101[1];
-  assign T119 = T124 ? T122 : T120;
-  assign T120 = T121 ? Activation_io_out_13 : Activation_io_out_12;
-  assign T121 = T101[0];
-  assign T122 = T123 ? Activation_io_out_15 : Activation_io_out_14;
-  assign T123 = T101[0];
-  assign T124 = T101[1];
-  assign T125 = T101[2];
-  assign T126 = T101[3];
-  assign io_xOut_1 = T127;
-  assign T127 = T157 ? T143 : T128;
-  assign T128 = T142 ? T136 : T129;
-  assign T129 = T135 ? T133 : T130;
-  assign T130 = T131 ? Activation_1_io_out_1 : Activation_1_io_out_0;
-  assign T131 = T132[0];
-  assign T132 = control_io_selectX;
-  assign T133 = T134 ? Activation_1_io_out_3 : Activation_1_io_out_2;
-  assign T134 = T132[0];
-  assign T135 = T132[1];
-  assign T136 = T141 ? T139 : T137;
-  assign T137 = T138 ? Activation_1_io_out_5 : Activation_1_io_out_4;
-  assign T138 = T132[0];
-  assign T139 = T140 ? Activation_1_io_out_7 : Activation_1_io_out_6;
-  assign T140 = T132[0];
-  assign T141 = T132[1];
-  assign T142 = T132[2];
-  assign T143 = T156 ? T150 : T144;
-  assign T144 = T149 ? T147 : T145;
-  assign T145 = T146 ? Activation_1_io_out_9 : Activation_1_io_out_8;
-  assign T146 = T132[0];
-  assign T147 = T148 ? Activation_1_io_out_11 : Activation_1_io_out_10;
-  assign T148 = T132[0];
-  assign T149 = T132[1];
-  assign T150 = T155 ? T153 : T151;
-  assign T151 = T152 ? Activation_1_io_out_13 : Activation_1_io_out_12;
-  assign T152 = T132[0];
-  assign T153 = T154 ? Activation_1_io_out_15 : Activation_1_io_out_14;
-  assign T154 = T132[0];
-  assign T155 = T132[1];
-  assign T156 = T132[2];
-  assign T157 = T132[3];
-  assign io_xOut_2 = T158;
-  assign T158 = T188 ? T174 : T159;
-  assign T159 = T173 ? T167 : T160;
-  assign T160 = T166 ? T164 : T161;
-  assign T161 = T162 ? Activation_2_io_out_1 : Activation_2_io_out_0;
-  assign T162 = T163[0];
-  assign T163 = control_io_selectX;
-  assign T164 = T165 ? Activation_2_io_out_3 : Activation_2_io_out_2;
-  assign T165 = T163[0];
-  assign T166 = T163[1];
-  assign T167 = T172 ? T170 : T168;
-  assign T168 = T169 ? Activation_2_io_out_5 : Activation_2_io_out_4;
-  assign T169 = T163[0];
-  assign T170 = T171 ? Activation_2_io_out_7 : Activation_2_io_out_6;
-  assign T171 = T163[0];
-  assign T172 = T163[1];
-  assign T173 = T163[2];
-  assign T174 = T187 ? T181 : T175;
-  assign T175 = T180 ? T178 : T176;
-  assign T176 = T177 ? Activation_2_io_out_9 : Activation_2_io_out_8;
-  assign T177 = T163[0];
-  assign T178 = T179 ? Activation_2_io_out_11 : Activation_2_io_out_10;
-  assign T179 = T163[0];
-  assign T180 = T163[1];
-  assign T181 = T186 ? T184 : T182;
-  assign T182 = T183 ? Activation_2_io_out_13 : Activation_2_io_out_12;
-  assign T183 = T163[0];
-  assign T184 = T185 ? Activation_2_io_out_15 : Activation_2_io_out_14;
-  assign T185 = T163[0];
-  assign T186 = T163[1];
-  assign T187 = T163[2];
-  assign T188 = T163[3];
+  assign io_xOut_0 = T32;
+  assign T32 = T62 ? T48 : T33;
+  assign T33 = T47 ? T41 : T34;
+  assign T34 = T40 ? T38 : T35;
+  assign T35 = T36 ? Activation_io_out_1 : Activation_io_out_0;
+  assign T36 = T37[0];
+  assign T37 = control_io_selectX;
+  assign T38 = T39 ? Activation_io_out_3 : Activation_io_out_2;
+  assign T39 = T37[0];
+  assign T40 = T37[1];
+  assign T41 = T46 ? T44 : T42;
+  assign T42 = T43 ? Activation_io_out_5 : Activation_io_out_4;
+  assign T43 = T37[0];
+  assign T44 = T45 ? Activation_io_out_7 : Activation_io_out_6;
+  assign T45 = T37[0];
+  assign T46 = T37[1];
+  assign T47 = T37[2];
+  assign T48 = T61 ? T55 : T49;
+  assign T49 = T54 ? T52 : T50;
+  assign T50 = T51 ? Activation_io_out_9 : Activation_io_out_8;
+  assign T51 = T37[0];
+  assign T52 = T53 ? Activation_io_out_11 : Activation_io_out_10;
+  assign T53 = T37[0];
+  assign T54 = T37[1];
+  assign T55 = T60 ? T58 : T56;
+  assign T56 = T57 ? Activation_io_out_13 : Activation_io_out_12;
+  assign T57 = T37[0];
+  assign T58 = T59 ? Activation_io_out_15 : Activation_io_out_14;
+  assign T59 = T37[0];
+  assign T60 = T37[1];
+  assign T61 = T37[2];
+  assign T62 = T37[3];
   assign io_startOut = io_start;
   assign io_ready = control_io_ready;
   WarpControl_1 control(.clk(clk), .reset(reset),
@@ -21393,97 +18880,23 @@ module Warp_2(input clk, input reset,
        .io_ys_1( Chain_io_ys_1 ),
        .io_ys_0( Chain_io_ys_0 )
   );
-  Chain_1 Chain_1(.clk(clk), .reset(reset),
-       .io_weights_15( memoryStreamer_io_weights_15 ),
-       .io_weights_14( memoryStreamer_io_weights_14 ),
-       .io_weights_13( memoryStreamer_io_weights_13 ),
-       .io_weights_12( memoryStreamer_io_weights_12 ),
-       .io_weights_11( memoryStreamer_io_weights_11 ),
-       .io_weights_10( memoryStreamer_io_weights_10 ),
-       .io_weights_9( memoryStreamer_io_weights_9 ),
-       .io_weights_8( memoryStreamer_io_weights_8 ),
-       .io_weights_7( memoryStreamer_io_weights_7 ),
-       .io_weights_6( memoryStreamer_io_weights_6 ),
-       .io_weights_5( memoryStreamer_io_weights_5 ),
-       .io_weights_4( memoryStreamer_io_weights_4 ),
-       .io_weights_3( memoryStreamer_io_weights_3 ),
-       .io_weights_2( memoryStreamer_io_weights_2 ),
-       .io_weights_1( memoryStreamer_io_weights_1 ),
-       .io_weights_0( memoryStreamer_io_weights_0 ),
-       .io_bias( memoryStreamer_io_bias ),
-       .io_restartIn( control_io_chainRestart ),
-       .io_xs( io_xIn_1 ),
-       .io_ys_15( Chain_1_io_ys_15 ),
-       .io_ys_14( Chain_1_io_ys_14 ),
-       .io_ys_13( Chain_1_io_ys_13 ),
-       .io_ys_12( Chain_1_io_ys_12 ),
-       .io_ys_11( Chain_1_io_ys_11 ),
-       .io_ys_10( Chain_1_io_ys_10 ),
-       .io_ys_9( Chain_1_io_ys_9 ),
-       .io_ys_8( Chain_1_io_ys_8 ),
-       .io_ys_7( Chain_1_io_ys_7 ),
-       .io_ys_6( Chain_1_io_ys_6 ),
-       .io_ys_5( Chain_1_io_ys_5 ),
-       .io_ys_4( Chain_1_io_ys_4 ),
-       .io_ys_3( Chain_1_io_ys_3 ),
-       .io_ys_2( Chain_1_io_ys_2 ),
-       .io_ys_1( Chain_1_io_ys_1 ),
-       .io_ys_0( Chain_1_io_ys_0 )
-  );
-  Chain_1 Chain_2(.clk(clk), .reset(reset),
-       .io_weights_15( memoryStreamer_io_weights_15 ),
-       .io_weights_14( memoryStreamer_io_weights_14 ),
-       .io_weights_13( memoryStreamer_io_weights_13 ),
-       .io_weights_12( memoryStreamer_io_weights_12 ),
-       .io_weights_11( memoryStreamer_io_weights_11 ),
-       .io_weights_10( memoryStreamer_io_weights_10 ),
-       .io_weights_9( memoryStreamer_io_weights_9 ),
-       .io_weights_8( memoryStreamer_io_weights_8 ),
-       .io_weights_7( memoryStreamer_io_weights_7 ),
-       .io_weights_6( memoryStreamer_io_weights_6 ),
-       .io_weights_5( memoryStreamer_io_weights_5 ),
-       .io_weights_4( memoryStreamer_io_weights_4 ),
-       .io_weights_3( memoryStreamer_io_weights_3 ),
-       .io_weights_2( memoryStreamer_io_weights_2 ),
-       .io_weights_1( memoryStreamer_io_weights_1 ),
-       .io_weights_0( memoryStreamer_io_weights_0 ),
-       .io_bias( memoryStreamer_io_bias ),
-       .io_restartIn( control_io_chainRestart ),
-       .io_xs( io_xIn_2 ),
-       .io_ys_15( Chain_2_io_ys_15 ),
-       .io_ys_14( Chain_2_io_ys_14 ),
-       .io_ys_13( Chain_2_io_ys_13 ),
-       .io_ys_12( Chain_2_io_ys_12 ),
-       .io_ys_11( Chain_2_io_ys_11 ),
-       .io_ys_10( Chain_2_io_ys_10 ),
-       .io_ys_9( Chain_2_io_ys_9 ),
-       .io_ys_8( Chain_2_io_ys_8 ),
-       .io_ys_7( Chain_2_io_ys_7 ),
-       .io_ys_6( Chain_2_io_ys_6 ),
-       .io_ys_5( Chain_2_io_ys_5 ),
-       .io_ys_4( Chain_2_io_ys_4 ),
-       .io_ys_3( Chain_2_io_ys_3 ),
-       .io_ys_2( Chain_2_io_ys_2 ),
-       .io_ys_1( Chain_2_io_ys_1 ),
-       .io_ys_0( Chain_2_io_ys_0 )
-  );
   Activation_1 Activation(
-       .io_in_15( T236 ),
-       .io_in_14( T235 ),
-       .io_in_13( T234 ),
-       .io_in_12( T233 ),
-       .io_in_11( T232 ),
-       .io_in_10( T231 ),
-       .io_in_9( T230 ),
-       .io_in_8( T229 ),
-       .io_in_7( T228 ),
-       .io_in_6( T227 ),
-       .io_in_5( T226 ),
-       .io_in_4( T225 ),
-       .io_in_3( T224 ),
-       .io_in_2( T223 ),
-       .io_in_1( T222 ),
-       .io_in_0( T221 ),
+       .io_in_15( T78 ),
+       .io_in_14( T77 ),
+       .io_in_13( T76 ),
+       .io_in_12( T75 ),
+       .io_in_11( T74 ),
+       .io_in_10( T73 ),
+       .io_in_9( T72 ),
+       .io_in_8( T71 ),
+       .io_in_7( T70 ),
+       .io_in_6( T69 ),
+       .io_in_5( T68 ),
+       .io_in_4( T67 ),
+       .io_in_3( T66 ),
+       .io_in_2( T65 ),
+       .io_in_1( T64 ),
+       .io_in_0( T63 ),
        .io_out_15( Activation_io_out_15 ),
        .io_out_14( Activation_io_out_14 ),
        .io_out_13( Activation_io_out_13 ),
@@ -21500,74 +18913,6 @@ module Warp_2(input clk, input reset,
        .io_out_2( Activation_io_out_2 ),
        .io_out_1( Activation_io_out_1 ),
        .io_out_0( Activation_io_out_0 )
-  );
-  Activation_1 Activation_1(
-       .io_in_15( T220 ),
-       .io_in_14( T219 ),
-       .io_in_13( T218 ),
-       .io_in_12( T217 ),
-       .io_in_11( T216 ),
-       .io_in_10( T215 ),
-       .io_in_9( T214 ),
-       .io_in_8( T213 ),
-       .io_in_7( T212 ),
-       .io_in_6( T211 ),
-       .io_in_5( T210 ),
-       .io_in_4( T209 ),
-       .io_in_3( T208 ),
-       .io_in_2( T207 ),
-       .io_in_1( T206 ),
-       .io_in_0( T205 ),
-       .io_out_15( Activation_1_io_out_15 ),
-       .io_out_14( Activation_1_io_out_14 ),
-       .io_out_13( Activation_1_io_out_13 ),
-       .io_out_12( Activation_1_io_out_12 ),
-       .io_out_11( Activation_1_io_out_11 ),
-       .io_out_10( Activation_1_io_out_10 ),
-       .io_out_9( Activation_1_io_out_9 ),
-       .io_out_8( Activation_1_io_out_8 ),
-       .io_out_7( Activation_1_io_out_7 ),
-       .io_out_6( Activation_1_io_out_6 ),
-       .io_out_5( Activation_1_io_out_5 ),
-       .io_out_4( Activation_1_io_out_4 ),
-       .io_out_3( Activation_1_io_out_3 ),
-       .io_out_2( Activation_1_io_out_2 ),
-       .io_out_1( Activation_1_io_out_1 ),
-       .io_out_0( Activation_1_io_out_0 )
-  );
-  Activation_1 Activation_2(
-       .io_in_15( T204 ),
-       .io_in_14( T203 ),
-       .io_in_13( T202 ),
-       .io_in_12( T201 ),
-       .io_in_11( T200 ),
-       .io_in_10( T199 ),
-       .io_in_9( T198 ),
-       .io_in_8( T197 ),
-       .io_in_7( T196 ),
-       .io_in_6( T195 ),
-       .io_in_5( T194 ),
-       .io_in_4( T193 ),
-       .io_in_3( T192 ),
-       .io_in_2( T191 ),
-       .io_in_1( T190 ),
-       .io_in_0( T189 ),
-       .io_out_15( Activation_2_io_out_15 ),
-       .io_out_14( Activation_2_io_out_14 ),
-       .io_out_13( Activation_2_io_out_13 ),
-       .io_out_12( Activation_2_io_out_12 ),
-       .io_out_11( Activation_2_io_out_11 ),
-       .io_out_10( Activation_2_io_out_10 ),
-       .io_out_9( Activation_2_io_out_9 ),
-       .io_out_8( Activation_2_io_out_8 ),
-       .io_out_7( Activation_2_io_out_7 ),
-       .io_out_6( Activation_2_io_out_6 ),
-       .io_out_5( Activation_2_io_out_5 ),
-       .io_out_4( Activation_2_io_out_4 ),
-       .io_out_3( Activation_2_io_out_3 ),
-       .io_out_2( Activation_2_io_out_2 ),
-       .io_out_1( Activation_2_io_out_1 ),
-       .io_out_0( Activation_2_io_out_0 )
   );
   MemoryStreamer_2 memoryStreamer(.clk(clk), .reset(reset),
        .io_restart( control_io_memoryRestart ),
@@ -23116,27 +20461,27 @@ module BitToWord_1(input clk,
   end
 endmodule
 
-module AsyncUpDownCounter_0(input clk, input reset,
+module AsyncUpDownCounter(input clk, input reset,
     input  io_up,
     input  io_down,
-    output[3:0] io_value
+    output[1:0] io_value
 );
 
-  wire[3:0] T0;
-  wire[3:0] T1;
-  wire[3:0] T2;
-  wire[3:0] T3;
+  wire[1:0] T0;
+  wire[1:0] T1;
+  wire[1:0] T2;
+  wire[1:0] T3;
   wire T4;
-  wire[3:0] T5;
+  wire[1:0] T5;
   wire T6;
   wire T7;
-  reg [3:0] reg_;
-  wire[3:0] T18;
-  wire[3:0] T8;
-  wire[3:0] T9;
-  wire[3:0] T10;
-  wire[3:0] T11;
-  wire[3:0] T12;
+  reg [1:0] reg_;
+  wire[1:0] T18;
+  wire[1:0] T8;
+  wire[1:0] T9;
+  wire[1:0] T10;
+  wire[1:0] T11;
+  wire[1:0] T12;
   wire T13;
   wire T14;
   wire T15;
@@ -23157,17 +20502,17 @@ module AsyncUpDownCounter_0(input clk, input reset,
   assign T0 = T16 ? reg_ : T1;
   assign T1 = T6 ? T5 : T2;
   assign T2 = T4 ? T3 : reg_;
-  assign T3 = reg_ + 4'h4;
+  assign T3 = reg_ + 2'h1;
   assign T4 = io_up & io_down;
-  assign T5 = reg_ + 4'h4;
+  assign T5 = reg_ + 2'h1;
   assign T6 = T7 & io_up;
   assign T7 = T4 ^ 1'h1;
-  assign T18 = reset ? 4'h0 : T8;
+  assign T18 = reset ? 2'h0 : T8;
   assign T8 = T13 ? reg_ : T9;
   assign T9 = T16 ? T12 : T10;
   assign T10 = T6 ? T5 : T11;
   assign T11 = T4 ? reg_ : reg_;
-  assign T12 = reg_ - 4'h4;
+  assign T12 = reg_ - 2'h1;
   assign T13 = T14 ^ 1'h1;
   assign T14 = T15 | io_down;
   assign T15 = T4 | io_up;
@@ -23176,7 +20521,7 @@ module AsyncUpDownCounter_0(input clk, input reset,
 
   always @(posedge clk) begin
     if(reset) begin
-      reg_ <= 4'h0;
+      reg_ <= 2'h0;
     end else if(T13) begin
       reg_ <= reg_;
     end else if(T16) begin
@@ -23185,59 +20530,6 @@ module AsyncUpDownCounter_0(input clk, input reset,
       reg_ <= T5;
     end else if(T4) begin
       reg_ <= reg_;
-    end
-  end
-endmodule
-
-module UpDownCounter_1(input clk, input reset,
-    input  io_up,
-    input  io_down,
-    output[3:0] io_value
-);
-
-  reg [3:0] reg_;
-  wire[3:0] T10;
-  wire[3:0] T0;
-  wire[3:0] T1;
-  wire[3:0] T2;
-  wire T3;
-  wire T4;
-  wire T5;
-  wire[3:0] T6;
-  wire T7;
-  wire T8;
-  wire T9;
-
-`ifndef SYNTHESIS
-// synthesis translate_off
-  integer initvar;
-  initial begin
-    #0.002;
-    reg_ = {1{$random}};
-  end
-// synthesis translate_on
-`endif
-
-  assign io_value = reg_;
-  assign T10 = reset ? 4'h0 : T0;
-  assign T0 = T7 ? T6 : T1;
-  assign T1 = T3 ? T2 : reg_;
-  assign T2 = reg_ + 4'h4;
-  assign T3 = T4 & io_up;
-  assign T4 = T5 ^ 1'h1;
-  assign T5 = io_up & io_down;
-  assign T6 = reg_ - 4'h3;
-  assign T7 = T8 & io_down;
-  assign T8 = T9 ^ 1'h1;
-  assign T9 = T5 | io_up;
-
-  always @(posedge clk) begin
-    if(reset) begin
-      reg_ <= 4'h0;
-    end else if(T7) begin
-      reg_ <= T6;
-    end else if(T3) begin
-      reg_ <= T2;
     end
   end
 endmodule
@@ -23431,7 +20723,7 @@ module CircularPeekQueue_1(input clk, input reset,
   end
 endmodule
 
-module WrappingCounter_0(
+module WrappingCounter(
     input  io_enable,
     output io_value
 );
@@ -23441,404 +20733,7 @@ module WrappingCounter_0(
   assign io_value = 1'h0;
 endmodule
 
-module WrappingCounter_1(
-    input  io_enable,
-    output io_value
-);
-
-
-
-  assign io_value = 1'h1;
-endmodule
-
-module WrappingCounter_2(
-    input  io_enable,
-    output[1:0] io_value
-);
-
-
-
-  assign io_value = 2'h2;
-endmodule
-
-module WrappingCounter_3(
-    input  io_enable,
-    output[1:0] io_value
-);
-
-
-
-  assign io_value = 2'h3;
-endmodule
-
-module WrappingCounter_4(input clk, input reset,
-    input  io_enable,
-    output[2:0] io_value
-);
-
-  reg [2:0] R0;
-  wire[2:0] T11;
-  wire[2:0] T1;
-  wire[2:0] T2;
-  wire[2:0] T3;
-  wire[2:0] T4;
-  wire T5;
-  wire T6;
-  wire[2:0] T7;
-  wire[2:0] T8;
-  wire T9;
-  wire T10;
-
-`ifndef SYNTHESIS
-// synthesis translate_off
-  integer initvar;
-  initial begin
-    #0.002;
-    R0 = {1{$random}};
-  end
-// synthesis translate_on
-`endif
-
-  assign io_value = R0;
-  assign T11 = reset ? 3'h1 : T1;
-  assign T1 = T9 ? T8 : T2;
-  assign T2 = T5 ? T3 : R0;
-  assign T3 = T4 - 3'h4;
-  assign T4 = R0 + 3'h3;
-  assign T5 = io_enable & T6;
-  assign T6 = 3'h4 <= T7;
-  assign T7 = R0 + 3'h3;
-  assign T8 = R0 + 3'h3;
-  assign T9 = io_enable & T10;
-  assign T10 = T6 ^ 1'h1;
-
-  always @(posedge clk) begin
-    if(reset) begin
-      R0 <= 3'h1;
-    end else if(T9) begin
-      R0 <= T8;
-    end else if(T5) begin
-      R0 <= T3;
-    end
-  end
-endmodule
-
-module WrappingCounter_5(input clk, input reset,
-    input  io_enable,
-    output[2:0] io_value
-);
-
-  reg [2:0] R0;
-  wire[2:0] T11;
-  wire[2:0] T1;
-  wire[2:0] T2;
-  wire[2:0] T3;
-  wire[2:0] T4;
-  wire T5;
-  wire T6;
-  wire[2:0] T7;
-  wire[2:0] T8;
-  wire T9;
-  wire T10;
-
-`ifndef SYNTHESIS
-// synthesis translate_off
-  integer initvar;
-  initial begin
-    #0.002;
-    R0 = {1{$random}};
-  end
-// synthesis translate_on
-`endif
-
-  assign io_value = R0;
-  assign T11 = reset ? 3'h2 : T1;
-  assign T1 = T9 ? T8 : T2;
-  assign T2 = T5 ? T3 : R0;
-  assign T3 = T4 - 3'h4;
-  assign T4 = R0 + 3'h3;
-  assign T5 = io_enable & T6;
-  assign T6 = 3'h4 <= T7;
-  assign T7 = R0 + 3'h3;
-  assign T8 = R0 + 3'h3;
-  assign T9 = io_enable & T10;
-  assign T10 = T6 ^ 1'h1;
-
-  always @(posedge clk) begin
-    if(reset) begin
-      R0 <= 3'h2;
-    end else if(T9) begin
-      R0 <= T8;
-    end else if(T5) begin
-      R0 <= T3;
-    end
-  end
-endmodule
-
-module WrappingCounter_6(input clk, input reset,
-    input  io_enable,
-    output[2:0] io_value
-);
-
-  reg [2:0] R0;
-  wire[2:0] T11;
-  wire[2:0] T1;
-  wire[2:0] T2;
-  wire[2:0] T3;
-  wire[2:0] T4;
-  wire T5;
-  wire T6;
-  wire[2:0] T7;
-  wire[2:0] T8;
-  wire T9;
-  wire T10;
-
-`ifndef SYNTHESIS
-// synthesis translate_off
-  integer initvar;
-  initial begin
-    #0.002;
-    R0 = {1{$random}};
-  end
-// synthesis translate_on
-`endif
-
-  assign io_value = R0;
-  assign T11 = reset ? 3'h3 : T1;
-  assign T1 = T9 ? T8 : T2;
-  assign T2 = T5 ? T3 : R0;
-  assign T3 = T4 - 3'h4;
-  assign T4 = R0 + 3'h3;
-  assign T5 = io_enable & T6;
-  assign T6 = 3'h4 <= T7;
-  assign T7 = R0 + 3'h3;
-  assign T8 = R0 + 3'h3;
-  assign T9 = io_enable & T10;
-  assign T10 = T6 ^ 1'h1;
-
-  always @(posedge clk) begin
-    if(reset) begin
-      R0 <= 3'h3;
-    end else if(T9) begin
-      R0 <= T8;
-    end else if(T5) begin
-      R0 <= T3;
-    end
-  end
-endmodule
-
-module WrappingCounter_7(input clk, input reset,
-    input  io_enable,
-    output[2:0] io_value
-);
-
-  reg [2:0] R0;
-  wire[2:0] T11;
-  wire[2:0] T1;
-  wire[2:0] T2;
-  wire[2:0] T3;
-  wire[2:0] T4;
-  wire T5;
-  wire T6;
-  wire[2:0] T7;
-  wire[2:0] T8;
-  wire T9;
-  wire T10;
-
-`ifndef SYNTHESIS
-// synthesis translate_off
-  integer initvar;
-  initial begin
-    #0.002;
-    R0 = {1{$random}};
-  end
-// synthesis translate_on
-`endif
-
-  assign io_value = R0;
-  assign T11 = reset ? 3'h0 : T1;
-  assign T1 = T9 ? T8 : T2;
-  assign T2 = T5 ? T3 : R0;
-  assign T3 = T4 - 3'h4;
-  assign T4 = R0 + 3'h1;
-  assign T5 = io_enable & T6;
-  assign T6 = 3'h4 <= T7;
-  assign T7 = R0 + 3'h1;
-  assign T8 = R0 + 3'h1;
-  assign T9 = io_enable & T10;
-  assign T10 = T6 ^ 1'h1;
-
-  always @(posedge clk) begin
-    if(reset) begin
-      R0 <= 3'h0;
-    end else if(T9) begin
-      R0 <= T8;
-    end else if(T5) begin
-      R0 <= T3;
-    end
-  end
-endmodule
-
-module WrappingCounter_8(input clk, input reset,
-    input  io_enable,
-    output[2:0] io_value
-);
-
-  reg [2:0] R0;
-  wire[2:0] T11;
-  wire[2:0] T1;
-  wire[2:0] T2;
-  wire[2:0] T3;
-  wire[2:0] T4;
-  wire T5;
-  wire T6;
-  wire[2:0] T7;
-  wire[2:0] T8;
-  wire T9;
-  wire T10;
-
-`ifndef SYNTHESIS
-// synthesis translate_off
-  integer initvar;
-  initial begin
-    #0.002;
-    R0 = {1{$random}};
-  end
-// synthesis translate_on
-`endif
-
-  assign io_value = R0;
-  assign T11 = reset ? 3'h1 : T1;
-  assign T1 = T9 ? T8 : T2;
-  assign T2 = T5 ? T3 : R0;
-  assign T3 = T4 - 3'h4;
-  assign T4 = R0 + 3'h1;
-  assign T5 = io_enable & T6;
-  assign T6 = 3'h4 <= T7;
-  assign T7 = R0 + 3'h1;
-  assign T8 = R0 + 3'h1;
-  assign T9 = io_enable & T10;
-  assign T10 = T6 ^ 1'h1;
-
-  always @(posedge clk) begin
-    if(reset) begin
-      R0 <= 3'h1;
-    end else if(T9) begin
-      R0 <= T8;
-    end else if(T5) begin
-      R0 <= T3;
-    end
-  end
-endmodule
-
-module WrappingCounter_9(input clk, input reset,
-    input  io_enable,
-    output[2:0] io_value
-);
-
-  reg [2:0] R0;
-  wire[2:0] T11;
-  wire[2:0] T1;
-  wire[2:0] T2;
-  wire[2:0] T3;
-  wire[2:0] T4;
-  wire T5;
-  wire T6;
-  wire[2:0] T7;
-  wire[2:0] T8;
-  wire T9;
-  wire T10;
-
-`ifndef SYNTHESIS
-// synthesis translate_off
-  integer initvar;
-  initial begin
-    #0.002;
-    R0 = {1{$random}};
-  end
-// synthesis translate_on
-`endif
-
-  assign io_value = R0;
-  assign T11 = reset ? 3'h2 : T1;
-  assign T1 = T9 ? T8 : T2;
-  assign T2 = T5 ? T3 : R0;
-  assign T3 = T4 - 3'h4;
-  assign T4 = R0 + 3'h1;
-  assign T5 = io_enable & T6;
-  assign T6 = 3'h4 <= T7;
-  assign T7 = R0 + 3'h1;
-  assign T8 = R0 + 3'h1;
-  assign T9 = io_enable & T10;
-  assign T10 = T6 ^ 1'h1;
-
-  always @(posedge clk) begin
-    if(reset) begin
-      R0 <= 3'h2;
-    end else if(T9) begin
-      R0 <= T8;
-    end else if(T5) begin
-      R0 <= T3;
-    end
-  end
-endmodule
-
-module WrappingCounter_10(input clk, input reset,
-    input  io_enable,
-    output[2:0] io_value
-);
-
-  reg [2:0] R0;
-  wire[2:0] T11;
-  wire[2:0] T1;
-  wire[2:0] T2;
-  wire[2:0] T3;
-  wire[2:0] T4;
-  wire T5;
-  wire T6;
-  wire[2:0] T7;
-  wire[2:0] T8;
-  wire T9;
-  wire T10;
-
-`ifndef SYNTHESIS
-// synthesis translate_off
-  integer initvar;
-  initial begin
-    #0.002;
-    R0 = {1{$random}};
-  end
-// synthesis translate_on
-`endif
-
-  assign io_value = R0;
-  assign T11 = reset ? 3'h3 : T1;
-  assign T1 = T9 ? T8 : T2;
-  assign T2 = T5 ? T3 : R0;
-  assign T3 = T4 - 3'h4;
-  assign T4 = R0 + 3'h1;
-  assign T5 = io_enable & T6;
-  assign T6 = 3'h4 <= T7;
-  assign T7 = R0 + 3'h1;
-  assign T8 = R0 + 3'h1;
-  assign T9 = io_enable & T10;
-  assign T10 = T6 ^ 1'h1;
-
-  always @(posedge clk) begin
-    if(reset) begin
-      R0 <= 3'h3;
-    end else if(T9) begin
-      R0 <= T8;
-    end else if(T5) begin
-      R0 <= T3;
-    end
-  end
-endmodule
-
-module GearBox_0(input clk, input reset,
-    input  io_xsIn_3,
-    input  io_xsIn_2,
-    input  io_xsIn_1,
+module GearBox(input clk, input reset,
     input  io_xsIn_0,
     input  io_validIn,
     input  io_prevDone,
@@ -23846,725 +20741,36 @@ module GearBox_0(input clk, input reset,
     output io_ready,
     input  io_nextReady,
     output io_startNext,
-    output[15:0] io_xsOut_2,
-    output[15:0] io_xsOut_1,
     output[15:0] io_xsOut_0
 );
 
   wire signalNewPeekBlock;
   wire T0;
   reg  R1;
-  wire T76;
-  reg  R2;
-  wire T77;
-  reg  R3;
-  wire T78;
-  reg  R4;
-  wire T79;
-  wire[15:0] T5;
-  wire[15:0] T6;
-  wire T7;
-  wire[1:0] T8;
-  wire[15:0] T9;
-  wire T10;
-  wire T11;
   wire T12;
-  reg  T13;
-  wire[1:0] T80;
-  wire T15;
-  reg  T16;
+  wire T2;
+  reg  T3;
+  wire T5;
+  reg  T6;
   reg  signalBitBuffersFull;
-  wire T81;
-  wire T18;
-  wire signalResetBitBuffers;
-  wire[15:0] T19;
-  wire[15:0] T20;
-  wire T21;
-  wire[1:0] T22;
-  wire[15:0] T23;
-  wire T24;
-  wire T25;
-  wire T26;
-  reg  T27;
-  wire[1:0] T82;
-  wire T28;
-  reg  T29;
-  wire[15:0] T30;
-  wire[15:0] T31;
-  wire T32;
-  wire[1:0] T33;
-  wire[1:0] T83;
-  wire[15:0] T34;
-  wire T35;
-  wire T36;
-  wire T37;
-  reg  T38;
-  wire[1:0] T84;
-  wire T39;
-  reg  T40;
-  wire[1:0] T85;
-  wire[15:0] T41;
-  wire[15:0] T42;
-  wire T43;
-  wire[1:0] T44;
-  wire[1:0] T86;
-  wire[15:0] T45;
-  wire T46;
-  wire T47;
-  wire T48;
-  reg  T49;
-  wire[1:0] T87;
-  wire T50;
-  reg  T51;
-  wire[1:0] T88;
-  reg  R52;
-  wire T89;
-  reg  R53;
-  wire T90;
-  wire[15:0] T54;
-  wire[15:0] T55;
-  wire T56;
-  wire[1:0] T57;
-  wire[1:0] T91;
-  wire[15:0] T58;
-  wire T59;
-  wire T60;
-  wire[15:0] T61;
-  wire[15:0] T62;
-  wire T63;
-  wire[1:0] T64;
-  wire[1:0] T92;
-  wire[15:0] T65;
-  wire T66;
-  wire T67;
-  wire[15:0] T68;
-  wire[15:0] T69;
-  wire T70;
-  wire[1:0] T71;
-  wire[1:0] T93;
-  wire[15:0] T72;
-  wire T73;
-  wire T74;
-  reg  R75;
-  wire T94;
-  wire hasEnoughEmptyBlocks;
-  wire[3:0] reservedBlocks;
-  wire[15:0] BitToWord_io_word;
-  wire[15:0] BitToWord_1_io_word;
-  wire[15:0] BitToWord_2_io_word;
-  wire[15:0] BitToWord_3_io_word;
-  wire[3:0] fillingBlock_io_value;
-  wire[3:0] bitCounter_io_value;
-  wire[3:0] blocksReady_io_value;
-  wire inputSelectCounter_io_value;
-  wire inputSelectCounter_1_io_value;
-  wire[1:0] inputSelectCounter_2_io_value;
-  wire[1:0] inputSelectCounter_3_io_value;
-  wire[2:0] queueOutputSelectCounters_io_value;
-  wire[2:0] queueOutputSelectCounters_1_io_value;
-  wire[2:0] queueOutputSelectCounters_2_io_value;
-  wire[2:0] outputSelectCounters_io_value;
-  wire[2:0] outputSelectCounters_1_io_value;
-  wire[2:0] outputSelectCounters_2_io_value;
-  wire[2:0] outputSelectCounters_3_io_value;
-  wire[15:0] CircularPeekQueue_io_output;
-  wire[15:0] CircularPeekQueue_1_io_output;
-  wire[15:0] CircularPeekQueue_2_io_output;
-  wire[15:0] CircularPeekQueue_3_io_output;
-
-`ifndef SYNTHESIS
-// synthesis translate_off
-  integer initvar;
-  initial begin
-    #0.002;
-    R1 = {1{$random}};
-    R2 = {1{$random}};
-    R3 = {1{$random}};
-    R4 = {1{$random}};
-    signalBitBuffersFull = {1{$random}};
-    R52 = {1{$random}};
-    R53 = {1{$random}};
-    R75 = {1{$random}};
-  end
-// synthesis translate_on
-`endif
-
-  assign signalNewPeekBlock = io_nextReady & T0;
-  assign T0 = 4'h3 <= blocksReady_io_value;
-  assign T76 = reset ? 1'h0 : io_prevDone;
-  assign T77 = reset ? 1'h0 : io_prevDone;
-  assign T78 = reset ? 1'h0 : io_prevDone;
-  assign T79 = reset ? 1'h0 : io_prevDone;
-  assign T5 = T11 ? T9 : T6;
-  assign T6 = T7 ? BitToWord_1_io_word : BitToWord_io_word;
-  assign T7 = T8[0];
-  assign T8 = inputSelectCounter_3_io_value;
-  assign T9 = T10 ? BitToWord_3_io_word : BitToWord_2_io_word;
-  assign T10 = T8[0];
-  assign T11 = T8[1];
-  assign T12 = signalNewPeekBlock & T13;
-  always @(*) case (T80)
-    0: T13 = 1'h1;
-    1: T13 = 1'h1;
-    2: T13 = 1'h1;
-    3: T13 = 1'h0;
-    default: begin
-      T13 = 1'bx;
-`ifndef SYNTHESIS
-// synthesis translate_off
-      T13 = {1{$random}};
-// synthesis translate_on
-`endif
-    end
-  endcase
-  assign T80 = outputSelectCounters_3_io_value[1:0];
-  assign T15 = signalBitBuffersFull & T16;
-  always @(*) case (inputSelectCounter_3_io_value)
-    0: T16 = 1'h1;
-    1: T16 = 1'h1;
-    2: T16 = 1'h1;
-    3: T16 = 1'h1;
-    default: begin
-      T16 = 1'bx;
-`ifndef SYNTHESIS
-// synthesis translate_off
-      T16 = {1{$random}};
-// synthesis translate_on
-`endif
-    end
-  endcase
-  assign T81 = reset ? 1'h0 : T18;
-  assign T18 = io_validIn & signalResetBitBuffers;
-  assign signalResetBitBuffers = bitCounter_io_value == 4'hf;
-  assign T19 = T25 ? T23 : T20;
-  assign T20 = T21 ? BitToWord_1_io_word : BitToWord_io_word;
-  assign T21 = T22[0];
-  assign T22 = inputSelectCounter_2_io_value;
-  assign T23 = T24 ? BitToWord_3_io_word : BitToWord_2_io_word;
-  assign T24 = T22[0];
-  assign T25 = T22[1];
-  assign T26 = signalNewPeekBlock & T27;
-  always @(*) case (T82)
-    0: T27 = 1'h1;
-    1: T27 = 1'h1;
-    2: T27 = 1'h1;
-    3: T27 = 1'h0;
-    default: begin
-      T27 = 1'bx;
-`ifndef SYNTHESIS
-// synthesis translate_off
-      T27 = {1{$random}};
-// synthesis translate_on
-`endif
-    end
-  endcase
-  assign T82 = outputSelectCounters_2_io_value[1:0];
-  assign T28 = signalBitBuffersFull & T29;
-  always @(*) case (inputSelectCounter_2_io_value)
-    0: T29 = 1'h1;
-    1: T29 = 1'h1;
-    2: T29 = 1'h1;
-    3: T29 = 1'h1;
-    default: begin
-      T29 = 1'bx;
-`ifndef SYNTHESIS
-// synthesis translate_off
-      T29 = {1{$random}};
-// synthesis translate_on
-`endif
-    end
-  endcase
-  assign T30 = T36 ? T34 : T31;
-  assign T31 = T32 ? BitToWord_1_io_word : BitToWord_io_word;
-  assign T32 = T33[0];
-  assign T33 = T83;
-  assign T83 = {1'h0, inputSelectCounter_1_io_value};
-  assign T34 = T35 ? BitToWord_3_io_word : BitToWord_2_io_word;
-  assign T35 = T33[0];
-  assign T36 = T33[1];
-  assign T37 = signalNewPeekBlock & T38;
-  always @(*) case (T84)
-    0: T38 = 1'h1;
-    1: T38 = 1'h1;
-    2: T38 = 1'h1;
-    3: T38 = 1'h0;
-    default: begin
-      T38 = 1'bx;
-`ifndef SYNTHESIS
-// synthesis translate_off
-      T38 = {1{$random}};
-// synthesis translate_on
-`endif
-    end
-  endcase
-  assign T84 = outputSelectCounters_1_io_value[1:0];
-  assign T39 = signalBitBuffersFull & T40;
-  always @(*) case (T85)
-    0: T40 = 1'h1;
-    1: T40 = 1'h1;
-    2: T40 = 1'h1;
-    3: T40 = 1'h1;
-    default: begin
-      T40 = 1'bx;
-`ifndef SYNTHESIS
-// synthesis translate_off
-      T40 = {1{$random}};
-// synthesis translate_on
-`endif
-    end
-  endcase
-  assign T85 = {1'h0, inputSelectCounter_1_io_value};
-  assign T41 = T47 ? T45 : T42;
-  assign T42 = T43 ? BitToWord_1_io_word : BitToWord_io_word;
-  assign T43 = T44[0];
-  assign T44 = T86;
-  assign T86 = {1'h0, inputSelectCounter_io_value};
-  assign T45 = T46 ? BitToWord_3_io_word : BitToWord_2_io_word;
-  assign T46 = T44[0];
-  assign T47 = T44[1];
-  assign T48 = signalNewPeekBlock & T49;
-  always @(*) case (T87)
-    0: T49 = 1'h1;
-    1: T49 = 1'h1;
-    2: T49 = 1'h1;
-    3: T49 = 1'h0;
-    default: begin
-      T49 = 1'bx;
-`ifndef SYNTHESIS
-// synthesis translate_off
-      T49 = {1{$random}};
-// synthesis translate_on
-`endif
-    end
-  endcase
-  assign T87 = outputSelectCounters_io_value[1:0];
-  assign T50 = signalBitBuffersFull & T51;
-  always @(*) case (T88)
-    0: T51 = 1'h1;
-    1: T51 = 1'h1;
-    2: T51 = 1'h1;
-    3: T51 = 1'h1;
-    default: begin
-      T51 = 1'bx;
-`ifndef SYNTHESIS
-// synthesis translate_off
-      T51 = {1{$random}};
-// synthesis translate_on
-`endif
-    end
-  endcase
-  assign T88 = {1'h0, inputSelectCounter_io_value};
-  assign T89 = reset ? 1'h0 : io_prevDone;
-  assign T90 = reset ? 1'h0 : io_prevDone;
-  assign io_xsOut_0 = T54;
-  assign T54 = T60 ? T58 : T55;
-  assign T55 = T56 ? CircularPeekQueue_1_io_output : CircularPeekQueue_io_output;
-  assign T56 = T57[0];
-  assign T57 = T91;
-  assign T91 = queueOutputSelectCounters_io_value[1:0];
-  assign T58 = T59 ? CircularPeekQueue_3_io_output : CircularPeekQueue_2_io_output;
-  assign T59 = T57[0];
-  assign T60 = T57[1];
-  assign io_xsOut_1 = T61;
-  assign T61 = T67 ? T65 : T62;
-  assign T62 = T63 ? CircularPeekQueue_1_io_output : CircularPeekQueue_io_output;
-  assign T63 = T64[0];
-  assign T64 = T92;
-  assign T92 = queueOutputSelectCounters_1_io_value[1:0];
-  assign T65 = T66 ? CircularPeekQueue_3_io_output : CircularPeekQueue_2_io_output;
-  assign T66 = T64[0];
-  assign T67 = T64[1];
-  assign io_xsOut_2 = T68;
-  assign T68 = T74 ? T72 : T69;
-  assign T69 = T70 ? CircularPeekQueue_1_io_output : CircularPeekQueue_io_output;
-  assign T70 = T71[0];
-  assign T71 = T93;
-  assign T93 = queueOutputSelectCounters_2_io_value[1:0];
-  assign T72 = T73 ? CircularPeekQueue_3_io_output : CircularPeekQueue_2_io_output;
-  assign T73 = T71[0];
-  assign T74 = T71[1];
-  assign io_startNext = R75;
-  assign T94 = reset ? 1'h0 : signalNewPeekBlock;
-  assign io_ready = hasEnoughEmptyBlocks;
-  assign hasEnoughEmptyBlocks = reservedBlocks <= 4'h5;
-  assign reservedBlocks = blocksReady_io_value + fillingBlock_io_value;
-  BitToWord_1 BitToWord(.clk(clk),
-       .io_enable( io_validIn ),
-       .io_bit( io_xsIn_0 ),
-       .io_word( BitToWord_io_word )
-  );
-  BitToWord_1 BitToWord_1(.clk(clk),
-       .io_enable( io_validIn ),
-       .io_bit( io_xsIn_1 ),
-       .io_word( BitToWord_1_io_word )
-  );
-  BitToWord_1 BitToWord_2(.clk(clk),
-       .io_enable( io_validIn ),
-       .io_bit( io_xsIn_2 ),
-       .io_word( BitToWord_2_io_word )
-  );
-  BitToWord_1 BitToWord_3(.clk(clk),
-       .io_enable( io_validIn ),
-       .io_bit( io_xsIn_3 ),
-       .io_word( BitToWord_3_io_word )
-  );
-  AsyncUpDownCounter_0 fillingBlock(.clk(clk), .reset(reset),
-       .io_up( io_prevStart ),
-       .io_down( R53 ),
-       .io_value( fillingBlock_io_value )
-  );
-  Counter_2 bitCounter(.clk(clk), .reset(reset),
-       .io_enable( io_validIn ),
-       .io_rst( signalResetBitBuffers ),
-       .io_value( bitCounter_io_value )
-  );
-  UpDownCounter_1 blocksReady(.clk(clk), .reset(reset),
-       .io_up( R52 ),
-       .io_down( signalNewPeekBlock ),
-       .io_value( blocksReady_io_value )
-  );
-  CircularPeekQueue_1 CircularPeekQueue(.clk(clk), .reset(reset),
-       .io_writeEnable( T50 ),
-       .io_nextBlock( T48 ),
-       .io_input( T41 ),
-       .io_output( CircularPeekQueue_io_output )
-  );
-  CircularPeekQueue_1 CircularPeekQueue_1(.clk(clk), .reset(reset),
-       .io_writeEnable( T39 ),
-       .io_nextBlock( T37 ),
-       .io_input( T30 ),
-       .io_output( CircularPeekQueue_1_io_output )
-  );
-  CircularPeekQueue_1 CircularPeekQueue_2(.clk(clk), .reset(reset),
-       .io_writeEnable( T28 ),
-       .io_nextBlock( T26 ),
-       .io_input( T19 ),
-       .io_output( CircularPeekQueue_2_io_output )
-  );
-  CircularPeekQueue_1 CircularPeekQueue_3(.clk(clk), .reset(reset),
-       .io_writeEnable( T15 ),
-       .io_nextBlock( T12 ),
-       .io_input( T5 ),
-       .io_output( CircularPeekQueue_3_io_output )
-  );
-  WrappingCounter_0 inputSelectCounter(
-       .io_enable( R4 ),
-       .io_value( inputSelectCounter_io_value )
-  );
-  WrappingCounter_1 inputSelectCounter_1(
-       .io_enable( R3 ),
-       .io_value( inputSelectCounter_1_io_value )
-  );
-  WrappingCounter_2 inputSelectCounter_2(
-       .io_enable( R2 ),
-       .io_value( inputSelectCounter_2_io_value )
-  );
-  WrappingCounter_3 inputSelectCounter_3(
-       .io_enable( R1 ),
-       .io_value( inputSelectCounter_3_io_value )
-  );
-  WrappingCounter_4 queueOutputSelectCounters(.clk(clk), .reset(reset),
-       .io_enable( signalNewPeekBlock ),
-       .io_value( queueOutputSelectCounters_io_value )
-  );
-  WrappingCounter_5 queueOutputSelectCounters_1(.clk(clk), .reset(reset),
-       .io_enable( signalNewPeekBlock ),
-       .io_value( queueOutputSelectCounters_1_io_value )
-  );
-  WrappingCounter_6 queueOutputSelectCounters_2(.clk(clk), .reset(reset),
-       .io_enable( signalNewPeekBlock ),
-       .io_value( queueOutputSelectCounters_2_io_value )
-  );
-  WrappingCounter_7 outputSelectCounters(.clk(clk), .reset(reset),
-       .io_enable( signalNewPeekBlock ),
-       .io_value( outputSelectCounters_io_value )
-  );
-  WrappingCounter_8 outputSelectCounters_1(.clk(clk), .reset(reset),
-       .io_enable( signalNewPeekBlock ),
-       .io_value( outputSelectCounters_1_io_value )
-  );
-  WrappingCounter_9 outputSelectCounters_2(.clk(clk), .reset(reset),
-       .io_enable( signalNewPeekBlock ),
-       .io_value( outputSelectCounters_2_io_value )
-  );
-  WrappingCounter_10 outputSelectCounters_3(.clk(clk), .reset(reset),
-       .io_enable( signalNewPeekBlock ),
-       .io_value( outputSelectCounters_3_io_value )
-  );
-
-  always @(posedge clk) begin
-    if(reset) begin
-      R1 <= 1'h0;
-    end else begin
-      R1 <= io_prevDone;
-    end
-    if(reset) begin
-      R2 <= 1'h0;
-    end else begin
-      R2 <= io_prevDone;
-    end
-    if(reset) begin
-      R3 <= 1'h0;
-    end else begin
-      R3 <= io_prevDone;
-    end
-    if(reset) begin
-      R4 <= 1'h0;
-    end else begin
-      R4 <= io_prevDone;
-    end
-    if(reset) begin
-      signalBitBuffersFull <= 1'h0;
-    end else begin
-      signalBitBuffersFull <= T18;
-    end
-    if(reset) begin
-      R52 <= 1'h0;
-    end else begin
-      R52 <= io_prevDone;
-    end
-    if(reset) begin
-      R53 <= 1'h0;
-    end else begin
-      R53 <= io_prevDone;
-    end
-    if(reset) begin
-      R75 <= 1'h0;
-    end else begin
-      R75 <= signalNewPeekBlock;
-    end
-  end
-endmodule
-
-module AsyncUpDownCounter_1(input clk, input reset,
-    input  io_up,
-    input  io_down,
-    output[2:0] io_value
-);
-
-  wire[2:0] T0;
-  wire[2:0] T1;
-  wire[2:0] T2;
-  wire[2:0] T3;
-  wire T4;
-  wire[2:0] T5;
-  wire T6;
-  wire T7;
-  reg [2:0] reg_;
-  wire[2:0] T18;
-  wire[2:0] T8;
-  wire[2:0] T9;
-  wire[2:0] T10;
-  wire[2:0] T11;
-  wire[2:0] T12;
   wire T13;
-  wire T14;
-  wire T15;
-  wire T16;
-  wire T17;
-
-`ifndef SYNTHESIS
-// synthesis translate_off
-  integer initvar;
-  initial begin
-    #0.002;
-    reg_ = {1{$random}};
-  end
-// synthesis translate_on
-`endif
-
-  assign io_value = T0;
-  assign T0 = T16 ? reg_ : T1;
-  assign T1 = T6 ? T5 : T2;
-  assign T2 = T4 ? T3 : reg_;
-  assign T3 = reg_ + 3'h3;
-  assign T4 = io_up & io_down;
-  assign T5 = reg_ + 3'h3;
-  assign T6 = T7 & io_up;
-  assign T7 = T4 ^ 1'h1;
-  assign T18 = reset ? 3'h0 : T8;
-  assign T8 = T13 ? reg_ : T9;
-  assign T9 = T16 ? T12 : T10;
-  assign T10 = T6 ? T5 : T11;
-  assign T11 = T4 ? reg_ : reg_;
-  assign T12 = reg_ - 3'h3;
-  assign T13 = T14 ^ 1'h1;
-  assign T14 = T15 | io_down;
-  assign T15 = T4 | io_up;
-  assign T16 = T17 & io_down;
-  assign T17 = T15 ^ 1'h1;
-
-  always @(posedge clk) begin
-    if(reset) begin
-      reg_ <= 3'h0;
-    end else if(T13) begin
-      reg_ <= reg_;
-    end else if(T16) begin
-      reg_ <= T12;
-    end else if(T6) begin
-      reg_ <= T5;
-    end else if(T4) begin
-      reg_ <= reg_;
-    end
-  end
-endmodule
-
-module UpDownCounter_2(input clk, input reset,
-    input  io_up,
-    input  io_down,
-    output[2:0] io_value
-);
-
-  reg [2:0] reg_;
-  wire[2:0] T10;
-  wire[2:0] T0;
-  wire[2:0] T1;
-  wire[2:0] T2;
-  wire T3;
-  wire T4;
-  wire T5;
-  wire[2:0] T6;
-  wire T7;
   wire T8;
-  wire T9;
-
-`ifndef SYNTHESIS
-// synthesis translate_off
-  integer initvar;
-  initial begin
-    #0.002;
-    reg_ = {1{$random}};
-  end
-// synthesis translate_on
-`endif
-
-  assign io_value = reg_;
-  assign T10 = reset ? 3'h0 : T0;
-  assign T0 = T7 ? T6 : T1;
-  assign T1 = T3 ? T2 : reg_;
-  assign T2 = reg_ + 3'h3;
-  assign T3 = T4 & io_up;
-  assign T4 = T5 ^ 1'h1;
-  assign T5 = io_up & io_down;
-  assign T6 = reg_ - 3'h3;
-  assign T7 = T8 & io_down;
-  assign T8 = T9 ^ 1'h1;
-  assign T9 = T5 | io_up;
-
-  always @(posedge clk) begin
-    if(reset) begin
-      reg_ <= 3'h0;
-    end else if(T7) begin
-      reg_ <= T6;
-    end else if(T3) begin
-      reg_ <= T2;
-    end
-  end
-endmodule
-
-module GearBox_1(input clk, input reset,
-    input  io_xsIn_2,
-    input  io_xsIn_1,
-    input  io_xsIn_0,
-    input  io_validIn,
-    input  io_prevDone,
-    input  io_prevStart,
-    output io_ready,
-    input  io_nextReady,
-    output io_startNext,
-    output[15:0] io_xsOut_2,
-    output[15:0] io_xsOut_1,
-    output[15:0] io_xsOut_0
-);
-
-  wire signalNewPeekBlock;
-  wire T0;
-  reg  R1;
-  wire T52;
-  reg  R2;
-  wire T53;
-  reg  R3;
-  wire T54;
-  wire[15:0] T4;
-  wire[15:0] T5;
-  wire T6;
-  wire[1:0] T7;
-  wire T8;
-  wire T9;
-  reg  T10;
-  wire T12;
-  reg  T13;
-  reg  signalBitBuffersFull;
-  wire T55;
-  wire T15;
   wire signalResetBitBuffers;
-  wire[15:0] T16;
-  wire[15:0] T17;
-  wire T18;
-  wire[1:0] T19;
-  wire[1:0] T56;
-  wire T20;
-  wire T21;
-  reg  T22;
-  wire[1:0] T57;
-  wire T23;
-  reg  T24;
-  wire[1:0] T58;
-  wire[15:0] T25;
-  wire[15:0] T26;
-  wire T27;
-  wire[1:0] T28;
-  wire[1:0] T59;
-  wire T29;
-  wire T30;
-  reg  T31;
-  wire[1:0] T60;
-  wire T32;
-  reg  T33;
-  wire[1:0] T61;
-  reg  R34;
-  wire T62;
-  reg  R35;
-  wire T63;
-  wire[15:0] T36;
-  wire[15:0] T37;
-  wire T38;
-  wire[1:0] T39;
-  wire[1:0] T64;
-  wire T40;
-  wire[15:0] T41;
-  wire[15:0] T42;
-  wire T43;
-  wire[1:0] T44;
-  wire[1:0] T65;
-  wire T45;
-  wire[15:0] T46;
-  wire[15:0] T47;
-  wire T48;
-  wire[1:0] T49;
-  wire T50;
-  reg  R51;
-  wire T66;
+  reg  R9;
+  wire T14;
+  reg  R10;
+  wire T15;
+  reg  R11;
+  wire T16;
   wire hasEnoughEmptyBlocks;
-  wire[2:0] reservedBlocks;
+  wire[1:0] reservedBlocks;
   wire[15:0] BitToWord_io_word;
-  wire[15:0] BitToWord_1_io_word;
-  wire[15:0] BitToWord_2_io_word;
-  wire[2:0] fillingBlock_io_value;
+  wire[1:0] fillingBlock_io_value;
   wire[3:0] bitCounter_io_value;
-  wire[2:0] blocksReady_io_value;
+  wire[1:0] blocksReady_io_value;
   wire inputSelectCounter_io_value;
-  wire inputSelectCounter_1_io_value;
-  wire[1:0] inputSelectCounter_2_io_value;
-  wire queueOutputSelectCounters_io_value;
-  wire queueOutputSelectCounters_1_io_value;
-  wire[1:0] queueOutputSelectCounters_2_io_value;
   wire outputSelectCounters_io_value;
-  wire outputSelectCounters_1_io_value;
-  wire[1:0] outputSelectCounters_2_io_value;
   wire[15:0] CircularPeekQueue_io_output;
-  wire[15:0] CircularPeekQueue_1_io_output;
-  wire[15:0] CircularPeekQueue_2_io_output;
 
 `ifndef SYNTHESIS
 // synthesis translate_off
@@ -24572,174 +20778,60 @@ module GearBox_1(input clk, input reset,
   initial begin
     #0.002;
     R1 = {1{$random}};
-    R2 = {1{$random}};
-    R3 = {1{$random}};
     signalBitBuffersFull = {1{$random}};
-    R34 = {1{$random}};
-    R35 = {1{$random}};
-    R51 = {1{$random}};
+    R9 = {1{$random}};
+    R10 = {1{$random}};
+    R11 = {1{$random}};
   end
 // synthesis translate_on
 `endif
 
   assign signalNewPeekBlock = io_nextReady & T0;
-  assign T0 = 3'h3 <= blocksReady_io_value;
-  assign T52 = reset ? 1'h0 : io_prevDone;
-  assign T53 = reset ? 1'h0 : io_prevDone;
-  assign T54 = reset ? 1'h0 : io_prevDone;
-  assign T4 = T8 ? BitToWord_2_io_word : T5;
-  assign T5 = T6 ? BitToWord_1_io_word : BitToWord_io_word;
-  assign T6 = T7[0];
-  assign T7 = inputSelectCounter_2_io_value;
-  assign T8 = T7[1];
-  assign T9 = signalNewPeekBlock & T10;
-  always @(*) case (outputSelectCounters_2_io_value)
-    0: T10 = 1'h1;
-    1: T10 = 1'h1;
-    2: T10 = 1'h1;
+  assign T0 = 2'h1 <= blocksReady_io_value;
+  assign T12 = reset ? 1'h0 : io_prevDone;
+  assign T2 = signalNewPeekBlock & T3;
+  always @(*) case (outputSelectCounters_io_value)
+    0: T3 = 1'h1;
     default: begin
-      T10 = 1'bx;
+      T3 = 1'bx;
 `ifndef SYNTHESIS
 // synthesis translate_off
-      T10 = {1{$random}};
+      T3 = {1{$random}};
 // synthesis translate_on
 `endif
     end
   endcase
-  assign T12 = signalBitBuffersFull & T13;
-  always @(*) case (inputSelectCounter_2_io_value)
-    0: T13 = 1'h1;
-    1: T13 = 1'h1;
-    2: T13 = 1'h1;
+  assign T5 = signalBitBuffersFull & T6;
+  always @(*) case (inputSelectCounter_io_value)
+    0: T6 = 1'h1;
     default: begin
-      T13 = 1'bx;
+      T6 = 1'bx;
 `ifndef SYNTHESIS
 // synthesis translate_off
-      T13 = {1{$random}};
+      T6 = {1{$random}};
 // synthesis translate_on
 `endif
     end
   endcase
-  assign T55 = reset ? 1'h0 : T15;
-  assign T15 = io_validIn & signalResetBitBuffers;
+  assign T13 = reset ? 1'h0 : T8;
+  assign T8 = io_validIn & signalResetBitBuffers;
   assign signalResetBitBuffers = bitCounter_io_value == 4'hf;
-  assign T16 = T20 ? BitToWord_2_io_word : T17;
-  assign T17 = T18 ? BitToWord_1_io_word : BitToWord_io_word;
-  assign T18 = T19[0];
-  assign T19 = T56;
-  assign T56 = {1'h0, inputSelectCounter_1_io_value};
-  assign T20 = T19[1];
-  assign T21 = signalNewPeekBlock & T22;
-  always @(*) case (T57)
-    0: T22 = 1'h1;
-    1: T22 = 1'h1;
-    2: T22 = 1'h1;
-    default: begin
-      T22 = 1'bx;
-`ifndef SYNTHESIS
-// synthesis translate_off
-      T22 = {1{$random}};
-// synthesis translate_on
-`endif
-    end
-  endcase
-  assign T57 = {1'h0, outputSelectCounters_1_io_value};
-  assign T23 = signalBitBuffersFull & T24;
-  always @(*) case (T58)
-    0: T24 = 1'h1;
-    1: T24 = 1'h1;
-    2: T24 = 1'h1;
-    default: begin
-      T24 = 1'bx;
-`ifndef SYNTHESIS
-// synthesis translate_off
-      T24 = {1{$random}};
-// synthesis translate_on
-`endif
-    end
-  endcase
-  assign T58 = {1'h0, inputSelectCounter_1_io_value};
-  assign T25 = T29 ? BitToWord_2_io_word : T26;
-  assign T26 = T27 ? BitToWord_1_io_word : BitToWord_io_word;
-  assign T27 = T28[0];
-  assign T28 = T59;
-  assign T59 = {1'h0, inputSelectCounter_io_value};
-  assign T29 = T28[1];
-  assign T30 = signalNewPeekBlock & T31;
-  always @(*) case (T60)
-    0: T31 = 1'h1;
-    1: T31 = 1'h1;
-    2: T31 = 1'h1;
-    default: begin
-      T31 = 1'bx;
-`ifndef SYNTHESIS
-// synthesis translate_off
-      T31 = {1{$random}};
-// synthesis translate_on
-`endif
-    end
-  endcase
-  assign T60 = {1'h0, outputSelectCounters_io_value};
-  assign T32 = signalBitBuffersFull & T33;
-  always @(*) case (T61)
-    0: T33 = 1'h1;
-    1: T33 = 1'h1;
-    2: T33 = 1'h1;
-    default: begin
-      T33 = 1'bx;
-`ifndef SYNTHESIS
-// synthesis translate_off
-      T33 = {1{$random}};
-// synthesis translate_on
-`endif
-    end
-  endcase
-  assign T61 = {1'h0, inputSelectCounter_io_value};
-  assign T62 = reset ? 1'h0 : io_prevDone;
-  assign T63 = reset ? 1'h0 : io_prevDone;
-  assign io_xsOut_0 = T36;
-  assign T36 = T40 ? CircularPeekQueue_2_io_output : T37;
-  assign T37 = T38 ? CircularPeekQueue_1_io_output : CircularPeekQueue_io_output;
-  assign T38 = T39[0];
-  assign T39 = T64;
-  assign T64 = {1'h0, queueOutputSelectCounters_io_value};
-  assign T40 = T39[1];
-  assign io_xsOut_1 = T41;
-  assign T41 = T45 ? CircularPeekQueue_2_io_output : T42;
-  assign T42 = T43 ? CircularPeekQueue_1_io_output : CircularPeekQueue_io_output;
-  assign T43 = T44[0];
-  assign T44 = T65;
-  assign T65 = {1'h0, queueOutputSelectCounters_1_io_value};
-  assign T45 = T44[1];
-  assign io_xsOut_2 = T46;
-  assign T46 = T50 ? CircularPeekQueue_2_io_output : T47;
-  assign T47 = T48 ? CircularPeekQueue_1_io_output : CircularPeekQueue_io_output;
-  assign T48 = T49[0];
-  assign T49 = queueOutputSelectCounters_2_io_value;
-  assign T50 = T49[1];
-  assign io_startNext = R51;
-  assign T66 = reset ? 1'h0 : signalNewPeekBlock;
+  assign T14 = reset ? 1'h0 : io_prevDone;
+  assign T15 = reset ? 1'h0 : io_prevDone;
+  assign io_xsOut_0 = CircularPeekQueue_io_output;
+  assign io_startNext = R11;
+  assign T16 = reset ? 1'h0 : signalNewPeekBlock;
   assign io_ready = hasEnoughEmptyBlocks;
-  assign hasEnoughEmptyBlocks = reservedBlocks <= 3'h3;
+  assign hasEnoughEmptyBlocks = reservedBlocks <= 2'h1;
   assign reservedBlocks = blocksReady_io_value + fillingBlock_io_value;
   BitToWord_1 BitToWord(.clk(clk),
        .io_enable( io_validIn ),
        .io_bit( io_xsIn_0 ),
        .io_word( BitToWord_io_word )
   );
-  BitToWord_1 BitToWord_1(.clk(clk),
-       .io_enable( io_validIn ),
-       .io_bit( io_xsIn_1 ),
-       .io_word( BitToWord_1_io_word )
-  );
-  BitToWord_1 BitToWord_2(.clk(clk),
-       .io_enable( io_validIn ),
-       .io_bit( io_xsIn_2 ),
-       .io_word( BitToWord_2_io_word )
-  );
-  AsyncUpDownCounter_1 fillingBlock(.clk(clk), .reset(reset),
+  AsyncUpDownCounter fillingBlock(.clk(clk), .reset(reset),
        .io_up( io_prevStart ),
-       .io_down( R35 ),
+       .io_down( R10 ),
        .io_value( fillingBlock_io_value )
   );
   Counter_2 bitCounter(.clk(clk), .reset(reset),
@@ -24747,64 +20839,28 @@ module GearBox_1(input clk, input reset,
        .io_rst( signalResetBitBuffers ),
        .io_value( bitCounter_io_value )
   );
-  UpDownCounter_2 blocksReady(.clk(clk), .reset(reset),
-       .io_up( R34 ),
+  UpDownCounter blocksReady(.clk(clk), .reset(reset),
+       .io_up( R9 ),
        .io_down( signalNewPeekBlock ),
        .io_value( blocksReady_io_value )
   );
   CircularPeekQueue_1 CircularPeekQueue(.clk(clk), .reset(reset),
-       .io_writeEnable( T32 ),
-       .io_nextBlock( T30 ),
-       .io_input( T25 ),
+       .io_writeEnable( T5 ),
+       .io_nextBlock( T2 ),
+       .io_input( BitToWord_io_word ),
        .io_output( CircularPeekQueue_io_output )
   );
-  CircularPeekQueue_1 CircularPeekQueue_1(.clk(clk), .reset(reset),
-       .io_writeEnable( T23 ),
-       .io_nextBlock( T21 ),
-       .io_input( T16 ),
-       .io_output( CircularPeekQueue_1_io_output )
-  );
-  CircularPeekQueue_1 CircularPeekQueue_2(.clk(clk), .reset(reset),
-       .io_writeEnable( T12 ),
-       .io_nextBlock( T9 ),
-       .io_input( T4 ),
-       .io_output( CircularPeekQueue_2_io_output )
-  );
-  WrappingCounter_0 inputSelectCounter(
-       .io_enable( R3 ),
+  WrappingCounter inputSelectCounter(
+       .io_enable( R1 ),
        .io_value( inputSelectCounter_io_value )
   );
-  WrappingCounter_1 inputSelectCounter_1(
-       .io_enable( R2 ),
-       .io_value( inputSelectCounter_1_io_value )
+  WrappingCounter queueOutputSelectCounters(
+       .io_enable( signalNewPeekBlock )
+       //.io_value(  )
   );
-  WrappingCounter_2 inputSelectCounter_2(
-       .io_enable( R1 ),
-       .io_value( inputSelectCounter_2_io_value )
-  );
-  WrappingCounter_0 queueOutputSelectCounters(
-       .io_enable( signalNewPeekBlock ),
-       .io_value( queueOutputSelectCounters_io_value )
-  );
-  WrappingCounter_1 queueOutputSelectCounters_1(
-       .io_enable( signalNewPeekBlock ),
-       .io_value( queueOutputSelectCounters_1_io_value )
-  );
-  WrappingCounter_2 queueOutputSelectCounters_2(
-       .io_enable( signalNewPeekBlock ),
-       .io_value( queueOutputSelectCounters_2_io_value )
-  );
-  WrappingCounter_0 outputSelectCounters(
+  WrappingCounter outputSelectCounters(
        .io_enable( signalNewPeekBlock ),
        .io_value( outputSelectCounters_io_value )
-  );
-  WrappingCounter_1 outputSelectCounters_1(
-       .io_enable( signalNewPeekBlock ),
-       .io_value( outputSelectCounters_1_io_value )
-  );
-  WrappingCounter_2 outputSelectCounters_2(
-       .io_enable( signalNewPeekBlock ),
-       .io_value( outputSelectCounters_2_io_value )
   );
 
   always @(posedge clk) begin
@@ -24814,647 +20870,24 @@ module GearBox_1(input clk, input reset,
       R1 <= io_prevDone;
     end
     if(reset) begin
-      R2 <= 1'h0;
-    end else begin
-      R2 <= io_prevDone;
-    end
-    if(reset) begin
-      R3 <= 1'h0;
-    end else begin
-      R3 <= io_prevDone;
-    end
-    if(reset) begin
       signalBitBuffersFull <= 1'h0;
     end else begin
-      signalBitBuffersFull <= T15;
+      signalBitBuffersFull <= T8;
     end
     if(reset) begin
-      R34 <= 1'h0;
+      R9 <= 1'h0;
     end else begin
-      R34 <= io_prevDone;
+      R9 <= io_prevDone;
     end
     if(reset) begin
-      R35 <= 1'h0;
+      R10 <= 1'h0;
     end else begin
-      R35 <= io_prevDone;
+      R10 <= io_prevDone;
     end
     if(reset) begin
-      R51 <= 1'h0;
+      R11 <= 1'h0;
     end else begin
-      R51 <= signalNewPeekBlock;
-    end
-  end
-endmodule
-
-module UpDownCounter_3(input clk, input reset,
-    input  io_up,
-    input  io_down,
-    output[3:0] io_value
-);
-
-  reg [3:0] reg_;
-  wire[3:0] T10;
-  wire[3:0] T0;
-  wire[3:0] T1;
-  wire[3:0] T2;
-  wire T3;
-  wire T4;
-  wire T5;
-  wire[3:0] T6;
-  wire T7;
-  wire T8;
-  wire T9;
-
-`ifndef SYNTHESIS
-// synthesis translate_off
-  integer initvar;
-  initial begin
-    #0.002;
-    reg_ = {1{$random}};
-  end
-// synthesis translate_on
-`endif
-
-  assign io_value = reg_;
-  assign T10 = reset ? 4'h0 : T0;
-  assign T0 = T7 ? T6 : T1;
-  assign T1 = T3 ? T2 : reg_;
-  assign T2 = reg_ + 4'h3;
-  assign T3 = T4 & io_up;
-  assign T4 = T5 ^ 1'h1;
-  assign T5 = io_up & io_down;
-  assign T6 = reg_ - 4'h1;
-  assign T7 = T8 & io_down;
-  assign T8 = T9 ^ 1'h1;
-  assign T9 = T5 | io_up;
-
-  always @(posedge clk) begin
-    if(reset) begin
-      reg_ <= 4'h0;
-    end else if(T7) begin
-      reg_ <= T6;
-    end else if(T3) begin
-      reg_ <= T2;
-    end
-  end
-endmodule
-
-module WrappingCounter_11(input clk, input reset,
-    input  io_enable,
-    output[2:0] io_value
-);
-
-  reg [2:0] R0;
-  wire[2:0] T11;
-  wire[2:0] T1;
-  wire[2:0] T2;
-  wire[2:0] T3;
-  wire[2:0] T4;
-  wire T5;
-  wire T6;
-  wire[2:0] T7;
-  wire[2:0] T8;
-  wire T9;
-  wire T10;
-
-`ifndef SYNTHESIS
-// synthesis translate_off
-  integer initvar;
-  initial begin
-    #0.002;
-    R0 = {1{$random}};
-  end
-// synthesis translate_on
-`endif
-
-  assign io_value = R0;
-  assign T11 = reset ? 3'h2 : T1;
-  assign T1 = T9 ? T8 : T2;
-  assign T2 = T5 ? T3 : R0;
-  assign T3 = T4 - 3'h3;
-  assign T4 = R0 + 3'h1;
-  assign T5 = io_enable & T6;
-  assign T6 = 3'h3 <= T7;
-  assign T7 = R0 + 3'h1;
-  assign T8 = R0 + 3'h1;
-  assign T9 = io_enable & T10;
-  assign T10 = T6 ^ 1'h1;
-
-  always @(posedge clk) begin
-    if(reset) begin
-      R0 <= 3'h2;
-    end else if(T9) begin
-      R0 <= T8;
-    end else if(T5) begin
-      R0 <= T3;
-    end
-  end
-endmodule
-
-module WrappingCounter_12(input clk, input reset,
-    input  io_enable,
-    output[2:0] io_value
-);
-
-  reg [2:0] R0;
-  wire[2:0] T11;
-  wire[2:0] T1;
-  wire[2:0] T2;
-  wire[2:0] T3;
-  wire[2:0] T4;
-  wire T5;
-  wire T6;
-  wire[2:0] T7;
-  wire[2:0] T8;
-  wire T9;
-  wire T10;
-
-`ifndef SYNTHESIS
-// synthesis translate_off
-  integer initvar;
-  initial begin
-    #0.002;
-    R0 = {1{$random}};
-  end
-// synthesis translate_on
-`endif
-
-  assign io_value = R0;
-  assign T11 = reset ? 3'h0 : T1;
-  assign T1 = T9 ? T8 : T2;
-  assign T2 = T5 ? T3 : R0;
-  assign T3 = T4 - 3'h3;
-  assign T4 = R0 + 3'h2;
-  assign T5 = io_enable & T6;
-  assign T6 = 3'h3 <= T7;
-  assign T7 = R0 + 3'h2;
-  assign T8 = R0 + 3'h2;
-  assign T9 = io_enable & T10;
-  assign T10 = T6 ^ 1'h1;
-
-  always @(posedge clk) begin
-    if(reset) begin
-      R0 <= 3'h0;
-    end else if(T9) begin
-      R0 <= T8;
-    end else if(T5) begin
-      R0 <= T3;
-    end
-  end
-endmodule
-
-module WrappingCounter_13(input clk, input reset,
-    input  io_enable,
-    output[2:0] io_value
-);
-
-  reg [2:0] R0;
-  wire[2:0] T11;
-  wire[2:0] T1;
-  wire[2:0] T2;
-  wire[2:0] T3;
-  wire[2:0] T4;
-  wire T5;
-  wire T6;
-  wire[2:0] T7;
-  wire[2:0] T8;
-  wire T9;
-  wire T10;
-
-`ifndef SYNTHESIS
-// synthesis translate_off
-  integer initvar;
-  initial begin
-    #0.002;
-    R0 = {1{$random}};
-  end
-// synthesis translate_on
-`endif
-
-  assign io_value = R0;
-  assign T11 = reset ? 3'h1 : T1;
-  assign T1 = T9 ? T8 : T2;
-  assign T2 = T5 ? T3 : R0;
-  assign T3 = T4 - 3'h3;
-  assign T4 = R0 + 3'h2;
-  assign T5 = io_enable & T6;
-  assign T6 = 3'h3 <= T7;
-  assign T7 = R0 + 3'h2;
-  assign T8 = R0 + 3'h2;
-  assign T9 = io_enable & T10;
-  assign T10 = T6 ^ 1'h1;
-
-  always @(posedge clk) begin
-    if(reset) begin
-      R0 <= 3'h1;
-    end else if(T9) begin
-      R0 <= T8;
-    end else if(T5) begin
-      R0 <= T3;
-    end
-  end
-endmodule
-
-module WrappingCounter_14(input clk, input reset,
-    input  io_enable,
-    output[2:0] io_value
-);
-
-  reg [2:0] R0;
-  wire[2:0] T11;
-  wire[2:0] T1;
-  wire[2:0] T2;
-  wire[2:0] T3;
-  wire[2:0] T4;
-  wire T5;
-  wire T6;
-  wire[2:0] T7;
-  wire[2:0] T8;
-  wire T9;
-  wire T10;
-
-`ifndef SYNTHESIS
-// synthesis translate_off
-  integer initvar;
-  initial begin
-    #0.002;
-    R0 = {1{$random}};
-  end
-// synthesis translate_on
-`endif
-
-  assign io_value = R0;
-  assign T11 = reset ? 3'h2 : T1;
-  assign T1 = T9 ? T8 : T2;
-  assign T2 = T5 ? T3 : R0;
-  assign T3 = T4 - 3'h3;
-  assign T4 = R0 + 3'h2;
-  assign T5 = io_enable & T6;
-  assign T6 = 3'h3 <= T7;
-  assign T7 = R0 + 3'h2;
-  assign T8 = R0 + 3'h2;
-  assign T9 = io_enable & T10;
-  assign T10 = T6 ^ 1'h1;
-
-  always @(posedge clk) begin
-    if(reset) begin
-      R0 <= 3'h2;
-    end else if(T9) begin
-      R0 <= T8;
-    end else if(T5) begin
-      R0 <= T3;
-    end
-  end
-endmodule
-
-module GearBox_2(input clk, input reset,
-    input  io_xsIn_2,
-    input  io_xsIn_1,
-    input  io_xsIn_0,
-    input  io_validIn,
-    input  io_prevDone,
-    input  io_prevStart,
-    output io_ready,
-    input  io_nextReady,
-    output io_startNext,
-    output[15:0] io_xsOut_0
-);
-
-  wire signalNewPeekBlock;
-  wire T0;
-  reg  R1;
-  wire T42;
-  reg  R2;
-  wire T43;
-  reg  R3;
-  wire T44;
-  wire[15:0] T4;
-  wire[15:0] T5;
-  wire T6;
-  wire[1:0] T7;
-  wire T8;
-  wire T9;
-  reg  T10;
-  wire[1:0] T45;
-  wire T12;
-  reg  T13;
-  reg  signalBitBuffersFull;
-  wire T46;
-  wire T15;
-  wire signalResetBitBuffers;
-  wire[15:0] T16;
-  wire[15:0] T17;
-  wire T18;
-  wire[1:0] T19;
-  wire[1:0] T47;
-  wire T20;
-  wire T21;
-  reg  T22;
-  wire[1:0] T48;
-  wire T23;
-  reg  T24;
-  wire[1:0] T49;
-  wire[15:0] T25;
-  wire[15:0] T26;
-  wire T27;
-  wire[1:0] T28;
-  wire[1:0] T50;
-  wire T29;
-  wire T30;
-  reg  T31;
-  wire[1:0] T51;
-  wire T32;
-  reg  T33;
-  wire[1:0] T52;
-  reg  R34;
-  wire T53;
-  reg  R35;
-  wire T54;
-  wire[15:0] T36;
-  wire[15:0] T37;
-  wire T38;
-  wire[1:0] T39;
-  wire[1:0] T55;
-  wire T40;
-  reg  R41;
-  wire T56;
-  wire hasEnoughEmptyBlocks;
-  wire[3:0] reservedBlocks;
-  wire[3:0] T57;
-  wire[15:0] BitToWord_io_word;
-  wire[15:0] BitToWord_1_io_word;
-  wire[15:0] BitToWord_2_io_word;
-  wire[2:0] fillingBlock_io_value;
-  wire[3:0] bitCounter_io_value;
-  wire[3:0] blocksReady_io_value;
-  wire inputSelectCounter_io_value;
-  wire inputSelectCounter_1_io_value;
-  wire[1:0] inputSelectCounter_2_io_value;
-  wire[2:0] queueOutputSelectCounters_io_value;
-  wire[2:0] outputSelectCounters_io_value;
-  wire[2:0] outputSelectCounters_1_io_value;
-  wire[2:0] outputSelectCounters_2_io_value;
-  wire[15:0] CircularPeekQueue_io_output;
-  wire[15:0] CircularPeekQueue_1_io_output;
-  wire[15:0] CircularPeekQueue_2_io_output;
-
-`ifndef SYNTHESIS
-// synthesis translate_off
-  integer initvar;
-  initial begin
-    #0.002;
-    R1 = {1{$random}};
-    R2 = {1{$random}};
-    R3 = {1{$random}};
-    signalBitBuffersFull = {1{$random}};
-    R34 = {1{$random}};
-    R35 = {1{$random}};
-    R41 = {1{$random}};
-  end
-// synthesis translate_on
-`endif
-
-  assign signalNewPeekBlock = io_nextReady & T0;
-  assign T0 = 4'h1 <= blocksReady_io_value;
-  assign T42 = reset ? 1'h0 : io_prevDone;
-  assign T43 = reset ? 1'h0 : io_prevDone;
-  assign T44 = reset ? 1'h0 : io_prevDone;
-  assign T4 = T8 ? BitToWord_2_io_word : T5;
-  assign T5 = T6 ? BitToWord_1_io_word : BitToWord_io_word;
-  assign T6 = T7[0];
-  assign T7 = inputSelectCounter_2_io_value;
-  assign T8 = T7[1];
-  assign T9 = signalNewPeekBlock & T10;
-  always @(*) case (T45)
-    0: T10 = 1'h1;
-    1: T10 = 1'h0;
-    2: T10 = 1'h0;
-    default: begin
-      T10 = 1'bx;
-`ifndef SYNTHESIS
-// synthesis translate_off
-      T10 = {1{$random}};
-// synthesis translate_on
-`endif
-    end
-  endcase
-  assign T45 = outputSelectCounters_2_io_value[1:0];
-  assign T12 = signalBitBuffersFull & T13;
-  always @(*) case (inputSelectCounter_2_io_value)
-    0: T13 = 1'h1;
-    1: T13 = 1'h1;
-    2: T13 = 1'h1;
-    default: begin
-      T13 = 1'bx;
-`ifndef SYNTHESIS
-// synthesis translate_off
-      T13 = {1{$random}};
-// synthesis translate_on
-`endif
-    end
-  endcase
-  assign T46 = reset ? 1'h0 : T15;
-  assign T15 = io_validIn & signalResetBitBuffers;
-  assign signalResetBitBuffers = bitCounter_io_value == 4'hf;
-  assign T16 = T20 ? BitToWord_2_io_word : T17;
-  assign T17 = T18 ? BitToWord_1_io_word : BitToWord_io_word;
-  assign T18 = T19[0];
-  assign T19 = T47;
-  assign T47 = {1'h0, inputSelectCounter_1_io_value};
-  assign T20 = T19[1];
-  assign T21 = signalNewPeekBlock & T22;
-  always @(*) case (T48)
-    0: T22 = 1'h1;
-    1: T22 = 1'h0;
-    2: T22 = 1'h0;
-    default: begin
-      T22 = 1'bx;
-`ifndef SYNTHESIS
-// synthesis translate_off
-      T22 = {1{$random}};
-// synthesis translate_on
-`endif
-    end
-  endcase
-  assign T48 = outputSelectCounters_1_io_value[1:0];
-  assign T23 = signalBitBuffersFull & T24;
-  always @(*) case (T49)
-    0: T24 = 1'h1;
-    1: T24 = 1'h1;
-    2: T24 = 1'h1;
-    default: begin
-      T24 = 1'bx;
-`ifndef SYNTHESIS
-// synthesis translate_off
-      T24 = {1{$random}};
-// synthesis translate_on
-`endif
-    end
-  endcase
-  assign T49 = {1'h0, inputSelectCounter_1_io_value};
-  assign T25 = T29 ? BitToWord_2_io_word : T26;
-  assign T26 = T27 ? BitToWord_1_io_word : BitToWord_io_word;
-  assign T27 = T28[0];
-  assign T28 = T50;
-  assign T50 = {1'h0, inputSelectCounter_io_value};
-  assign T29 = T28[1];
-  assign T30 = signalNewPeekBlock & T31;
-  always @(*) case (T51)
-    0: T31 = 1'h1;
-    1: T31 = 1'h0;
-    2: T31 = 1'h0;
-    default: begin
-      T31 = 1'bx;
-`ifndef SYNTHESIS
-// synthesis translate_off
-      T31 = {1{$random}};
-// synthesis translate_on
-`endif
-    end
-  endcase
-  assign T51 = outputSelectCounters_io_value[1:0];
-  assign T32 = signalBitBuffersFull & T33;
-  always @(*) case (T52)
-    0: T33 = 1'h1;
-    1: T33 = 1'h1;
-    2: T33 = 1'h1;
-    default: begin
-      T33 = 1'bx;
-`ifndef SYNTHESIS
-// synthesis translate_off
-      T33 = {1{$random}};
-// synthesis translate_on
-`endif
-    end
-  endcase
-  assign T52 = {1'h0, inputSelectCounter_io_value};
-  assign T53 = reset ? 1'h0 : io_prevDone;
-  assign T54 = reset ? 1'h0 : io_prevDone;
-  assign io_xsOut_0 = T36;
-  assign T36 = T40 ? CircularPeekQueue_2_io_output : T37;
-  assign T37 = T38 ? CircularPeekQueue_1_io_output : CircularPeekQueue_io_output;
-  assign T38 = T39[0];
-  assign T39 = T55;
-  assign T55 = queueOutputSelectCounters_io_value[1:0];
-  assign T40 = T39[1];
-  assign io_startNext = R41;
-  assign T56 = reset ? 1'h0 : signalNewPeekBlock;
-  assign io_ready = hasEnoughEmptyBlocks;
-  assign hasEnoughEmptyBlocks = reservedBlocks <= 4'h5;
-  assign reservedBlocks = blocksReady_io_value + T57;
-  assign T57 = {1'h0, fillingBlock_io_value};
-  BitToWord_1 BitToWord(.clk(clk),
-       .io_enable( io_validIn ),
-       .io_bit( io_xsIn_0 ),
-       .io_word( BitToWord_io_word )
-  );
-  BitToWord_1 BitToWord_1(.clk(clk),
-       .io_enable( io_validIn ),
-       .io_bit( io_xsIn_1 ),
-       .io_word( BitToWord_1_io_word )
-  );
-  BitToWord_1 BitToWord_2(.clk(clk),
-       .io_enable( io_validIn ),
-       .io_bit( io_xsIn_2 ),
-       .io_word( BitToWord_2_io_word )
-  );
-  AsyncUpDownCounter_1 fillingBlock(.clk(clk), .reset(reset),
-       .io_up( io_prevStart ),
-       .io_down( R35 ),
-       .io_value( fillingBlock_io_value )
-  );
-  Counter_2 bitCounter(.clk(clk), .reset(reset),
-       .io_enable( io_validIn ),
-       .io_rst( signalResetBitBuffers ),
-       .io_value( bitCounter_io_value )
-  );
-  UpDownCounter_3 blocksReady(.clk(clk), .reset(reset),
-       .io_up( R34 ),
-       .io_down( signalNewPeekBlock ),
-       .io_value( blocksReady_io_value )
-  );
-  CircularPeekQueue_1 CircularPeekQueue(.clk(clk), .reset(reset),
-       .io_writeEnable( T32 ),
-       .io_nextBlock( T30 ),
-       .io_input( T25 ),
-       .io_output( CircularPeekQueue_io_output )
-  );
-  CircularPeekQueue_1 CircularPeekQueue_1(.clk(clk), .reset(reset),
-       .io_writeEnable( T23 ),
-       .io_nextBlock( T21 ),
-       .io_input( T16 ),
-       .io_output( CircularPeekQueue_1_io_output )
-  );
-  CircularPeekQueue_1 CircularPeekQueue_2(.clk(clk), .reset(reset),
-       .io_writeEnable( T12 ),
-       .io_nextBlock( T9 ),
-       .io_input( T4 ),
-       .io_output( CircularPeekQueue_2_io_output )
-  );
-  WrappingCounter_0 inputSelectCounter(
-       .io_enable( R3 ),
-       .io_value( inputSelectCounter_io_value )
-  );
-  WrappingCounter_1 inputSelectCounter_1(
-       .io_enable( R2 ),
-       .io_value( inputSelectCounter_1_io_value )
-  );
-  WrappingCounter_2 inputSelectCounter_2(
-       .io_enable( R1 ),
-       .io_value( inputSelectCounter_2_io_value )
-  );
-  WrappingCounter_11 queueOutputSelectCounters(.clk(clk), .reset(reset),
-       .io_enable( signalNewPeekBlock ),
-       .io_value( queueOutputSelectCounters_io_value )
-  );
-  WrappingCounter_12 outputSelectCounters(.clk(clk), .reset(reset),
-       .io_enable( signalNewPeekBlock ),
-       .io_value( outputSelectCounters_io_value )
-  );
-  WrappingCounter_13 outputSelectCounters_1(.clk(clk), .reset(reset),
-       .io_enable( signalNewPeekBlock ),
-       .io_value( outputSelectCounters_1_io_value )
-  );
-  WrappingCounter_14 outputSelectCounters_2(.clk(clk), .reset(reset),
-       .io_enable( signalNewPeekBlock ),
-       .io_value( outputSelectCounters_2_io_value )
-  );
-
-  always @(posedge clk) begin
-    if(reset) begin
-      R1 <= 1'h0;
-    end else begin
-      R1 <= io_prevDone;
-    end
-    if(reset) begin
-      R2 <= 1'h0;
-    end else begin
-      R2 <= io_prevDone;
-    end
-    if(reset) begin
-      R3 <= 1'h0;
-    end else begin
-      R3 <= io_prevDone;
-    end
-    if(reset) begin
-      signalBitBuffersFull <= 1'h0;
-    end else begin
-      signalBitBuffersFull <= T15;
-    end
-    if(reset) begin
-      R34 <= 1'h0;
-    end else begin
-      R34 <= io_prevDone;
-    end
-    if(reset) begin
-      R35 <= 1'h0;
-    end else begin
-      R35 <= io_prevDone;
-    end
-    if(reset) begin
-      R41 <= 1'h0;
-    end else begin
-      R41 <= signalNewPeekBlock;
+      R11 <= signalNewPeekBlock;
     end
   end
 endmodule
@@ -25462,9 +20895,6 @@ endmodule
 module Net(input clk, input reset,
     output io_ready,
     input  io_start,
-    input [15:0] io_xsIn_3,
-    input [15:0] io_xsIn_2,
-    input [15:0] io_xsIn_1,
     input [15:0] io_xsIn_0,
     output io_xsOut_0,
     output io_xsOutValid,
@@ -25474,23 +20904,16 @@ module Net(input clk, input reset,
 
   wire Warp_io_ready;
   wire Warp_io_startOut;
-  wire Warp_io_xOut_3;
-  wire Warp_io_xOut_2;
-  wire Warp_io_xOut_1;
   wire Warp_io_xOut_0;
   wire Warp_io_xOutValid;
   wire Warp_io_done;
   wire Warp_1_io_ready;
   wire Warp_1_io_startOut;
-  wire Warp_1_io_xOut_2;
-  wire Warp_1_io_xOut_1;
   wire Warp_1_io_xOut_0;
   wire Warp_1_io_xOutValid;
   wire Warp_1_io_done;
   wire Warp_2_io_ready;
   wire Warp_2_io_startOut;
-  wire Warp_2_io_xOut_2;
-  wire Warp_2_io_xOut_1;
   wire Warp_2_io_xOut_0;
   wire Warp_2_io_xOutValid;
   wire Warp_2_io_done;
@@ -25500,13 +20923,9 @@ module Net(input clk, input reset,
   wire Warp_3_io_done;
   wire GearBox_io_ready;
   wire GearBox_io_startNext;
-  wire[15:0] GearBox_io_xsOut_2;
-  wire[15:0] GearBox_io_xsOut_1;
   wire[15:0] GearBox_io_xsOut_0;
   wire GearBox_1_io_ready;
   wire GearBox_1_io_startNext;
-  wire[15:0] GearBox_1_io_xsOut_2;
-  wire[15:0] GearBox_1_io_xsOut_1;
   wire[15:0] GearBox_1_io_xsOut_0;
   wire GearBox_2_io_ready;
   wire GearBox_2_io_startNext;
@@ -25518,44 +20937,30 @@ module Net(input clk, input reset,
   assign io_xsOut_0 = Warp_3_io_xOut_0;
   assign io_ready = Warp_io_ready;
   Warp_0 Warp(.clk(clk), .reset(reset),
-       .io_xIn_3( io_xsIn_3 ),
-       .io_xIn_2( io_xsIn_2 ),
-       .io_xIn_1( io_xsIn_1 ),
        .io_xIn_0( io_xsIn_0 ),
        .io_start( io_start ),
        .io_ready( Warp_io_ready ),
        .io_startOut( Warp_io_startOut ),
-       .io_xOut_3( Warp_io_xOut_3 ),
-       .io_xOut_2( Warp_io_xOut_2 ),
-       .io_xOut_1( Warp_io_xOut_1 ),
        .io_xOut_0( Warp_io_xOut_0 ),
        .io_xOutValid( Warp_io_xOutValid ),
        .io_pipeReady( GearBox_io_ready ),
        .io_done( Warp_io_done )
   );
   Warp_1 Warp_1(.clk(clk), .reset(reset),
-       .io_xIn_2( GearBox_io_xsOut_2 ),
-       .io_xIn_1( GearBox_io_xsOut_1 ),
        .io_xIn_0( GearBox_io_xsOut_0 ),
        .io_start( GearBox_io_startNext ),
        .io_ready( Warp_1_io_ready ),
        .io_startOut( Warp_1_io_startOut ),
-       .io_xOut_2( Warp_1_io_xOut_2 ),
-       .io_xOut_1( Warp_1_io_xOut_1 ),
        .io_xOut_0( Warp_1_io_xOut_0 ),
        .io_xOutValid( Warp_1_io_xOutValid ),
        .io_pipeReady( GearBox_1_io_ready ),
        .io_done( Warp_1_io_done )
   );
   Warp_2 Warp_2(.clk(clk), .reset(reset),
-       .io_xIn_2( GearBox_1_io_xsOut_2 ),
-       .io_xIn_1( GearBox_1_io_xsOut_1 ),
        .io_xIn_0( GearBox_1_io_xsOut_0 ),
        .io_start( GearBox_1_io_startNext ),
        .io_ready( Warp_2_io_ready ),
        .io_startOut( Warp_2_io_startOut ),
-       .io_xOut_2( Warp_2_io_xOut_2 ),
-       .io_xOut_1( Warp_2_io_xOut_1 ),
        .io_xOut_0( Warp_2_io_xOut_0 ),
        .io_xOutValid( Warp_2_io_xOutValid ),
        .io_pipeReady( GearBox_2_io_ready ),
@@ -25571,10 +20976,7 @@ module Net(input clk, input reset,
        .io_pipeReady( io_pipeReady ),
        .io_done( Warp_3_io_done )
   );
-  GearBox_0 GearBox(.clk(clk), .reset(reset),
-       .io_xsIn_3( Warp_io_xOut_3 ),
-       .io_xsIn_2( Warp_io_xOut_2 ),
-       .io_xsIn_1( Warp_io_xOut_1 ),
+  GearBox GearBox(.clk(clk), .reset(reset),
        .io_xsIn_0( Warp_io_xOut_0 ),
        .io_validIn( Warp_io_xOutValid ),
        .io_prevDone( Warp_io_done ),
@@ -25582,13 +20984,9 @@ module Net(input clk, input reset,
        .io_ready( GearBox_io_ready ),
        .io_nextReady( Warp_1_io_ready ),
        .io_startNext( GearBox_io_startNext ),
-       .io_xsOut_2( GearBox_io_xsOut_2 ),
-       .io_xsOut_1( GearBox_io_xsOut_1 ),
        .io_xsOut_0( GearBox_io_xsOut_0 )
   );
-  GearBox_1 GearBox_1(.clk(clk), .reset(reset),
-       .io_xsIn_2( Warp_1_io_xOut_2 ),
-       .io_xsIn_1( Warp_1_io_xOut_1 ),
+  GearBox GearBox_1(.clk(clk), .reset(reset),
        .io_xsIn_0( Warp_1_io_xOut_0 ),
        .io_validIn( Warp_1_io_xOutValid ),
        .io_prevDone( Warp_1_io_done ),
@@ -25596,13 +20994,9 @@ module Net(input clk, input reset,
        .io_ready( GearBox_1_io_ready ),
        .io_nextReady( Warp_2_io_ready ),
        .io_startNext( GearBox_1_io_startNext ),
-       .io_xsOut_2( GearBox_1_io_xsOut_2 ),
-       .io_xsOut_1( GearBox_1_io_xsOut_1 ),
        .io_xsOut_0( GearBox_1_io_xsOut_0 )
   );
-  GearBox_2 GearBox_2(.clk(clk), .reset(reset),
-       .io_xsIn_2( Warp_2_io_xOut_2 ),
-       .io_xsIn_1( Warp_2_io_xOut_1 ),
+  GearBox GearBox_2(.clk(clk), .reset(reset),
        .io_xsIn_0( Warp_2_io_xOut_0 ),
        .io_validIn( Warp_2_io_xOutValid ),
        .io_prevDone( Warp_2_io_done ),
@@ -25840,9 +21234,6 @@ module Pacman(input clk, input reset,
   wire deinterleaver_io_oneHotOut_valid;
   wire[9:0] deinterleaver_io_oneHotOut_bits;
   wire interleaver_io_wordIn_ready;
-  wire[15:0] interleaver_io_interleavedOut_3;
-  wire[15:0] interleaver_io_interleavedOut_2;
-  wire[15:0] interleaver_io_interleavedOut_1;
   wire[15:0] interleaver_io_interleavedOut_0;
   wire interleaver_io_startOut;
   wire net_io_ready;
@@ -25882,9 +21273,6 @@ module Pacman(input clk, input reset,
        .io_wordIn_ready( interleaver_io_wordIn_ready ),
        .io_wordIn_valid( widthConverter_io_wordOut_valid ),
        .io_wordIn_bits( widthConverter_io_wordOut_bits ),
-       .io_interleavedOut_3( interleaver_io_interleavedOut_3 ),
-       .io_interleavedOut_2( interleaver_io_interleavedOut_2 ),
-       .io_interleavedOut_1( interleaver_io_interleavedOut_1 ),
        .io_interleavedOut_0( interleaver_io_interleavedOut_0 ),
        .io_startOut( interleaver_io_startOut ),
        .io_pipeReady( net_io_ready )
@@ -25892,9 +21280,6 @@ module Pacman(input clk, input reset,
   Net net(.clk(clk), .reset(reset),
        .io_ready( net_io_ready ),
        .io_start( interleaver_io_startOut ),
-       .io_xsIn_3( interleaver_io_interleavedOut_3 ),
-       .io_xsIn_2( interleaver_io_interleavedOut_2 ),
-       .io_xsIn_1( interleaver_io_interleavedOut_1 ),
        .io_xsIn_0( interleaver_io_interleavedOut_0 ),
        .io_xsOut_0( net_io_xsOut_0 ),
        .io_xsOutValid( net_io_xsOutValid ),

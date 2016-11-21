@@ -55,7 +55,10 @@ architecture Behavioral of top is
     signal led_reg : std_logic_vector(7 downto 0);
     
     signal ready : std_logic;
+    signal temp_clock : std_logic;
 begin
+
+    temp_clock <= CLK100MHZ;
 
     ulpi_data <= temp_data_out when ulpi_dir = '0'
         else (others => 'Z');
@@ -69,7 +72,7 @@ begin
     n_rdy <= '1';
     process is
     begin
-        wait until rising_edge(CLK100MHZ);
+        wait until rising_edge(temp_clock);
         if(ready = '1') then
             led_reg(7 downto 4) <= (others => '0');
         else
@@ -89,7 +92,7 @@ begin
             io_net_result_bits => n_dat,
             io_net_result_ready => n_rdy,
             io_net_result_valid => n_val,
-            clk => CLK100MHZ,
+            clk => temp_clock,
             ulpi_clk => ulpi_clk60,
             reset => '0'
             );
