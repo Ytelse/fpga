@@ -42,7 +42,13 @@ class WidthConverterTest2To6(c: WidthConverter) extends Tester(c) {
     peeks()
     step(1)
     expect(c.io.wordIn.ready, wordInReady)
-    if(wordOutBits != -1) expect(c.io.wordOut.bits, wordOutBits)
+    if(wordOutBits != -1) {
+      expect(c.io.wordOut.bits, wordOutBits)
+      expect(c.io.wordOut.valid, true)
+    }
+    else {
+      expect(c.io.wordOut.valid, false)
+    }
   }
 
   step(100)
@@ -62,7 +68,11 @@ class WidthConverterTest2To6(c: WidthConverter) extends Tester(c) {
   cycle(           1,          3,             1,          50)
   cycle(           1,          1,             1,          -1)
   cycle(           1,          3,             1,          -1)
-  cycle(           1,          2,             1,          45)
+  cycle(           1,          2,             1,          45) // 115
+  cycle(           1,         -1,             1,          -1)
+  cycle(           1,         -1,             1,          -1)
+  cycle(           1,         -1,             1,          -1)
+  cycle(           1,         -1,             1,          -1)
 }
 
 class WidthConverterTest6To2(c: WidthConverter) extends Tester(c) {
