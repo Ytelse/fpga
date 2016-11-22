@@ -76,6 +76,16 @@ config: chisel ${BITFILE}
 clean:
 	@-rm -rf ${WORKDIR}
 	@-rm -rf ${CURDIR}/reports
+	@-rm -rf ${CURDIR}/*.h
+	@-rm -rf ${CURDIR}/*.cpp
+	@-rm -rf ${CURDIR}/*.o
+	@-rm -rf ${CURDIR}/*.v
+	@-rm -rf ${CURDIR}/*.in
+	@-rm -rf ${CURDIR}/*.out
+	@-rm -rf ${CURDIR}/*.log
+	@-rm -rf ${CURDIR}/*.jou
+	@-rm -rf ${CURDIR}/*.cmd
+	@-rm -rf ${CURDIR}/*.tab
 
 
 purge: clean
