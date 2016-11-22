@@ -19,12 +19,14 @@ class PacmanSpeedTestHarness(
     val leds = Vec.fill(8)(Bool()).asOutput
   }
 
+  val firstCycle = Reg(init=Bool(true), next=Bool(false))
+
   val pacman = Module(new Pacman(inputWidth, layers))
   pacman.io.digitOut.ready := Bool(true)
-  pacman.io.inDataStream.valid := Reg(init=Bool(false), next=Bool(true))
+  pacman.io.inDataStream.valid := !firstCycle
 
   val inputCounter = Module(new AsyncCounter(0, inData.length))
-  inputCounter.io.enable := pacman.io.inDataStream.ready
+  inputCounter.io.enable := pacman.io.inDataStream.ready && !firstCycle
 
   val inMem = Vec(inData.map(arrayToBits).toArray)
   val inReg = Reg(

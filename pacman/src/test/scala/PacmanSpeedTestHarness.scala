@@ -5,12 +5,13 @@ import Chisel._
 class PacmanSpeedTestHarnessTests(
   c: PacmanSpeedTestHarness
 ) extends Tester(c) {
-  for(i <- 0 until 10000) {
+  for(i <- 0 until 100000) {
     peek(c.io)
     peek(c.totalCounter.io)
     peek(c.incorrectSwitch.io)
     peek(c.resultReg)
     peek(c.correctResultReg)
+    peek(c.pacman.net.io.done)
     step(1)
   }
 }
@@ -90,13 +91,18 @@ object PacmanSpeedTestHarnessTest {
     val inputStreamWordArrays = netInputWordArrays.flatten.grouped(inputStreamWordWidth).toArray
     val inData = testInputs.flatten.grouped(inputStreamWordWidth).toArray
     val outData = testOutputs.map(_.indexWhere(_ == 1)).map(a => if(a == -1) 0 else a).toArray
-    print(outData)
+
+    println(inData.deep)
+    println()
+    println(outData.deep)
+
+
 
     chiselMainTest(margs, () => Module(new PacmanSpeedTestHarness(
                                          layers,
                                          inData,
                                          outData,
-                                         15
+                                         50
                                        ))) {
       c => new PacmanSpeedTestHarnessTests(c)
     }
