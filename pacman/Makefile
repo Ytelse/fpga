@@ -13,12 +13,14 @@ TESTRESDIR := ${WORKDIR}/test-results
 VIVADO := /opt/Xilinx/Vivado/2016.2/bin/vivado -tempDir ${WORKDIR}
 SCRIPTDIR := ${CURDIR}/buildscripts
 TESTSCRIPTDIR := ${CURDIR}/testscripts
+CONSTRAINTSDIR := ${CURDIR}/constraints
 SYNTH_DCP := ${WORKDIR}/synth.dcp
 PLACE_DCP := ${WORKDIR}/place.dcp
 ROUTE_DCP := ${WORKDIR}/route.dcp
 BITFILE   := ${WORKDIR}/${PACKAGE_NAME}-Top.bit
 BINFILE   := ${WORKDIR}/${PACKAGE_NAME}-Top.bin
 PRMFILE   := ${WORKDIR}/${PACKAGE_NAME}-Top.prm
+whichtarget := ${CURDIR}.which-target
 
 CHISELFILES := $(shell find ${CURDIR} -iname '*scala')
 BLOCK_PERIOD := 1234
@@ -58,12 +60,21 @@ route: ${ROUTE_DCP}
 bitgen: ${BITFILE}
 	@echo "Bitfile generation complete"
 
-upload: chisel ${BITFILE}
+upload:
+	@echo "mcu-output.xdc" > ${whichtarget}
+	@make _upload
+
+_upload: chisel ${BITFILE}
+	echo `cat ${whichtarget}
 	${VIVADO} -mode batch -source ${SCRIPTDIR}/program_bitfile.tcl -tclargs ${BITFILE} | tee ${SYNTH_LOG}
 	@rm -f ${CURDIR}/vivado.log
 	@rm -f ${CURDIR}/vivado.jou
 	@rm -f ${CURDIR}/webtalk.log
 	@rm -f ${CURDIR}/webtalk.jou
+
+upload-leds:
+	@echo "led-output.xdc" > ${whichtarget}
+	@make _upload
 
 
 config: chisel ${BITFILE}
@@ -86,6 +97,7 @@ clean:
 	@-rm -rf ${CURDIR}/*.jou
 	@-rm -rf ${CURDIR}/*.cmd
 	@-rm -rf ${CURDIR}/*.tab
+	@-rm -rf ${whichtarget}
 
 
 purge: clean
@@ -162,6 +174,7 @@ ${SYNTH_DCP}: ${SRC_FILES} ${WORKDIR}
 	  TIMING_SUMMARY=${SYNTH_TIMING_SUMMARY} \
     DRC_RPT=${SYNTH_DRC_RPT} \
 	  TOP=${SYNTH_TOP} \
+		CONSTRAINTS="${CONSTRAINTSDIR}/"`cat ${whichtarget}` \
 		${VIVADO} -mode batch -source ${SCRIPTDIR}/synthesize.tcl |\
        tee ${SYNTH_LOG}
 

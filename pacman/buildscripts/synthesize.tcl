@@ -10,7 +10,10 @@ if { [llength $sources_vhdl] == 0 } then {
 }
 read_vhdl "${sources_vhdl}"
 
-read_xdc [glob $env(TOPDIR)/constraints/*.xdc]
+set constraints [glob -nocomplain $env(CONSTRAINTS)]
+puts "Reading constraints file ${constraints}"
+
+read_xdc ${constraints}
 
 synth_design -top $env(TOP) -part xc7a35tftg256-2
 write_checkpoint $env(DCP) -force
