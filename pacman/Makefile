@@ -31,7 +31,7 @@ BLOCK_PERIOD := 1234
 
 chisel: ${CHISELFILES} ${SRCDIR} all-dirs
 	@sbt "runMain ${PACKAGE_NAME}.Main --backend v --targetDir ${SRCDIR}"
-	@-ln -s ${CURDIR}/src/DualPortBRAM.v ${SRCDIR}/DualPortBRAM.v
+	@-ln -s ${CURDIR}/src/external ${SRCDIR}/external
 
 all-dirs:
 	@mkdir -p ${CURDIR}/reports
@@ -126,12 +126,12 @@ ROUTE_LOG = ${RPT_DIR}/route.log
 BITGEN_DRC_RPT = ${RPT_DIR}/bitgen_design_rule_check.rpt
 BITGEN_LOG = ${RPT_DIR}/bitgen.log
 
-SRC_FILES = $(shell find -L ${SRCDIR} -name '*.v')
+SRC_FILES = $(shell find -L ${SRCDIR} -name '*.(v)')
 TEST_FILES = $(shell find -L ${SRCDIR} -name '*.v')
 
 ## Call the top level "Top_cfg" for all exercises, to make it easy to reuse the
 ## Makefile.
-SYNTH_TOP ?= ${PACKAGE_NAME}
+SYNTH_TOP ?= top
 
 ${SRCDIR}:
 	mkdir -p $@
