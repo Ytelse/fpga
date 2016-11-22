@@ -31,7 +31,7 @@ BLOCK_PERIOD := 1234
 
 chisel: ${CHISELFILES} ${SRCDIR} all-dirs
 	@sbt "runMain ${PACKAGE_NAME}.Main --backend v --targetDir ${SRCDIR}"
-	@-ln -s ${CURDIR}/src/external ${SRCDIR}/external
+	@-ln -s "${CURDIR}/src/external/" -t "${WORKDIR}/src/"
 
 all-dirs:
 	@mkdir -p ${CURDIR}/reports
@@ -126,8 +126,8 @@ ROUTE_LOG = ${RPT_DIR}/route.log
 BITGEN_DRC_RPT = ${RPT_DIR}/bitgen_design_rule_check.rpt
 BITGEN_LOG = ${RPT_DIR}/bitgen.log
 
-SRC_FILES = $(shell find -L ${SRCDIR} -name '*.(v)')
-TEST_FILES = $(shell find -L ${SRCDIR} -name '*.v')
+SRC_FILES = $(shell find -L ${SRCDIR} -type f -regex '.*\.\(v\|vhdl?\)')
+# TEST_FILES = $(shell find -L ${SRCDIR} -type f -regex '.*\.\(v\|vhdl?\)')
 
 ## Call the top level "Top_cfg" for all exercises, to make it easy to reuse the
 ## Makefile.
@@ -139,12 +139,13 @@ ${SRCDIR}:
 ${WORKDIR}:
 	mkdir -p $@
 
+.PHONY:
 ${SYNTH_DCP}: ${SRC_FILES} ${WORKDIR}
 	@echo "Starting synthesis"
 	@echo "========================"
 	@cd ${WORKDIR} && \
 		env TOPDIR=${CURDIR} \
-		SRCDIR=${SRCDIR} \
+		SRCDIR=${WORKDIR}/src \
 	  DCP=${SYNTH_DCP} \
 	  UTIL_RPT=${SYNTH_UTIL_RPT} \
 	  TIMING_RPT=${SYNTH_TIMING_RPT} \
@@ -152,7 +153,7 @@ ${SYNTH_DCP}: ${SRC_FILES} ${WORKDIR}
     DRC_RPT=${SYNTH_DRC_RPT} \
 	  TOP=${SYNTH_TOP} \
 		${VIVADO} -mode batch -source ${SCRIPTDIR}/synthesize.tcl |\
-      tee ${SYNTH_LOG}
+       tee ${SYNTH_LOG}
 
 ${PLACE_DCP}: ${SYNTH_DCP}
 	@echo "Starting placement"
@@ -198,8 +199,8 @@ ${TESTRESDIR}/%.wdb: ${TESTRESDIR}/sim-prj.prj ${TESTDIR}/%.vhd
 	cp -v $*/waveform.wdb $@ && \
 	cd -
 
-${TESTRESDIR}/sim-prj.prj: ${TESTRESDIR} ${SRC_FILES} ${TEST_FILES}
-	@${TESTSCRIPTDIR}/gen_prj.sh ${CURDIR} > $@
+# ${TESTRESDIR}/sim-prj.prj: ${TESTRESDIR} ${SRC_FILES} ${TEST_FILES}
+# 	@${TESTSCRIPTDIR}/gen_prj.sh ${CURDIR} > $@
 
 ${TESTDIR}/%.vhd:
 	@echo "No test bench file named $$(basename ${TESTDIR})/$*.vhd!" >&2
@@ -208,7 +209,7 @@ ${TESTDIR}/%.vhd:
 .PHONY: print_debug
 print_debug:
 	@echo "SRC_FILES = ${SRC_FILES}"
-	@echo "TEST_FILES = ${TEST_FILES}"
+	# @echo "TEST_FILES = ${TEST_FILES}"
 	@echo "SYNTH_DCP = ${SYNTH_DCP}"
 	@echo "TRANS_DCP = ${TRANS_DCP}"
 	@echo "MAP_DCP = ${MAP_DCP}"

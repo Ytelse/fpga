@@ -1,19 +1,18 @@
-#set constraints [glob -nocomplain $env(TOPDIR)/constraints/*.xdc]
-#if { [llength $framework] == 0 } then {
-#    return -code error "\nERROR: No source files found in the framework/ directory!\n"
-#}
-#read_vhdl "${framework}"
-
-set sources [glob -nocomplain $env(SRCDIR)/*.v]
-if { [llength $sources] == 0 } then {
-    return -code error "\nERROR: No source files found in the src/ directory!\n"
+set sources_v [glob -nocomplain $env(SRCDIR)/external/*.v $env(SRCDIR)/*.v]
+if { [llength $sources_v] == 0 } then {
+    return -code error "\nERROR: No verilog files found.\n"
 }
-read_verilog "${sources}"
+read_verilog "${sources_v}"
 
-#read_xdc [glob $env(TOPDIR)/framework/*.xdc]
+set sources_vhdl [glob -nocomplain $env(SRCDIR)/external/*.vhdl]
+if { [llength $sources_vhdl] == 0 } then {
+    return -code error "\nERROR: No VHDL files found.\n"
+}
+read_vhdl "${sources_vhdl}"
+
 read_xdc [glob $env(TOPDIR)/constraints/*.xdc]
 
-synth_design -top $env(TOP) -part xc7a35tcsg324-1
+synth_design -top $env(TOP) -part xc7a35tftg256-2
 write_checkpoint $env(DCP) -force
 report_utilization -file $env(UTIL_RPT) -hierarchical
 report_timing -sort_by group -max_paths 5 -path_type summary -file $env(TIMING_RPT)
