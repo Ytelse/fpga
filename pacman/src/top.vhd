@@ -76,9 +76,11 @@ begin
     begin
         wait until rising_edge(temp_clock);
         if(ready = '1') then
-            led_reg(7 downto 4) <= (others => '0');
+            led_reg(7) <= '0';
+            led_reg(6 downto 4) <= (others => '0');
         else
-            led_reg(7 downto 4) <= (others => '1');
+            led_reg(7) <= '1';
+            led_reg(6 downto 4) <= (others => '0');
         end if; 
         if n_val = '1' then
             led_reg(3 downto 0) <= n_dat(3 downto 0);
