@@ -11,7 +11,11 @@ entity top is
 	   ulpi_reset    : out std_logic := '1';
 	   reset    : in std_logic;
 	   ulpi_clk60    : in  std_logic;
-	   led : out std_logic_vector(7 downto 0));
+	   led : out std_logic_vector(7 downto 0);
+        mcu_dat : out std_logic_vector(15 downto 0);
+        mcu_ack : in std_logic;
+        mcu_rdy : in std_logic;
+        mcu_val : out std_logic);
 end top;
 
 architecture Behavioral of top is
@@ -19,9 +23,10 @@ architecture Behavioral of top is
         port(   io_usb_data_bits : in std_logic_vector(7 downto 0);
                 io_usb_data_ready : out std_logic;
                 io_usb_data_valid : in std_logic;
-                io_net_result_bits : out std_logic_vector(3 downto 0);
+                io_net_result_bits : out std_logic_vector(15 downto 0);
                 io_net_result_ready : in std_logic;
                 io_net_result_valid : out std_logic;
+		io_ebiAck : in std_logic;
                 clk : in std_logic;
                 ulpi_clk : in std_logic;
                 reset : in std_logic);
@@ -49,9 +54,10 @@ architecture Behavioral of top is
     signal usb_rxdat : std_logic_vector(7 downto 0);
     signal usb_rxrdy : std_logic;
     signal usb_rxval : std_logic;
-    signal n_dat : std_logic_vector(3 downto 0);
+    signal n_dat : std_logic_vector(15 downto 0);
     signal n_rdy : std_logic;
     signal n_val : std_logic;
+    signal n_ack : std_logic;
     signal led_reg : std_logic_vector(7 downto 0);
     
     signal ready : std_logic;
@@ -70,20 +76,25 @@ begin
 
     led <= not led_reg;
     
+    mcu_dat <= n_dat;
+    n_rdy <= mcu_rdy;
+    mcu_val <= n_val;
+    n_ack <= mcu_ack;
     -- a small test
-    n_rdy <= '1';
+--    n_rdy <= '1;
     process is
     begin
-        wait until rising_edge(temp_clock);
+	wait until rising_edge(temp_clock);
+        led_reg(6 downto 0) <= (others => '0');
         if(ready = '1') then
             led_reg(7) <= '0';
-            led_reg(6 downto 4) <= (others => '0');
+--            led_reg(6 downto 4) <= (others => '0');
         else
             led_reg(7) <= '1';
-            led_reg(6 downto 4) <= (others => '0');
-        end if; 
-        if n_val = '1' then
-            led_reg(3 downto 0) <= n_dat(3 downto 0);
+--            led_reg(6 downto 4) <= (others => '0');
+--        end if; 
+--        if n_val = '1' then
+--            led_reg(3 downto 0) <= n_dat(3 downto 0);
         end if;
     end process;
     --end a small test
@@ -96,6 +107,7 @@ begin
             io_net_result_bits => n_dat,
             io_net_result_ready => n_rdy,
             io_net_result_valid => n_val,
+            io_ebiAck => n_ack,
             clk => temp_clock,
             ulpi_clk => ulpi_clk60,
             reset => rst

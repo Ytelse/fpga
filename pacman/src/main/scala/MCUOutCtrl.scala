@@ -10,12 +10,14 @@ class MCUOutCtrl extends Module {
     val validOut = Bool().asOutput
     val readyLow = Bool().asInput
     val state = Vec.fill(5) { Bits(width=1) }.asOutput
-    val addrIn = UInt(width=10).asOutput
-    val addrOut = UInt(width=10).asOutput
-    val offset = UInt(width=10).asOutput
+    val addr = UInt(width=5).asOutput
+//    val addrIn = UInt(width=10).asOutput
+//    val addrOut = UInt(width=10).asOutput
+//    val offset = UInt(width=10).asOutput
   }
-  val fifoAddrIn = Reg(init=UInt(0,width=10))
-  val fifoAddrOut = Reg(init=UInt(0,width=10))
+  val fifoAddr = Reg(init=UInt(0,width=5))
+//  val fifoAddrIn = Reg(init=UInt(0,width=10))
+//  val fifoAddrOut = Reg(init=UInt(0,width=10))
   val fillToggle = Reg(init=Bool(false))
   val fill = Reg(init=Bool(false))
   val fillState = Vec(
@@ -26,14 +28,15 @@ class MCUOutCtrl extends Module {
     Reg(init=Bits(1))  // Idle state
   ) 
   val valid = Reg(init=Bool(false))
-  val offset = fifoAddrIn - fifoAddrOut
+//  val offset = fifoAddrIn - fifoAddrOut
  
   // Outputs
   io.state := fillState
-  io.addrIn := fifoAddrIn
-  io.addrOut := fifoAddrOut
+  io.addr := fifoAddr
+//  io.addrIn := fifoAddrIn
+//  io.addrOut := fifoAddrOut
   io.validOut := valid
-  io.offset := offset
+//  io.offset := offset
 
   //valid is recieved and ready went low, setting valid low
   when (valid && io.readyLow){
@@ -41,12 +44,12 @@ class MCUOutCtrl extends Module {
   }
 
   // The fifo gets 1 valid number
-  when (io.validIn && ~fill) {
-    fifoAddrIn := fifoAddrIn + UInt(1)
+  when (io.validIn && ~fill ) {
+    fifoAddr := fifoAddr + UInt(1)
   }
 
   // Data is available and the states will cycle once
-  when ((offset >= UInt(4) && fillToggle) && ~valid){
+  when ((fifoAddr >= UInt(5)) && fillToggle && ~valid){
     fill := ~fill
     fillToggle := ~fillToggle
   }
@@ -62,12 +65,14 @@ class MCUOutCtrl extends Module {
     for(i <- 1 until 5){
       fillState(i) := fillState(i-1)
     }
-
+    //when(~(fillState(3)===Bits(1))) {
+    //fifoAddrOut := fifoAddrOut + UInt(1)
+    //}
     when(fillState(3)===Bits(1)){ 
       fill := ~fill // resets when the state machine reaches Idle
       valid := ~valid
-    } .elsewhen (~io.validIn) {
-      fifoAddrOut := fifoAddrOut + UInt(1)
+    } .elsewhen (~io.validIn){
+      fifoAddr := fifoAddr - UInt(1)
     } 
 
   }
